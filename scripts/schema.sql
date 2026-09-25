@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS rail_groups (id text PRIMARY KEY,name text NOT NULL,description text NOT NULL DEFAULT '',kind text NOT NULL,owner text NOT NULL REFERENCES "user"(id),code text UNIQUE NOT NULL,created timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS rail_members (group_id text REFERENCES rail_groups(id) ON DELETE CASCADE,user_id text REFERENCES "user"(id) ON DELETE CASCADE,PRIMARY KEY(group_id,user_id));
+CREATE TABLE IF NOT EXISTS rail_posts (id text PRIMARY KEY,group_id text NOT NULL REFERENCES rail_groups(id) ON DELETE CASCADE,user_id text NOT NULL REFERENCES "user"(id),kind text NOT NULL CHECK(kind IN ('update','hand')),body text NOT NULL,hand jsonb,tournament jsonb,created timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS rail_posts_group_created ON rail_posts(group_id,created DESC);
+CREATE TABLE IF NOT EXISTS rail_comments (id text PRIMARY KEY,post_id text NOT NULL REFERENCES rail_posts(id) ON DELETE CASCADE,user_id text NOT NULL REFERENCES "user"(id),body text NOT NULL,created timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS rail_likes (post_id text REFERENCES rail_posts(id) ON DELETE CASCADE,user_id text REFERENCES "user"(id),PRIMARY KEY(post_id,user_id));
+CREATE TABLE IF NOT EXISTS rail_votes (post_id text REFERENCES rail_posts(id) ON DELETE CASCADE,user_id text REFERENCES "user"(id),choice text NOT NULL CHECK(choice IN ('Fold','Call','Raise')),PRIMARY KEY(post_id,user_id));
