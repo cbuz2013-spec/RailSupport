@@ -6,7 +6,8 @@ export type ImportState = 'pending' | 'imported' | 'rejected' | 'timeout';
 export type SolverHand = Record<'game'|'hero'|'board'|'position'|'stakes'|'stack'|'pot'|'action'|'question'|'context',string>;
 export function solverHand(post:Post):SolverHand {
  const h=post.hand;
- return {game:h?.game??'',hero:h?.hero??'',board:h?.board??'',position:h?.position??'',stakes:h?.stakes??'',stack:h?.stack??'',pot:h?.pot??'',action:h?.action??'',question:h?.question??'',context:post.body??''};
+ // MP is ambiguous across table sizes. Leave it for the player to select in Spot Solver.
+ return {game:h?.game??'',hero:h?.hero??'',board:h?.board??'',position:h?.position==='MP'?'':h?.position??'',stakes:h?.stakes??'',stack:h?.stack??'',pot:h?.pot??'',action:h?.action??'',question:h?.question??'',context:post.body??''};
 }
 
 export function connectSpotSolver(frame:HTMLIFrameElement,onStatus:(state:ImportState,message:string)=>void){

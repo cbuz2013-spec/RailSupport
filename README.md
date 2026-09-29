@@ -1,45 +1,28 @@
-# RailSupport V1 — Buz Trio
+# Rail Social 2.0 — Buz Trio
 
-Separate from Circle Pilot. Original Circle source and deployment have not been changed.
+Rail Social is the renamed RailSupport poker discussion app. Circle Pilot remains a separate project and is unchanged. Production origin stays `https://railsupport.vercel.app` so existing sessions and the Spot Solver receiver keep working.
 
-## V1
+## Version 2.0
 
-- Responsive private rails for friends/family, study groups, and backers.
-- Text updates and tournament snapshots (event, chips, big blind, players remaining, status).
-- Completed NL Hold’em hand posts, cards, action, question, fold/call/raise votes, and author-controlled result reveal.
-- Comments, reactions, group creation/joining, author-only post deletion.
-- Generated final-table rail silhouette background in `public/final-table-rail.png`.
-- Independent email/password account integration using Better Auth and PostgreSQL. No ChatGPT dependency.
+- Private rails for friends, study partners, and backers; completed-hand discussions, updates, votes, comments, and result reveal.
+- Shareable invite links. A recipient signs in or creates an account, then accepts the invite; a raw code also works. Invitations are bearer links—share privately.
+- Player profiles with a photo, bio, and optional WSOP, MSPT, Hendon Mob, and Sharkscope links. Follow/unfollow and a Following filter within the current rail. Following never grants membership to a rail.
+- Search the members of the current private rail by name, then open their profiles. Member search does not reveal people in other rails.
+- Up to three photos per update or completed-hand discussion. The browser resizes each photo; original files are not uploaded. Images are served through an authenticated route that checks rail membership and blocks.
+- Block/unblock hides the other player's posts, comments, and member listing in either direction and removes reciprocal follows. It does not delete either person's membership or past data.
+- Hand-versus-hand Hold’em showdown odds preflop, flop, turn, and river using the hand-history card notation. Turn and river are exhaustive; preflop and flop are Monte Carlo estimates. This is a review tool, not live-hand assistance.
+- Embedded Spot Solver V20.1 hand import remains separate from this odds calculator. The authorized origin is the existing production URL.
 
-## Current deployment state
+## Deploy
 
-The completed V1 has not been published. Vercel rejected production deployment because the connected account lacks deployment permission for the project. A Vercel owner must provide an authorized project/account before publishing. Local production build and TypeScript checks pass; browser and database end-to-end checks remain pending.
+1. Run `npm ci`, then `npm run typecheck && npm run build` locally. No secrets belong in the repository.
+2. Before publishing v2 code, apply the additive `scripts/v2-social.sql` migration to the existing Rail Social Neon database. It now includes `rail_post_images`; rerun it even if an earlier draft of the 2.0 social migration was already applied. The tables are also present in `scripts/schema.sql` for fresh installs.
+3. Upload/push all app, lib, public, and scripts changes to the connected `cbuz2013-spec/RailSupport` GitHub repository; Vercel deploys the connected main branch to `railsupport.vercel.app`. Do not create a new Vercel project or change the URL merely to change the brand.
+4. Leave the existing Vercel `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `RAILSUPPORT_READY` values intact. `BETTER_AUTH_URL` must remain the exact production origin.
+5. Test with two real test accounts: invite recipient signup and join; follow/unfollow; block/unblock; profile photo and links; member search on desktop and phone; photos in posts and hand discussions; confirm a signed-out user and nonmember cannot load post images; calculator on every street; and Spot Solver import. Do not treat a local build alone as production acceptance.
 
-**Interactive preview, not yet a connected multiuser pilot.** No database credentials were available for a separate RailSupport database. `RAILSUPPORT_READY` is false by default. The UI uses fictional sample activity and explicitly labels it. Preview actions exist in React memory only, reset on reload, and are never shared. Preview does not collect passwords. No real private data is bundled in this repository.
+## Boundaries
 
-## Run
+Accounts use Better Auth and PostgreSQL, not ChatGPT. Profile photos are resized client-side and stored as small data URLs in the profile table; post images are resized client-side and stored in PostgreSQL with a 300 KB limit each. This is for a limited pilot; switch to object storage before broader use. Email verification/recovery, invite rotation, membership removal, public discovery, moderation/reporting, and production load testing are not included. The private feed returns the newest 100 posts per rail. No real-money play or live-hand assistance.
 
-`npm ci`, then `npm run dev`. Production check: `npm run typecheck && npm run build`.
-
-## Activate shared testing
-
-1. Create a dedicated Neon/PostgreSQL database for RailSupport. Do not reuse DealerFlow tables or credentials.
-2. Configure `DATABASE_URL`, a random `BETTER_AUTH_SECRET` (at least 32 bytes), and `BETTER_AUTH_URL` equal to the exact deployed HTTPS origin in Vercel environment settings. Never place secrets in client code or source archives.
-3. With the same environment configured locally, run `npm run db:setup` once. It applies Better Auth migrations and the bounded application schema.
-4. Verify sign-up, sign-in, private-group separation, invitation joins, result hiding, and delete authorization with two disposable test accounts on an isolated test database.
-5. Set `RAILSUPPORT_READY=true` and redeploy once checks pass.
-
-Authentication uses secure cookies in production and database-backed authentication rate limiting. Application requests validate a server-side session and rail membership. Writes validate request origin. Hidden hand results are stripped from server responses to nonauthors until revealed. Group invite codes are high-entropy bearer invitations; share only with intended members.
-
-## Limitations / follow-up
-
-- Email verification and self-service password reset are not yet configured; connect an email service before expanding beyond a trusted pilot.
-- Membership removal and invite rotation, uploads, push notifications, pagination beyond the latest 100 posts, and moderation/reporting are not included in V1.
-- Add application write throttling and operational monitoring before public signup.
-- Spot Solver tools, advertising, paid memberships, and payments are explicitly planned, not active.
-- No live-hand advice, real-money games, or staking transactions.
-- Domain `railsupportpoker.com` was not purchased or connected.
-
-## Artwork
-
-Created using built-in image generation. Prompt: cinematic wide silhouette of spectators on the rail at a poker final table, seen from behind, seated players beyond, charcoal haze and muted antique-gold overhead lighting, dark negative space above, realistic proportions, no identifiable faces, text, logos, watermarks, or UI. Source asset is retained in the project.
+The final-table silhouette and Rail Social logo were created with image generation.
