@@ -4,6 +4,8 @@
 
 The September 25 RailSupport product roadmap puts **official poker-room pages and hosts** after the Spot Solver integration. Version 2.1 implements that room-network foundation in the existing RailSupport application.
 
+**Complete and deployed on October 6, 2026.** Version 2.1 is live at https://railsupport.vercel.app. The production database migration and room-creator configuration are complete. See [the updated roadmap](ROADMAP.md).
+
 Included:
 - A searchable room directory with All rooms, Following, and My host desk filters.
 - Room profiles with name, city/region, description, street address, website, host roster, and shareable links.
@@ -55,7 +57,15 @@ With the disposable preview running, `node --import tsx scripts/rooms-http-smoke
 - Browser visual and responsive checks remain pending. The in-app browser repeatedly timed out attaching to the local preview. No screenshot or browser interaction result is claimed.
 - No production data or credentials were used for testing. Existing Spot Solver integration was preserved, but its live trusted-origin flow was not rerun in this localhost preview.
 
-## Release preparation — requires separate deployment approval
+## Production release completed October 6, 2026
+
+The user authorized deployment. The additive Room Pages migration was tested on an isolated Neon branch and then applied to production after a recovery branch was created. The existing account for `cbuz2013@gmail.com` was approved to create rooms.
+
+The final production deployment is `dpl_4E3XLh36iD6n5YjUxpfjWmNfmmH2`, built from commit `088d3b35292a61b96454463ed82b2ed8e8a85ddc` on `codex/rail-social-v2.1`. Vercel confirms it is ready and promoted to the existing production domain. The draft PR has not been merged into `main`.
+
+Production checks confirmed the homepage and all eight homepage JavaScript assets returned 200, version 2.1 was present, the requested ChatGPT reference was removed, signed-out Rooms and Rails requests returned 401, and session lookup returned 200. Signed-in production room creation and browser visual checks remain manual follow-up checks; local HTTP acceptance covered the full room permission flows.
+
+## Reference checklist for future releases
 
 1. Review the branch and authorize deployment separately. The review branch `codex/rail-social-v2.1` is explicitly disabled in `vercel.json`, matching the [Vercel branch deployment configuration](https://vercel.com/docs/project-configuration/git-configuration).
 2. On an approved database target, back up first and apply `scripts/room-pages.sql`. It is additive and rerunnable. New installations can run `npm run db:setup`, whose full schema includes Room Pages. Do not run setup or this migration against production without approval.
@@ -63,4 +73,4 @@ With the disposable preview running, `node --import tsx scripts/rooms-http-smoke
 4. Verify owner creation, draft visibility, publication, following, invitations/acceptance/removal, and announcements with distinct accounts on the intended test environment.
 5. Recheck existing private rails, Table Talk, and the Spot Solver bridge at the trusted Rail Social origin before any production promotion. This release does not change the solver URL or its message origins.
 
-No production migration, environment change, merge, or deployment is performed by these source changes. Rolling the app back to 2.0 can leave the additive Room Pages tables in place.
+The October 6 deployment included the approved production migration and environment configuration. Rolling the app back to 2.0 can leave the additive Room Pages tables in place.

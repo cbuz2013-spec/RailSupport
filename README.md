@@ -4,9 +4,9 @@ Rail Social is the renamed RailSupport poker discussion app. Circle Pilot remain
 
 ## Version 2.1 — Room Pages
 
-The next roadmap milestone adds a room directory, room profiles, room follows, host announcements, drafts, and co-host invitations. Creation is restricted to approved hosts. Published room pages are visible to signed-in members; private rails remain invite only.
+The Room Pages roadmap milestone is complete and deployed as version 2.1 on October 6, 2026. It adds a room directory, room profiles, room follows, host announcements, drafts, and co-host invitations. Creation is restricted to approved hosts. Published room pages are visible to signed-in members; private rails remain invite only.
 
-See [Room Pages release notes](ROOM-PAGES-2.1.md) for roles, the disposable local preview, verification results, and the additive database migration. This is a review build: production migration and deployment require separate approval.
+See the [current roadmap](ROADMAP.md) and [Room Pages release notes](ROOM-PAGES-2.1.md) for status, roles, verification results, and the additive database migration. The production release is live at https://railsupport.vercel.app. Tournaments is the next roadmap milestone.
 
 ## Existing version 2.0 features
 
