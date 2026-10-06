@@ -1,8 +1,14 @@
-# Rail Social 2.0 — Buz Trio
+# Rail Social 2.1 — Buz Trio
 
 Rail Social is the renamed RailSupport poker discussion app. Circle Pilot remains a separate project and is unchanged. Production origin stays `https://railsupport.vercel.app` so existing sessions and the Spot Solver receiver keep working.
 
-## Version 2.0
+## Version 2.1 — Room Pages
+
+The next roadmap milestone adds a room directory, room profiles, room follows, host announcements, drafts, and co-host invitations. Creation is restricted to approved hosts. Published room pages are visible to signed-in members; private rails remain invite only.
+
+See [Room Pages release notes](ROOM-PAGES-2.1.md) for roles, the disposable local preview, verification results, and the additive database migration. This is a review build: production migration and deployment require separate approval.
+
+## Existing version 2.0 features
 
 - Private rails for friends, study partners, and backers; completed-hand discussions, updates, votes, comments, and result reveal.
 - Shareable invite links. A recipient signs in or creates an account, then accepts the invite; a raw code also works. Invitations are bearer links—share privately.
@@ -13,7 +19,9 @@ Rail Social is the renamed RailSupport poker discussion app. Circle Pilot remain
 - Hand-versus-hand Hold’em showdown odds preflop, flop, turn, and river using the hand-history card notation. Turn and river are exhaustive; preflop and flop are Monte Carlo estimates. This is a review tool, not live-hand assistance.
 - Embedded Spot Solver V20.1 hand import remains separate from this odds calculator. The authorized origin is the existing production URL.
 
-## Deploy
+## Earlier 2.0 deployment reference
+
+For 2.1, use the migration and review steps in [Room Pages release notes](ROOM-PAGES-2.1.md). The historical steps below are not authorization to deploy.
 
 1. Run `npm ci`, then `npm run typecheck && npm run build` locally. No secrets belong in the repository.
 2. Before publishing v2 code, apply the additive `scripts/v2-social.sql` migration to the existing Rail Social Neon database. It now includes `rail_post_images`; rerun it even if an earlier draft of the 2.0 social migration was already applied. The tables are also present in `scripts/schema.sql` for fresh installs.

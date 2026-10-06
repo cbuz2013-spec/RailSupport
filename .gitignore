@@ -4,3 +4,6 @@ node_modules/
 !.env.example
 *.tsbuildinfo
 .vercel/
+
+# Local verification artifacts
+tmp/
