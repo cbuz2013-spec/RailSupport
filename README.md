@@ -1,12 +1,16 @@
-# Rail Social 2.1 — Buz Trio
+# Rail Social 2.2 — Buz Trio
 
 Rail Social is the renamed RailSupport poker discussion app. Circle Pilot remains a separate project and is unchanged. Production origin stays `https://railsupport.vercel.app` so existing sessions and the Spot Solver receiver keep working.
+
+## Version 2.2 — Community beta
+
+Deployed October 7, 2026. Adds People search and connections, reliable rail/room invitation handoffs, in-app invitations, follower room posts/comments, and host-managed leagues with schedules, rosters, results and standings. See [Community 2.2 release notes](COMMUNITY-2.2.md) for capabilities, verification, and migration details. Password-reset email delivery remains pending domain and sender setup. Ads and monetization are planned, not activated.
 
 ## Version 2.1 — Room Pages
 
 The Room Pages roadmap milestone is complete and deployed as version 2.1 on October 6, 2026. It adds a room directory, room profiles, room follows, host announcements, drafts, and co-host invitations. Creation is restricted to approved hosts. Published room pages are visible to signed-in members; private rails remain invite only.
 
-See the [current roadmap](ROADMAP.md) and [Room Pages release notes](ROOM-PAGES-2.1.md) for status, roles, verification results, and the additive database migration. The production release is live at https://railsupport.vercel.app. Tournaments is the next roadmap milestone.
+See the [current roadmap](ROADMAP.md) and [Room Pages release notes](ROOM-PAGES-2.1.md) for status, roles, verification results, and the additive database migration. The production release is live at https://railsupport.vercel.app. League management is delivered in 2.2; tournament-specific live features remain future work.
 
 ## Existing version 2.0 features
 
@@ -31,6 +35,6 @@ For 2.1, use the migration and review steps in [Room Pages release notes](ROOM-P
 
 ## Boundaries
 
-Accounts use Better Auth and PostgreSQL, not ChatGPT. Profile photos are resized client-side and stored as small data URLs in the profile table; post images are resized client-side and stored in PostgreSQL with a 300 KB limit each. This is for a limited pilot; switch to object storage before broader use. Email verification/recovery, invite rotation, membership removal, public discovery, moderation/reporting, and production load testing are not included. The private feed returns the newest 100 posts per rail. No real-money play or live-hand assistance.
+Accounts use Better Auth and PostgreSQL. Profile photos are resized client-side and stored as small data URLs in the profile table; post images are resized client-side and stored in PostgreSQL with a 300 KB limit each. This is for a limited pilot; switch to object storage before broader use. Email verification/recovery, invite rotation, membership removal, abuse-report queues, and production load testing are not included. Signed-in member discovery and host moderation of room conversations are available in 2.2. The private feed returns the newest 100 posts per rail. No real-money play or live-hand assistance.
 
 The final-table silhouette and Rail Social logo were created with image generation.

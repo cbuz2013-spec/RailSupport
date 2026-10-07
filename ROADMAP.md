@@ -1,19 +1,19 @@
 # Rail Social product roadmap
 
-Updated October 6, 2026. **Current release: Rail Social 2.1, deployed to production.** Milestone 4, Room Pages, is complete. Milestone numbers below follow the original September 25 roadmap; they are not software version numbers.
+Updated October 7, 2026. **Current release: Rail Social 2.2, deployed to production.** Room Pages now include community conversations and league management. Milestone numbers below follow the original September 25 roadmap; they are not software version numbers.
 
 Live site: https://railsupport.vercel.app
 
-![Rail Social roadmap with Room Pages complete in version 2.1 and Tournaments next](docs/rail-social-roadmap-2026-10-06.png)
+[Historical October 6 roadmap visual](docs/rail-social-roadmap-2026-10-06.png). The table below reflects the current release.
 
 | Milestone | Scope | Status |
 | --- | --- | --- |
 | 1. Vision | Private poker community for players and backers | Complete |
 | 2. Player platform | Accounts, feed, hand-review foundation; expanded in 2.0 with private rails, profiles, follows, photos, blocks, and odds | Complete and deployed |
 | 3. Spot Solver integration | Embedded Spot Solver and hand import | Complete and deployed |
-| **4. Room Pages** | **Official poker-room pages and hosts** | **Complete and deployed in 2.1 — October 6, 2026** |
-| **5. Tournaments** | **QR join, live stacks, hands, and event chat** | **Next to build** |
-| 6. Monetization | Free, Standard, and Premium room plans | Planned |
+| **4. Room Pages** | **Room profiles and hosts; expanded with follower posts/comments, invitations, and leagues** | **Complete in 2.1; community expansion deployed in 2.2 — October 7, 2026** |
+| **5. Tournaments** | **QR join, live stacks, hands, and event chat** | **League schedules, rosters, results and standings delivered in 2.2; tournament-specific live features remain planned** |
+| 6. Monetization | Advertising, sponsors, and Free, Standard, and Premium room plans | Planned; no ads or payments activated |
 | 7. Growth tools | Push notifications, live video, and analytics | Planned |
 | 8. Pilot rooms | Three to five rooms; measure adoption | Planned |
 | 9. Room apps | White-label branded apps and managed service | Planned |
@@ -26,9 +26,18 @@ Live site: https://railsupport.vercel.app
 - Access checks that preserve private-rail separation and draft privacy.
 - Production database migration and initial room-creator approval.
 
-Published Room Pages currently require sign-in. Room follows do not yet send notifications. Paid plans, tournament communities, growth tools, pilot-room rollout, and branded apps remain future work.
+## Community beta completed in 2.2
 
-The production build and signed-out checks passed. The full room permission flows passed local HTTP acceptance tests. Signed-in production room creation and browser visual checks remain manual follow-up checks; this does not change the completed deployment status.
+- People directory with display-name search, follows, followers and mutual friends.
+- Rail invitation links preserved through account creation/sign-in, opening the accepted rail.
+- In-app rail and room invitations with recipient acceptance and a pending-invitation indicator.
+- Room followers can invite others, post, and comment. Authors remove their own content; hosts moderate.
+- Room league seasons, scoring rules, self-enrollment, game scheduling, editable results and standings.
+- Production migration, recovery branch, automated tests, signed-in local HTTP checks, and desktop/mobile browser verification.
+
+Password recovery remains pending domain and email-sender setup. Published Room Pages require sign-in. Room follows do not yet send notifications. Paid plans, live tournament tools, growth tools, broader pilot rollout, and branded apps remain future work.
+
+The 2.2 production build and signed-out checks passed. The social/room/league permission flows passed local HTTP acceptance tests, and headless Edge verified the invitation handoffs and key member/host screens with synthetic local accounts. Real-member production flows were not impersonated. See [Community 2.2 release notes](COMMUNITY-2.2.md).
 
 ## Business direction
 
