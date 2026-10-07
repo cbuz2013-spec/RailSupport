@@ -1,0 +1,30 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {communityRequest,type PeopleData} from './community-client';
+import './community.css';
+import './room-pages.css';
+
+export function InviteMembers({groupId,roomId}:{groupId?:string;roomId?:string}){
+ const [query,setQuery]=useState(''),[data,setData]=useState<PeopleData|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ const [term,setTerm]=useState('');const sending=useRef(false);
+ useEffect(()=>{const c=new AbortController();setData(null);setError('');communityRequest<PeopleData>({q:term},undefined,c.signal).then(setData).catch(e=>{if(!c.signal.aborted)setError(e.message)});return()=>c.abort()},[term]);
+ return <section className="community-section"><h3>Invite a Rail Social member</h3><form className="room-search" onSubmit={e=>{e.preventDefault();setTerm(query.trim())}}><label className="field">Find a member<input value={query} onChange={e=>setQuery(e.target.value)} maxLength={100} placeholder="Display name"/></label><button className="outline">Search</button></form>
+ {error&&<p className="error" role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
+ {data?.people.length===0&&<p>No members found.</p>}
+ <ul className="people-list">{data?.people.map(p=><li key={p.id}><span>{p.name}</span><button className="outline" disabled={busy} onClick={async()=>{if(sending.current)return;sending.current=true;setBusy(true);setError('');try{await communityRequest({}, {action:'invite',recipientId:p.id,...(groupId?{groupId}:{roomId})});setNotice('Invitation sent to '+p.name+'. They can accept it in People.')}catch(e){setError((e as Error).message)}finally{sending.current=false;setBusy(false)}}}>Invite</button></li>)}</ul>{data?.nextOffset!==null&&data&&<p className="muted">Narrow your search to find more members.</p>}</section>;
+}
+
+export default function People({openProfile,onJoined}:{openProfile:(id:string)=>void;onJoined:(target:{groupId?:string;roomId?:string})=>Promise<void>}){
+ const [data,setData]=useState<PeopleData|null>(null),[query,setQuery]=useState(''),[term,setTerm]=useState(''),[scope,setScope]=useState('all'),[error,setError]=useState(''),[busy,setBusy]=useState(false),[revision,setRevision]=useState(0);
+ const actionLock=useRef(false);
+ useEffect(()=>{const c=new AbortController();setData(null);setError('');communityRequest<PeopleData>({q:term,scope},undefined,c.signal).then(setData).catch(e=>{if(!c.signal.aborted)setError(e.message)});return()=>c.abort()},[term,scope,revision]);
+ async function act(run:()=>Promise<void>){if(actionLock.current)return;actionLock.current=true;setBusy(true);setError('');try{await run()}catch(e){setError((e as Error).message)}finally{actionLock.current=false;setBusy(false)}}
+ return <section className="community-page"><div className="page-title"><div><span className="eyebrow">FIND YOUR PEOPLE</span><h1>Your connections.</h1><p>Find players, follow friends, and accept invitations.</p></div><button className="outline" disabled={busy} onClick={()=>setRevision(v=>v+1)}>Refresh</button></div>
+ {error&&<p className="error" role="alert">{error}</p>}
+ {!!data?.invitations.length&&<section className="panel community-section"><h2>Your invitations</h2>{data.invitations.map(i=><article className="community-invite" key={i.id}><div><h3>{i.name}</h3><p>{i.sender} invited you to this {i.kind}.</p></div><div className="room-actions"><button className="primary" disabled={busy} onClick={()=>act(async()=>{const target=await communityRequest<{groupId?:string;roomId?:string}>({}, {action:'accept',invitationId:i.id});await onJoined(target)})}>Join {i.kind}</button><button className="outline" disabled={busy} onClick={()=>act(async()=>{await communityRequest({}, {action:'decline',invitationId:i.id});setRevision(v=>v+1)})}>Decline</button></div></article>)}</section>}
+ <section className="panel community-section"><form className="room-search" onSubmit={e=>{e.preventDefault();setTerm(query.trim())}}><label className="field">Search members<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Display name" maxLength={100}/></label><button className="outline" disabled={busy}>Search</button></form><div className="room-filters">{[['all','All members'],['following','Following'],['followers','Followers'],['friends','Friends']].map(([value,label])=><button key={value} disabled={busy} className={scope===value?'selected':''} aria-pressed={scope===value} onClick={()=>setScope(value)}>{label}</button>)}</div><p className="form-hint">Friends are people who follow each other. Invite them from your rail or room page.</p></section>
+ {!data&&!error&&<p role="status">Loading people…</p>}{data?.people.length===0&&<div className="panel empty"><h2>No members here yet.</h2><p>Try another name or explore All members.</p></div>}
+ <div className="people-grid">{data?.people.map(p=><article className="panel community-section" key={p.id}><button className="profile-name" onClick={()=>openProfile(p.id)}><h2>{p.name}</h2></button><p className="community-body">{p.bio||'A seat in the Rail Social community.'}</p>{p.followsYou&&<p className="muted">{p.following?'Friends · You follow each other':'Follows you'}</p>}<div className="room-actions"><button className="outline" onClick={()=>openProfile(p.id)}>View profile</button><button className={p.following?'outline':'primary'} disabled={busy} aria-pressed={p.following} onClick={()=>act(async()=>{const res=await fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:p.following?'unfollow':'follow',id:p.id})});const d=await res.json();if(!res.ok)throw Error(d.error||'Could not update follow.');setRevision(v=>v+1)})}>{p.following?'Unfollow':'Follow'}</button></div></article>)}</div>
+ {data?.nextOffset!=null&&<button className="outline" disabled={busy} onClick={()=>act(async()=>{const more=await communityRequest<PeopleData>({q:term,scope,offset:String(data.nextOffset)});setData({...more,people:[...data.people,...more.people]})})}>Load more people</button>}
+ </section>;
+}
