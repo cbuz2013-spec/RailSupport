@@ -1,8 +1,14 @@
 import {betterAuth} from 'better-auth';
 import {db} from './db';
+import {after} from 'next/server';
+import {authOptions} from './auth-options';
 function createAuth(){
- if(!process.env.BETTER_AUTH_SECRET||!process.env.BETTER_AUTH_URL)throw new Error('Account setup is incomplete');
- return betterAuth({appName:'Rail Social',database:db(),secret:process.env.BETTER_AUTH_SECRET,baseURL:process.env.BETTER_AUTH_URL,emailAndPassword:{enabled:true,minPasswordLength:8},rateLimit:{enabled:true,storage:'database',window:60,max:30},session:{expiresIn:60*60*24*7},advanced:{useSecureCookies:process.env.NODE_ENV==='production'}});
+ const options=authOptions(db());
+ return betterAuth({...options,advanced:{...options.advanced,backgroundTasks:{handler:promise=>{
+   // Keep delivery alive on Vercel without making the HTTP response disclose account existence.
+   const delivery=promise.catch(()=>console.error('Rail Social password email delivery failed. Check Resend delivery logs.'));
+   after(async()=>{await delivery;});
+ }}}});
 }
 let instance:ReturnType<typeof createAuth>|undefined;
 export function auth(){return instance??=createAuth();}
