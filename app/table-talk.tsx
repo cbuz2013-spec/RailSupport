@@ -1,4 +1,5 @@
 'use client';
+import PostTimestamp from './post-timestamp';
 import {useCallback,useEffect,useState} from 'react';
 import PostActivity from './post-activity';
 import MentionInput from './mention-input';
@@ -38,7 +39,7 @@ export default function TableTalk({id,me,relationshipVersion}:{id:string;me:stri
   {error&&<p className="error" role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
   {loading?<p role="status" className="muted">Loading Table Talk…</p>:posts.length===0&&!error?<p className="talk-empty">{id===me?'Start the conversation with your first post.':'No Table Talk posts to show. Friends-only posts appear when you follow each other.'}</p>:null}
   {posts.map(post=><article className="talk-post" key={post.id} aria-label={post.name+' Table Talk post'}>
-   <header><strong>{post.name}</strong><div className="talk-meta"><span>{post.kind}</span><time dateTime={post.created}>{new Date(post.created).toLocaleString()}</time><span>{post.audience==='friends'?<Users size={13}/>:<Globe size={13}/>} {post.audience==='friends'?'Friends only':'Public'}</span></div></header>
+   <header><strong>{post.name}</strong><div className="talk-meta"><span>{post.kind}</span><PostTimestamp created={post.created} edited={post.edited}/><span>{post.audience==='friends'?<Users size={13}/>:<Globe size={13}/>} {post.audience==='friends'?'Friends only':'Public'}</span></div></header>
    <p className="talk-body">{post.body}</p>{post.location&&<p className="talk-location"><MapPin size={14}/>{post.location}</p>}
    <PostActivity scope="table" postId={post.id} author={{id:post.userId,name:post.name}} body={post.body} postMentions={post.mentions} onChanged={()=>void load().catch(e=>setError(e.message))}/>
   </article>)}

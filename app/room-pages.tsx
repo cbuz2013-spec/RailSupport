@@ -1,4 +1,5 @@
 'use client';
+import PostTimestamp from './post-timestamp';
 
 import {useEffect, useRef, useState} from 'react';
 import {ArrowLeft, ArrowUpRight, Building2, Check, Copy, MapPin, Plus, Search, Users} from 'lucide-react';
@@ -154,7 +155,7 @@ export default function RoomPages() {
 
       <section className="room-updates" aria-label="Room announcements"><div className="room-heading"><h2>From the room</h2><span className="eyebrow">HOST UPDATES</span></div>
         {managing&&<form className="panel post-form room-form" onSubmit={event=>{event.preventDefault();act({action:'announce',roomId:room.id,body:announcement,mentions:activeMentions(announcement,mentions)},'Announcement posted.',()=>{setAnnouncement('');setMentions([])});}}><MentionInput label="Post an announcement" value={announcement} onChange={setAnnouncement} mentions={mentions} onMentions={setMentions} context={{}} maxLength={3000}/><button className="primary" disabled={busy||!announcement.trim()}>Post announcement</button></form>}
-        {detail.announcements.length===0?<div className="panel empty"><Building2 size={28}/><h3>The next update starts here.</h3><p>{managing?'Welcome your players with your first announcement.':'The hosts haven’t posted an update yet. Follow this room to find it easily later.'}</p></div>:detail.announcements.map(post=><article className="panel room-announcement" key={post.id}><div className="room-heading"><div><strong>{room.name}</strong><p className="room-caption">{post.name} · {new Date(post.created).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}</p></div></div><p className="room-description">{post.body}</p><PostActivity scope="announcement" postId={post.id} author={{id:post.userId,name:post.name}} body={post.body} postMentions={post.mentions} onChanged={()=>setRevision(v=>v+1)}/></article>)}
+        {detail.announcements.length===0?<div className="panel empty"><Building2 size={28}/><h3>The next update starts here.</h3><p>{managing?'Welcome your players with your first announcement.':'The hosts haven’t posted an update yet. Follow this room to find it easily later.'}</p></div>:detail.announcements.map(post=><article className="panel room-announcement" key={post.id}><div className="room-heading"><div><strong>{room.name}</strong><p className="room-caption">{post.name} · <PostTimestamp created={post.created} edited={post.edited}/></p></div></div><p className="room-description">{post.body}</p><PostActivity scope="announcement" postId={post.id} author={{id:post.userId,name:post.name}} body={post.body} postMentions={post.mentions} onChanged={()=>setRevision(v=>v+1)}/></article>)}
         {detail.nextBefore&&<button className="outline" disabled={busy} onClick={more}>Load earlier updates</button>}
       </section>
     </>:directory?<>

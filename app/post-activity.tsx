@@ -1,4 +1,5 @@
 'use client';
+import PostTimestamp from './post-timestamp';
 import Image from 'next/image';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {Heart,MessageCircle,Pencil,Trash2,Check} from 'lucide-react';
@@ -50,7 +51,7 @@ export default function PostActivity({scope,postId,author,body,postMentions=[],o
   {thread?.comments.length===0&&<p className="muted">No comments yet.</p>}
   {thread?.comments.map(c=><article className="activity-comment" key={c.id}><a className="profile-name" href={'/?profile='+encodeURIComponent(c.userId)}>{c.name}</a>
    {editing===c.id?<form className="activity-editor" onSubmit={e=>{e.preventDefault();void act('editComment',{commentId:c.id,body:editBody,mentions:[...(commentEditing?.mentions||[]),...activeMentions(editBody,editMentions)]},()=>setEditing(''))}}><MentionInput label="Edit comment" value={editBody} onChange={setEditBody} mentions={editMentions} onMentions={setEditMentions} context={context}/><div className="room-actions"><button className="primary" disabled={busy||!editBody.trim()}>Save comment</button><button type="button" className="outline" onClick={()=>setEditing('')}>Cancel</button></div></form>:<p>{c.body}</p>}
-   <small>{new Date(c.created).toLocaleString()}{c.edited?' · Edited':''}</small><div className="comment-controls"><button disabled={busy||!state?.canComment} aria-pressed={c.liked} onClick={()=>void act('likeComment',{commentId:c.id,enabled:!c.liked})}><Heart size={14} fill={c.liked?'currentColor':'none'}/>Like{c.likes?' · '+c.likes:''}</button><button disabled={!state?.canComment} onClick={()=>reply({id:c.userId,name:c.name})}>Reply</button>{c.canEdit&&<button onClick={()=>edit(c.id,c.body)}>Edit</button>}{c.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this comment?'))void act('deleteComment',{commentId:c.id})}}>Delete</button>}</div>
+   <small><PostTimestamp created={c.created} edited={c.edited}/></small><div className="comment-controls"><button disabled={busy||!state?.canComment} aria-pressed={c.liked} onClick={()=>void act('likeComment',{commentId:c.id,enabled:!c.liked})}><Heart size={14} fill={c.liked?'currentColor':'none'}/>Like{c.likes?' · '+c.likes:''}</button><button disabled={!state?.canComment} onClick={()=>reply({id:c.userId,name:c.name})}>Reply</button>{c.canEdit&&<button onClick={()=>edit(c.id,c.body)}>Edit</button>}{c.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this comment?'))void act('deleteComment',{commentId:c.id})}}>Delete</button>}</div>
   </article>)}
   {thread?.nextBefore&&<button className="outline" disabled={busy} onClick={async()=>{try{const more=await activityRequest<Thread>(undefined,{comments:'1',scope,postId,before:thread.nextBefore!});setThread({...more,comments:[...thread.comments,...more.comments]})}catch(e){setError((e as Error).message)}}}>Earlier comments</button>}
  </section>}
