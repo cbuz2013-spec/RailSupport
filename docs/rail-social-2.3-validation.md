@@ -36,3 +36,14 @@ Date: 2026-10-09
 - Vercel deployment: `dpl_HPyUp6EeGc1Fu5chn5YbvK9tEmxS`, built successfully and promoted on 2026-10-09.
 - Live site: <https://railsupport.vercel.app>. Deployment inspection confirmed this exact release serves the live URL.
 - Staged and live HTTP checks passed: app, password recovery, standalone manifest, push worker and icon; activity and retry endpoints rejected unauthenticated access. The live push worker has cache control preventing stale copies.
+
+## Card-picker update — October 9, 2026
+
+- Implementation commit: `bb35edc4f247cb486da15e16c1eccebc36c116af`, pushed to `codex/rail-social-v2.1` without merging.
+- Shared suit-first picker in hand reviews and the equity calculator: four suit icons, thirteen values, visible selected cards, replacement/removal/clear controls, and duplicate prevention across the hand and board. Hand-review cards remain optional.
+- Local production build and all five existing equity tests passed. Browser checks verified all 52 choices, keyboard selection, duplicate prevention, calculation-result invalidation, 320px/390px layouts, save/readback/reload, editing, discussion-to-calculator prefill, and submissions without cards. Test posts used the isolated local database only.
+- Production build succeeded from a clean archive of the implementation commit. Staged checks confirmed the exact commit and card-picker CSS before promotion.
+- Vercel deployment: `dpl_3xsWsvU1GRztYFL59mgqURPFYd5r`, URL <https://railsupport-1dugdog3w-rage-factory1.vercel.app>.
+- Promoted successfully; deployment inspection confirmed <https://railsupport.vercel.app> serves this exact READY production deployment and commit.
+- Live signed-in browser checks confirmed the calculator renders all thirteen heart values, selects cards, and disables duplicates in the other hand. No browser errors were captured; no error-level runtime logs were returned for the deployment in the initial ten-minute query window. No production posts were created or edited during verification.
+- No database migration or environment-variable change was needed.
