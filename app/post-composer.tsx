@@ -6,6 +6,7 @@ import type {Hand,Post,Tournament} from '@/lib/types';
 import {postSchema} from '@/lib/validation';
 import {activityRequest,activeMentions,type Mention} from './activity-client';
 import MentionInput from './mention-input';
+import CardPicker from './card-picker';
 const emptyHand:Hand={game:'NL Hold’em',stakes:'',position:'',stack:'',hero:'',board:'',pot:'',action:'',question:'',result:'',revealed:false};
 async function resizePhoto(file:File){
  if(!/^image\/(jpeg|png|webp|heic|heif)$/.test(file.type)||file.size>12_000_000)throw Error('Choose a JPG, PNG, WebP, or HEIC photo under 12 MB.');
@@ -51,11 +52,13 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSa
  {sessionChoice&&<p className="form-hint">People who join this session get its updates. Followers who belong to this private group are notified when a new session starts.</p>}
  <div className="form-grid"><label className="field">Event / game name (optional)<input value={event} onChange={e=>setEvent(e.target.value)} maxLength={120} placeholder="e.g. Weekend Main Event"/></label><label className="field">Status (optional)<select value={status} onChange={e=>setStatus(e.target.value as Tournament['status'])}>{['Playing','On break','Bagged','Cashed','Out'].map(s=><option key={s}>{s}</option>)}</select></label></div>
  {kind==='hand'&&<>
- <div className="form-grid">{([['stakes','Stakes / event','$1 / $3'],['stack','Effective stack','100 BB'],['hero','Your hole cards','Ah Qh'],['board','Board','Qs 9h 4c'],['pot','Pot size','$120']] as const).map(([key,label,placeholder])=><label key={key} className="field">{label} (optional)<input value={hand[key]} onChange={e=>setHand({...hand,[key]:e.target.value})} maxLength={key==='hero'?8:key==='board'?20:key==='stack'||key==='pot'?30:60} placeholder={placeholder}/></label>)}<label className="field">Position (optional)<select value={hand.position} onChange={e=>setHand({...hand,position:e.target.value})}><option value="">Not specified</option>{['UTG','UTG+1','MP','LJ','HJ','CO','BTN','SB','BB'].map(s=><option key={s}>{s}</option>)}</select></label></div>
+ <CardPicker label="Your hole cards (optional)" value={hand.hero} onChange={hero=>setHand(previous=>({...previous,hero}))} maxCards={2} unavailable={hand.board} hint="Leave blank, or choose your 2 hole cards. Tap a suit, then a value." disabled={busy}/>
+ <CardPicker label="Board (optional)" value={hand.board} onChange={board=>setHand(previous=>({...previous,board}))} maxCards={5} unavailable={hand.hero} hint="Leave blank, or choose 3 cards for the flop, 4 for the turn, or 5 for the river." disabled={busy}/>
+ <div className="form-grid">{([['stakes','Stakes / event','$1 / $3'],['stack','Effective stack','100 BB'],['pot','Pot size','$120']] as const).map(([key,label,placeholder])=><label key={key} className="field">{label} (optional)<input value={hand[key]} onChange={e=>setHand({...hand,[key]:e.target.value})} maxLength={key==='stack'||key==='pot'?30:60} placeholder={placeholder}/></label>)}<label className="field">Position (optional)<select value={hand.position} onChange={e=>setHand({...hand,position:e.target.value})}><option value="">Not specified</option>{['UTG','UTG+1','MP','LJ','HJ','CO','BTN','SB','BB'].map(s=><option key={s}>{s}</option>)}</select></label></div>
  <label className="field">Action by street (optional)<textarea rows={3} value={hand.action} onChange={e=>setHand({...hand,action:e.target.value})} maxLength={5000}/></label>
  <label className="field">Your question (optional)<input value={hand.question} onChange={e=>setHand({...hand,question:e.target.value})} maxLength={500}/></label>
  <label className="field">Result (optional)<textarea value={hand.result} onChange={e=>setHand({...hand,result:e.target.value})} maxLength={2000} rows={2}/></label>
- <p className="form-hint">Review completed hands only. Card notation: Ah Qh, or Qs 9h 4c. Results stay hidden until you reveal them.</p>
+ <p className="form-hint">Review completed hands only. Results stay hidden until you reveal them.</p>
  </>}
  {error&&<p className="error" role="alert">{error}</p>}<button className="primary" disabled={busy||photoBusy}>{busy?'Saving…':initial?'Save changes':'Share with my rail'}</button>
  </form>;
