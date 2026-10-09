@@ -6,6 +6,9 @@ import type {Room, RoomAction, RoomDetail, RoomDirectory, RoomFields} from '@/li
 import './room-pages.css';
 import {InviteMembers} from './people';
 import RoomCommunity from './room-community';
+import PostActivity from './post-activity';
+import MentionInput from './mention-input';
+import {activeMentions,type Mention} from './activity-client';
 import RoomLeague from './room-league';
 
 async function request<T>(query: string, action?: RoomAction, signal?: AbortSignal): Promise<T> {
@@ -36,6 +39,7 @@ function RoomForm({room, busy, onSave, onCancel}: {
 }
 
 export default function RoomPages() {
+  const [announcement,setAnnouncement]=useState(''),[mentions,setMentions]=useState<Mention[]>([]);
   const [roomId, setRoomId] = useState<string|null>(null);
   const [directory, setDirectory] = useState<RoomDirectory|null>(null);
   const [detail, setDetail] = useState<RoomDetail|null>(null);
@@ -66,7 +70,7 @@ export default function RoomPages() {
     const controller = new AbortController();
     generation.current++;
     setLoading(true); setError(''); setDetail(null); setDirectory(null);
-    const path = roomId ? '?id='+encodeURIComponent(roomId) : '?'+new URLSearchParams({q:query,scope});
+    const path = roomId ? '?id='+encodeURIComponent(roomId)+'&focus='+encodeURIComponent(new URLSearchParams(location.search).get('post')||'') : '?'+new URLSearchParams({q:query,scope});
     request<RoomDetail & RoomDirectory>(path, undefined, controller.signal).then(data => {
       if(controller.signal.aborted)return;
       if(roomId)setDetail(data);else setDirectory(data);
@@ -149,8 +153,8 @@ export default function RoomPages() {
       </section>
 
       <section className="room-updates" aria-label="Room announcements"><div className="room-heading"><h2>From the room</h2><span className="eyebrow">HOST UPDATES</span></div>
-        {managing&&<form className="panel post-form room-form" onSubmit={event=>{event.preventDefault();const form=event.currentTarget;act({action:'announce',roomId:room.id,body:String(new FormData(form).get('body'))},room.published?'Announcement posted.':'Announcement saved to your draft room.',()=>form.reset());}}><label className="field">Post an announcement<textarea name="body" required maxLength={3000} rows={3} placeholder="What should your players know?"/></label><button className="primary" disabled={busy}>{busy?'Saving…':'Post announcement'}</button></form>}
-        {detail.announcements.length===0?<div className="panel empty"><Building2 size={28}/><h3>The next update starts here.</h3><p>{managing?'Welcome your players with your first announcement.':'The hosts haven’t posted an update yet. Follow this room to find it easily later.'}</p></div>:detail.announcements.map(post=><article className="panel room-announcement" key={post.id}><div className="room-heading"><div><strong>{room.name}</strong><p className="room-caption">{post.name} · {new Date(post.created).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}</p></div>{managing&&<button className="text-link" disabled={busy} onClick={()=>setConfirm('post:'+post.id)}>Remove</button>}</div><p className="room-description">{post.body}</p>{confirm==='post:'+post.id&&<div className="room-confirm"><p>Remove this announcement?</p><button className="outline" disabled={busy} onClick={()=>act({action:'removeAnnouncement',roomId:room.id,announcementId:post.id},'Announcement removed.')}>Confirm removal</button><button className="outline" disabled={busy} onClick={()=>setConfirm('')}>Keep announcement</button></div>}</article>)}
+        {managing&&<form className="panel post-form room-form" onSubmit={event=>{event.preventDefault();act({action:'announce',roomId:room.id,body:announcement,mentions:activeMentions(announcement,mentions)},'Announcement posted.',()=>{setAnnouncement('');setMentions([])});}}><MentionInput label="Post an announcement" value={announcement} onChange={setAnnouncement} mentions={mentions} onMentions={setMentions} context={{}} maxLength={3000}/><button className="primary" disabled={busy||!announcement.trim()}>Post announcement</button></form>}
+        {detail.announcements.length===0?<div className="panel empty"><Building2 size={28}/><h3>The next update starts here.</h3><p>{managing?'Welcome your players with your first announcement.':'The hosts haven’t posted an update yet. Follow this room to find it easily later.'}</p></div>:detail.announcements.map(post=><article className="panel room-announcement" key={post.id}><div className="room-heading"><div><strong>{room.name}</strong><p className="room-caption">{post.name} · {new Date(post.created).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}</p></div></div><p className="room-description">{post.body}</p><PostActivity scope="announcement" postId={post.id} author={{id:post.userId,name:post.name}} body={post.body} postMentions={post.mentions} onChanged={()=>setRevision(v=>v+1)}/></article>)}
         {detail.nextBefore&&<button className="outline" disabled={busy} onClick={more}>Load earlier updates</button>}
       </section>
     </>:directory?<>

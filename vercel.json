@@ -5,5 +5,11 @@
       "Rail-Social-v2": false,
       "codex/rail-social-v2.1": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/activity/retry",
+      "schedule": "0 12 * * *"
+    }
+  ]
 }

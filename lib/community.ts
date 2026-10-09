@@ -1,3 +1,4 @@
+import {validMentions} from './activity';
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {type RoomDatabase, RoomError} from './rooms';
@@ -9,7 +10,7 @@ const eventFields={name:z.string().trim().min(2).max(100),starts:z.iso.datetime(
 const actionSchema=z.discriminatedUnion('action',[
  z.object({action:z.literal('invite'),recipientId:id,groupId:id.optional(),roomId:id.optional()}).refine(d=>!!d.groupId!==!!d.roomId,'Choose one invitation destination.'),
  z.object({action:z.literal('accept'),invitationId:id}),z.object({action:z.literal('decline'),invitationId:id}),
- z.object({action:z.literal('post'),roomId:id,body:text(5000)}),
+ z.object({action:z.literal('post'),roomId:id,body:text(5000),mentions:z.array(id).max(20).default([])}),
  z.object({action:z.literal('comment'),roomId:id,postId:id,body:text(2000)}),
  z.object({action:z.literal('removePost'),roomId:id,postId:id}),
  z.object({action:z.literal('removeComment'),roomId:id,commentId:id}),
@@ -30,13 +31,18 @@ function offset(params:URLSearchParams){const n=Number(params.get('offset')||0);
 export async function people(database:RoomDatabase,userId:string,params:URLSearchParams){
  const q=(params.get('q')||'').trim().slice(0,100),scope=params.get('scope')||'all',start=offset(params);
  if(!['all','following','followers','friends'].includes(scope))throw new RoomError('Invalid people filter.');
+ const inviteGroup=params.get('inviteGroup'),inviteRoom=params.get('inviteRoom');
+ if(inviteGroup)checked((await database.query(`SELECT 1 FROM rail_members m JOIN rail_groups g ON g.id=m.group_id WHERE m.group_id=$2 AND m.user_id=$1 AND ${unblocked('g.owner')}`,[userId,inviteGroup])).rows);
+ if(inviteRoom)checked((await database.query(`SELECT 1 FROM rail_rooms r WHERE r.id=$2 AND r.published AND ${participant}`,[userId,inviteRoom])).rows);
  const following=`EXISTS(SELECT 1 FROM rail_follows f WHERE f.follower_id=$1 AND f.followed_id=u.id)`;
  const followsYou=`EXISTS(SELECT 1 FROM rail_follows f WHERE f.follower_id=u.id AND f.followed_id=$1)`;
- const result=await database.query(`SELECT u.id,u.name,COALESCE(p.bio,'') AS bio,${following} AS following,${followsYou} AS "followsYou"
+ const result=await database.query(`SELECT u.id,u.name,COALESCE(p.bio,'') AS bio,${following} AS following,${followsYou} AS "followsYou",
+ (EXISTS(SELECT 1 FROM rail_members WHERE group_id=$5 AND user_id=u.id) OR EXISTS(SELECT 1 FROM rail_room_follows WHERE room_id=$6 AND user_id=u.id)) AS "alreadyMember",
+ EXISTS(SELECT 1 FROM rail_invitations WHERE recipient_id=u.id AND (group_id=$5 OR room_id=$6) AND created>now()-interval '30 days') AS invited
  FROM "user" u LEFT JOIN rail_profiles p ON p.user_id=u.id WHERE u.id<>$1 AND ${unblocked('u.id')}
  AND ($2='' OR strpos(lower(u.name),lower($2))>0)
  AND ($3='all' OR ($3='following' AND ${following}) OR ($3='followers' AND ${followsYou}) OR ($3='friends' AND ${following} AND ${followsYou}))
- ORDER BY lower(u.name),u.id LIMIT 25 OFFSET $4`,[userId,q,scope,start]);
+ ORDER BY CASE WHEN $5::text IS NOT NULL OR $6::text IS NOT NULL THEN ${following} ELSE false END DESC,lower(u.name),u.id LIMIT 25 OFFSET $4`,[userId,q,scope,start,inviteGroup,inviteRoom]);
  const invitations=await database.query(`SELECT i.id,u.name AS sender,COALESCE(g.name,r.name) AS name,CASE WHEN i.group_id IS NULL THEN 'room' ELSE 'rail' END AS kind
  FROM rail_invitations i JOIN "user" u ON u.id=i.sender_id LEFT JOIN rail_groups g ON g.id=i.group_id LEFT JOIN rail_rooms r ON r.id=i.room_id
  WHERE i.recipient_id=$1 AND ${unblocked('i.sender_id')} AND i.created>now()-interval '30 days'
@@ -57,10 +63,10 @@ export async function community(database:RoomDatabase,userId:string,params:URLSe
    AND ($4::text IS NULL OR (c.created,c.id)<(SELECT created,id FROM rail_room_comments WHERE id=$4 AND post_id=$3)) ORDER BY c.created DESC,c.id DESC LIMIT 31`,[userId,roomId,postId,before])).rows;
   return {comments:rows.slice(0,30),nextBefore:rows.length>30?rows[29].id:null};
  }
- const rows=(await database.query(`SELECT p.id,p.user_id AS "userId",u.name,p.body,p.created,(p.user_id=$1 OR ${host}) AS "canRemove",
+ const rows=(await database.query(`SELECT p.id,p.user_id AS "userId",u.name,p.body,p.created,p.edited,p.mentions,(p.user_id=$1 OR ${host}) AS "canRemove",
  (SELECT count(*)::int FROM rail_room_comments c WHERE c.post_id=p.id AND ${unblocked('c.user_id')}) AS comments
  FROM rail_room_posts p JOIN rail_rooms r ON r.id=p.room_id JOIN "user" u ON u.id=p.user_id WHERE r.id=$2 AND ${visible} AND ${unblocked('p.user_id')}
- AND ($3::text IS NULL OR (p.created,p.id)<(SELECT created,id FROM rail_room_posts WHERE id=$3 AND room_id=$2)) ORDER BY p.created DESC,p.id DESC LIMIT 21`,[userId,roomId,before])).rows;
+ AND ($3::text IS NULL OR (p.created,p.id)<(SELECT created,id FROM rail_room_posts WHERE id=$3 AND room_id=$2)) ORDER BY (p.id=$4) DESC,p.created DESC,p.id DESC LIMIT 21`,[userId,roomId,before,params.get('focus')||''])).rows;
  return {posts:rows.slice(0,20),nextBefore:rows.length>20?rows[19].id:null};
 }
 
@@ -106,7 +112,7 @@ export async function mutateCommunity(database:RoomDatabase,userId:string,raw:un
  }
  const values=[userId,d.roomId];let result:{rows:Record<string,unknown>[]};
  switch(d.action){
-  case 'post':result=await database.query(`INSERT INTO rail_room_posts(id,room_id,user_id,body) SELECT $3,r.id,$1,$4 FROM rail_rooms r WHERE r.id=$2 AND ${participant} RETURNING id`,[...values,randomUUID(),d.body]);break;
+  case 'post':result=await database.query(`INSERT INTO rail_room_posts(id,room_id,user_id,body,mentions) SELECT $3,r.id,$1,$4,$5::jsonb FROM rail_rooms r WHERE r.id=$2 AND ${participant} RETURNING id`,[...values,randomUUID(),d.body,JSON.stringify(await validMentions(database,userId,d.body,d.mentions))]);break;
   case 'comment':result=await database.query(`INSERT INTO rail_room_comments(id,post_id,user_id,body) SELECT $4,p.id,$1,$5 FROM rail_room_posts p JOIN rail_rooms r ON r.id=p.room_id WHERE r.id=$2 AND p.id=$3 AND ${participant} AND ${unblocked('p.user_id')} RETURNING id`,[...values,d.postId,randomUUID(),d.body]);break;
   case 'removePost':result=await database.query(`DELETE FROM rail_room_posts p USING rail_rooms r WHERE p.id=$3 AND p.room_id=r.id AND r.id=$2 AND ${visible} AND (p.user_id=$1 OR ${host}) RETURNING p.id`,[...values,d.postId]);break;
   case 'removeComment':result=await database.query(`DELETE FROM rail_room_comments c USING rail_room_posts p,rail_rooms r WHERE c.id=$3 AND c.post_id=p.id AND p.room_id=r.id AND r.id=$2 AND ${visible} AND (c.user_id=$1 OR ${host}) RETURNING c.id`,[...values,d.commentId]);break;

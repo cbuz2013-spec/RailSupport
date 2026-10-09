@@ -1,8 +1,10 @@
+import {scheduleActivity} from '@/lib/activity-dispatch';
 import {auth} from '@/lib/auth';
 import {configured,db} from '@/lib/db';
 import {listRooms,readRoom,mutateRoom,RoomError} from '@/lib/rooms';
 
 export const runtime='nodejs';
+export const maxDuration=90;
 export const dynamic='force-dynamic';
 const out=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store'}});
 function failure(error:unknown) {
@@ -18,7 +20,7 @@ export async function GET(req:Request) {
     if(!user)return out({error:'Sign in to explore rooms.'},401);
     const params=new URL(req.url).searchParams,id=params.get('id');
     if((id?.length||0)>100||(params.get('before')?.length||0)>100)throw new RoomError('Invalid room link.');
-    return out(id?await readRoom(db(),user.id,id,params.get('before')):await listRooms(db(),user.id,params));
+    return out(id?await readRoom(db(),user.id,id,params.get('before'),(params.get('focus')||'').slice(0,100)):await listRooms(db(),user.id,params));
   } catch(error) {return failure(error);}
 }
 export async function POST(req:Request) {
@@ -27,6 +29,7 @@ export async function POST(req:Request) {
   try {
     const user=(await auth().api.getSession({headers:req.headers}))?.user;
     if(!user)return out({error:'Sign in first.'},401);
+    scheduleActivity();
     const raw=await req.text();
     if(raw.length>16000)return out({error:'Room details are too long.'},413);
     return out(await mutateRoom(db(),user.id,JSON.parse(raw)));
