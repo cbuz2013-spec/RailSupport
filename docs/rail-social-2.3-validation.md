@@ -28,3 +28,11 @@ Date: 2026-10-09
 - Delivery starts after app writes, retries on subsequent activity, and has a daily cron fallback within the current hosting plan.
 - Provider delivery behavior is covered by tests with a stubbed sender. Receipt on a physical phone has not yet been verified.
 - Local test accounts and test content exist only in the isolated preview database.
+
+## Production release
+
+- Implementation commit: `2752d1d`, pushed to `codex/rail-social-v2.1` without merging.
+- Production migration applied successfully to `br-empty-fire-b58tq1en`. Initial event, notification and device counts were zero; all 14 capture triggers were present.
+- Vercel deployment: `dpl_HPyUp6EeGc1Fu5chn5YbvK9tEmxS`, built successfully and promoted on 2026-10-09.
+- Live site: <https://railsupport.vercel.app>. Deployment inspection confirmed this exact release serves the live URL.
+- Staged and live HTTP checks passed: app, password recovery, standalone manifest, push worker and icon; activity and retry endpoints rejected unauthenticated access. The live push worker has cache control preventing stale copies.
