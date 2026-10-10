@@ -41,4 +41,7 @@
 .equity-results th:first-child{padding-left:0}.equity-results td:last-child,.equity-results th:last-child{text-align:right;padding-right:0}
 .equity-results td:last-child strong{color:var(--primary);font-variant-numeric:tabular-nums}
 .equity-calculator button:disabled{cursor:not-allowed}
+.equity-share-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.equity-share-heading h3{font-size:19px}
+.equity-share-history{margin:0;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--selected);font:13px/1.8 'DM Sans',Arial,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:480px){.equity-table{gap:22px 6px;padding:12px 6px}.equity-felt{inset:40px 2px 35px;border-width:7px}.equity-seat{padding:8px 3px}.equity-seat-name{font-size:10px}.equity-seat-value{font-size:20px}.equity-mini-card{width:26px;height:36px}.equity-mini-card b{font-size:17px}.equity-mini-card>span{font-size:15px}.equity-cards{gap:3px}.equity-results th,.equity-results td{padding:8px 3px;font-size:10px}.equity-toolbar{font-size:10px}.equity-toolbar .outline{font-size:10px;gap:4px;padding:8px}.equity-editor-heading h3{font-size:16px}.equity-remove{font-size:10px}}
