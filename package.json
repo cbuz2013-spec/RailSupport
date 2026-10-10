@@ -1,1 +1,35 @@
-{"name":"railsupport","version":"2.0.0","private":true,"scripts":{"dev":"next dev --hostname 0.0.0.0","build":"next build","start":"next start --hostname 0.0.0.0","typecheck":"tsc --noEmit","test":"node --import tsx --test tests/*.test.ts","db:setup":"tsx scripts/setup-db.ts"},"dependencies":{"next":"16.3.6","react":"19.2.6","react-dom":"19.2.6","lucide-react":"^0.577.0","better-auth":"1.7.6","pg":"8.23.0","zod":"^4.3.6"},"devDependencies":{"typescript":"^5.9.3","@types/react":"^19.2.14","@types/react-dom":"^19.2.3","@types/node":"^22.19.19","@types/pg":"^8.16.0","tsx":"^4.21.0"}}
+{
+  "name": "railsupport",
+  "version": "2.3.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --wasm-num-compilation-tasks=1 --liftoff-only --import tsx --test --test-concurrency=1 tests/*.test.ts",
+    "db:setup": "tsx scripts/setup-db.ts",
+    "preview:rooms": "node --wasm-num-compilation-tasks=1 --liftoff-only --import tsx scripts/local-room-preview.ts"
+  },
+  "dependencies": {
+    "better-auth": "1.7.6",
+    "lucide-react": "^0.577.0",
+    "next": "16.3.8",
+    "pg": "8.23.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "web-push": "3.6.7",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-socket": "0.2.11",
+    "@types/node": "^22.19.19",
+    "@types/pg": "^8.16.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/web-push": "3.6.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

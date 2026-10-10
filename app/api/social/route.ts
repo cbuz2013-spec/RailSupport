@@ -1,6 +1,8 @@
+import {scheduleActivity} from '@/lib/activity-dispatch';
 import {auth} from '@/lib/auth';
 import {configured,db} from '@/lib/db';
 export const runtime='nodejs';
+export const maxDuration=90;
 export const dynamic='force-dynamic';
 const out=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store'}});
 const domains:Record<string,string[]>={wsop:['wsop.com'],mspt:['msptpoker.com'],hendon:['thehendonmob.com'],sharkscope:['sharkscope.com']};
@@ -25,6 +27,7 @@ export async function POST(req:Request){
  if(!configured())return out({error:'Account setup is incomplete.'},503);
  if(req.headers.get('origin')!==new URL(process.env.BETTER_AUTH_URL!).origin)return out({error:'Invalid request origin.'},403);
  try{const uid=await session(req);if(!uid)return out({error:'Sign in first.'},401);
+  scheduleActivity();
   const raw=await req.text();if(raw.length>250000)return out({error:'Profile photo is too large.'},413);
   const data=JSON.parse(raw);const action=String(data.action||'');
   if(action==='profile'){

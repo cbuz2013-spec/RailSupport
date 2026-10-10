@@ -1,7 +1,11 @@
+import {validMentions} from '@/lib/activity';
+import {RoomError} from '@/lib/rooms';
+import {scheduleActivity} from '@/lib/activity-dispatch';
 import {randomUUID} from 'node:crypto';
 import {auth} from '@/lib/auth';
 import {configured,db} from '@/lib/db';
 export const runtime='nodejs';
+export const maxDuration=90;
 export const dynamic='force-dynamic';
 const out=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store'}});
 // Every read and interaction applies this same policy. $1 is always the viewer.
@@ -19,13 +23,13 @@ export async function GET(req:Request){
   const blocked=await db().query('SELECT 1 FROM rail_blocks WHERE (blocker_id=$1 AND blocked_id=$2) OR (blocker_id=$2 AND blocked_id=$1)',[uid,owner]);
   if(blocked.rowCount)return out({posts:[],hasMore:false});
   const cursor=params.get('before');
-  const result=await db().query(`SELECT p.id,p.user_id AS "userId",u.name,pr.photo,p.kind,p.audience,p.body,p.location,p.created,
+  const result=await db().query(`SELECT p.id,p.user_id AS "userId",u.name,pr.photo,p.kind,p.audience,p.body,p.location,p.created,p.edited,p.mentions,
    (SELECT count(*)::int FROM rail_table_likes l WHERE l.post_id=p.id AND ${unblocked('l')}) AS likes,
    EXISTS(SELECT 1 FROM rail_table_likes l WHERE l.post_id=p.id AND l.user_id=$1) AS liked,
    COALESCE((SELECT jsonb_agg(c ORDER BY c.created,c.id) FROM (SELECT c.id,c.user_id AS "userId",u.name,c.body,c.created FROM rail_table_comments c JOIN "user" u ON u.id=c.user_id WHERE c.post_id=p.id AND ${unblocked('c')} ORDER BY c.created DESC,c.id DESC LIMIT 100) c),'[]'::jsonb) AS comments
    FROM rail_table_posts p JOIN "user" u ON u.id=p.user_id LEFT JOIN rail_profiles pr ON pr.user_id=p.user_id
    WHERE p.user_id=$2 AND ${visible} AND ($3::text IS NULL OR (p.created,p.id)<(SELECT created,id FROM rail_table_posts WHERE id=$3 AND user_id=$2))
-   ORDER BY p.created DESC,p.id DESC LIMIT 21`,[uid,owner,cursor]);
+   ORDER BY (p.id=$4) DESC,p.created DESC,p.id DESC LIMIT 21`,[uid,owner,cursor,params.get('focus')||'']);
   return out({posts:result.rows.slice(0,20),hasMore:result.rows.length>20});
  }catch(e){console.error('Table Talk read failed',e);return out({error:'Could not load Table Talk. Please retry.'},503)}
 }
@@ -36,13 +40,14 @@ export async function POST(req:Request){
  try{
   const uid=(await auth().api.getSession({headers:req.headers}))?.user.id;
   if(!uid)return out({error:'Sign in first.'},401);
+  scheduleActivity();
   const raw=await req.text();if(raw.length>16000)return out({error:'This post is too long.'},413);
   const data=JSON.parse(raw);if(!data||typeof data!=='object')return out({error:'Invalid request.'},400);
   if(data.action==='post'){
    const body=typeof data.body==='string'?data.body.trim():'';
    const location=typeof data.location==='string'?data.location.trim():'';
    if(!body||body.length>5000||location.length>120||!['status','location','news','topic'].includes(data.kind)||!['public','friends'].includes(data.audience))return out({error:'Add a post (up to 5,000 characters), a valid type and an audience.'},400);
-   const id=randomUUID();await db().query('INSERT INTO rail_table_posts(id,user_id,kind,audience,body,location) VALUES($1,$2,$3,$4,$5,$6)',[id,uid,data.kind,data.audience,body,location]);return out({id},201);
+   const id=randomUUID();await db().query('INSERT INTO rail_table_posts(id,user_id,kind,audience,body,location,mentions) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb)',[id,uid,data.kind,data.audience,body,location,JSON.stringify(await validMentions(db(),uid,body,data.mentions))]);return out({id},201);
   }
   if(typeof data.postId!=='string'||data.postId.length>100)return out({error:'Choose a post.'},400);
   if(data.action==='delete'){
@@ -59,5 +64,5 @@ export async function POST(req:Request){
    const r=await db().query(`INSERT INTO rail_table_comments(id,post_id,user_id,body) SELECT $3,p.id,$1,$4 FROM rail_table_posts p WHERE p.id=$2 AND ${visible} RETURNING id`,[uid,data.postId,randomUUID(),body]);if(!r.rowCount)return out({error:'Post unavailable.'},404);
   }else return out({error:'Unknown action.'},400);
   return out({ok:true});
- }catch(e){if(e instanceof SyntaxError)return out({error:'Invalid request.'},400);console.error('Table Talk write failed',e);return out({error:'Could not save. Your draft is unchanged.'},503)}
+ }catch(e){if(e instanceof RoomError)return out({error:e.message},e.status);if(e instanceof SyntaxError)return out({error:'Invalid request.'},400);console.error('Table Talk write failed',e);return out({error:'Could not save. Your draft is unchanged.'},503)}
 }
