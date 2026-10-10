@@ -1,6 +1,16 @@
 # Multi-opponent equity calculator — October 9, 2026
 
-Status: implemented and verified locally; awaiting deployment. The live site still has the previously released two-player calculator.
+Status: deployed and verified on October 9, 2026 at https://railsupport.vercel.app.
+
+## Production release
+
+- Release commit: `0579017735fe98203a2448f8ee2ee70cdd39f0b5` on `codex/rail-social-v2.1`.
+- Deployment: `dpl_ffTLB8wYNY8FcJpiFjNRfCaa5p2w` — https://railsupport-69r1tjuid-rage-factory1.vercel.app.
+- Clean tracked-source release built successfully on Vercel, including full TypeScript and page generation. Build output completed in 10 seconds; deployment reached READY before promotion.
+- Promoted the tested production build. Vercel confirmed the main `railsupport.vercel.app` alias resolves to this deployment and exact commit.
+- Signed-in live browser verification: added four opponents; selected cards and positions; confirmed the requested dropdown order, duplicate-card prevention and disabled fifth-opponent action; completed a five-player, 24,000-runout estimate; verified every hand/equity row and clockwise table placement. No browser console errors observed.
+- Runtime log scan returned six dependency warnings (Postgres SSL-mode compatibility and Node `url.parse` deprecation), not calculator exceptions. Keep these as maintenance follow-ups; do not describe the runtime scan as warning-free.
+- Rollback reference: previous live deployment `dpl_3xsWsvU1GRztYFL59mgqURPFYd5r`, commit `bb35edc4f247cb486da15e16c1eccebc36c116af`.
 
 ## Behavior
 
@@ -18,7 +28,7 @@ Status: implemented and verified locally; awaiting deployment. The live site sti
 - Eleven automated odds tests pass. They cover exact counts, two- through five-way split pots, sole/partial winners, duplicate and incomplete hands, player limits and cancellation.
 - The direct seven-card evaluator agrees with the existing five-card enumeration evaluator on eight targeted edge cases and 320 seeded deals spanning two to five players.
 - Clockwise seating verified for 784 position/hero arrangements spanning two to five players. Rendering checks confirm that repositioned seats retain their original hand/equity association and the position menu follows SB, BB, UTG, MP, LJ, HJ, CO, BTN. The corrected five-player table was visually checked in the local component preview.
-- The initial multi-opponent implementation passed the full production build and TypeScript checks. After the clockwise-position correction, production compilation and a focused TypeScript check of the changed calculator components passed. The full-project type check was stopped after an extended run without a result; complete a clean release build before deployment. Temporary preview files are now excluded from project type checking.
+- The initial implementation passed the full production build and TypeScript checks. Following the clockwise-position correction, the final clean Vercel release build passed full TypeScript, compilation and page generation. This resolves the earlier interrupted full-project check in the OneDrive working folder. Temporary preview files are excluded from project type checking.
 - Disposable local browser preview: add four opponents, choose cards/positions, leave a position blank, calculate all five equities and show all five result rows.
 - Shared-card prevention, stale-result clearing, remove/re-add behavior and the four-opponent limit verified through the UI.
 - Five-player flop example reports exactly 741 runouts. Preflop reports 24,000 sampled runouts.
