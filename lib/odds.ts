@@ -31,20 +31,61 @@ export function handScore(cards:string[]):number[]{
  return best;
 }
 export type OddsResult={hero:number;villain:number;ties:number;trials:number;exact:boolean};
-export async function calculateOdds(heroText:string,villainText:string,boardText:string):Promise<OddsResult>{
- const hero=parseCards(heroText),villain=parseCards(villainText),board=parseCards(boardText);
- if(hero.length!==2||villain.length!==2||![0,3,4,5].includes(board.length))throw Error('Enter two cards for each player and 0, 3, 4, or 5 board cards.');
- const known=[...hero,...villain,...board];if(new Set(known).size!==known.length)throw Error('A card cannot appear twice.');
+export type PlayerEquity={equity:number;win:number;tie:number};
+export type MultiwayOddsResult={players:PlayerEquity[];trials:number;exact:boolean};
+type CalculationOptions={signal?:AbortSignal;onProgress?:(fraction:number)=>void};
+
+// Direct seven-card evaluation avoids 21 five-card combinations per player/runout.
+// handScore remains an independent enumeration reference for regression checks.
+function sevenScore(cards:string[]):number{
+ const counts=new Uint8Array(15),suitCounts=new Uint8Array(4),suitMasks=[0,0,0,0];let mask=0;
+ for(const card of cards){const rank=RANKS.indexOf(card[0])+2,suit=SUITS.indexOf(card[1]);counts[rank]++;suitCounts[suit]++;suitMasks[suit]|=1<<rank;mask|=1<<rank;}
+ const encode=(kind:number,values:number[])=>{let score=kind;for(let i=0;i<5;i++)score=score*15+(values[i]||0);return score;};
+ const straight=(ranks:number)=>{if(ranks&(1<<14))ranks|=1<<1;for(let high=14;high>=5;high--)if(((ranks>>(high-4))&31)===31)return high;return 0;};
+ const ranks:number[]=[],pairs:number[]=[],trips:number[]=[];let quad=0,flush=-1;
+ for(let rank=14;rank>=2;rank--)if(counts[rank]){ranks.push(rank);if(counts[rank]>=2)pairs.push(rank);if(counts[rank]>=3)trips.push(rank);if(counts[rank]===4)quad=rank;}
+ for(let suit=0;suit<4;suit++)if(suitCounts[suit]>=5){flush=suit;const high=straight(suitMasks[suit]);if(high)return encode(8,[high]);}
+ if(quad)return encode(7,[quad,ranks.find(rank=>rank!==quad)!]);
+ if(trips.length){const pair=pairs.find(rank=>rank!==trips[0]);if(pair)return encode(6,[trips[0],pair]);}
+ if(flush>=0)return encode(5,ranks.filter(rank=>suitMasks[flush]&(1<<rank)).slice(0,5));
+ const high=straight(mask);if(high)return encode(4,[high]);
+ if(trips.length)return encode(3,[trips[0],...ranks.filter(rank=>rank!==trips[0]).slice(0,2)]);
+ if(pairs.length>=2)return encode(2,[pairs[0],pairs[1],ranks.find(rank=>rank!==pairs[0]&&rank!==pairs[1])!]);
+ if(pairs.length)return encode(1,[pairs[0],...ranks.filter(rank=>rank!==pairs[0]).slice(0,3)]);
+ return encode(0,ranks.slice(0,5));
+}
+
+export async function calculateMultiwayOdds(handTexts:string[],boardText:string,options:CalculationOptions={}):Promise<MultiwayOddsResult>{
+ if(handTexts.length<2||handTexts.length>5)throw Error('Compare your hand with 1 to 4 opponents.');
+ const hands=handTexts.map(parseCards),board=parseCards(boardText);
+ const incomplete=hands.findIndex(hand=>hand.length!==2);
+ if(incomplete>=0)throw Error(`Choose two cards for ${incomplete===0?'your hand':`Opponent ${incomplete}`}.`);
+ if(![0,3,4,5].includes(board.length))throw Error('Choose 0, 3, 4, or 5 board cards.');
+ const known=[...hands.flat(),...board];if(new Set(known).size!==known.length)throw Error('A card cannot appear twice.');
  const deck=[...RANKS].flatMap(r=>[...SUITS].map(s=>r+s)).filter(c=>!known.includes(c));
- const missing=5-board.length,exact=missing<=1,trials=exact?(missing?deck.length:1):(missing===2?12000:24000);
- let wins=0,losses=0,ties=0;
+ const missing=5-board.length,exact=missing<=2;
+ const trials=exact?(missing===2?deck.length*(deck.length-1)/2:missing===1?deck.length:1):24000;
+ const shares=hands.map(()=>0),wins=hands.map(()=>0),ties=hands.map(()=>0);
+ let first=0,second=1;
+ const checkCancelled=()=>{if(options.signal?.aborted)throw new DOMException('Calculation cancelled.','AbortError');};
+ checkCancelled();options.onProgress?.(0);
  for(let i=0;i<trials;i++){
-  let draw:string[]=[];
-  if(exact){if(missing)draw=[deck[i]];}
+  const draw:string[]=[];
+  if(exact){
+   if(missing===1)draw.push(deck[i]);
+   else if(missing===2){draw.push(deck[first],deck[second]);second++;if(second===deck.length){first++;second=first+1;}}
+  }
   else {const used=new Set<number>();while(draw.length<missing){const n=Math.floor(Math.random()*deck.length);if(!used.has(n)){used.add(n);draw.push(deck[n]);}}}
-  const complete=[...board,...draw],result=compare(handScore([...hero,...complete]),handScore([...villain,...complete]));
-  if(result>0)wins++;else if(result<0)losses++;else ties++;
-  if(i%300===299)await new Promise<void>(resolve=>setTimeout(resolve,0));
+  const complete=[...board,...draw],scores=hands.map(hand=>sevenScore([...hand,...complete])),best=Math.max(...scores);
+  const winners=scores.map((score,index)=>score===best?index:-1).filter(index=>index>=0);
+  for(const winner of winners){shares[winner]+=1/winners.length;if(winners.length===1)wins[winner]++;else ties[winner]++;}
+  if(i%250===249){options.onProgress?.((i+1)/trials);await new Promise<void>(resolve=>setTimeout(resolve,0));checkCancelled();}
  }
- return {hero:wins/trials,villain:losses/trials,ties:ties/trials,trials,exact};
+ checkCancelled();options.onProgress?.(1);
+ return {players:hands.map((_,index)=>({equity:shares[index]/trials,win:wins[index]/trials,tie:ties[index]/trials})),trials,exact};
+}
+
+export async function calculateOdds(heroText:string,villainText:string,boardText:string):Promise<OddsResult>{
+ const result=await calculateMultiwayOdds([heroText,villainText],boardText);
+ return {hero:result.players[0].win,villain:result.players[1].win,ties:result.players[0].tie,trials:result.trials,exact:result.exact};
 }
