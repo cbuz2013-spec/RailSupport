@@ -1,5 +1,7 @@
 export type Group = {id:string;name:string;description:string;kind:'Friends & family'|'Study group'|'Backers';owner:string;code?:string;members:number};
-export type Hand = {game:string;stakes:string;position:string;stack:string;hero:string;board:string;pot:string;action:string;question:string;result?:string;revealed:boolean};
+export type ReviewOpponent={cards:string;position:string;stack:string};
+export type HandReview={format:''|'cash'|'tournament';blinds:string;ante:string;event:string;level:string;remaining:string;opponents:ReviewOpponent[];actionMode:'notes'|'streets';notes:string;streets:{preflop:string;flop:string;turn:string;river:string};equity?:import('./odds').MultiwayOddsResult};
+export type Hand = {game:string;stakes:string;position:string;stack:string;hero:string;board:string;pot:string;action:string;question:string;result?:string;revealed:boolean;review?:HandReview};
 export type Tournament = {event:string;chips?:number;bigBlind?:number;remaining?:number;status:'Playing'|'On break'|'Bagged'|'Cashed'|'Out';gameType?:'tournament'|'cash'};
 export type Comment = {id:string;userId:string;name:string;body:string;created:string};
 export type Post = {id:string;groupId:string;userId:string;name:string;photo?:string;kind:'update'|'hand';body:string;created:string;edited?:string;mentions?:string[];sessionId?:string;hand?:Hand;tournament?:Tournament;imageCount:number;likes:number;liked:boolean;comments:Comment[];votes:{Fold:number;Call:number;Raise:number};myVote?:'Fold'|'Call'|'Raise'};

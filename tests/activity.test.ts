@@ -8,6 +8,8 @@ import {processActivityEvents,notificationInbox,deliverPush,savePushDevice,valid
 import {saveRailPost} from '../lib/save-rail-post';
 import {postSchema} from '../lib/validation';
 import {mutateCommunity,people} from '../lib/community';
+import {withReview} from '../lib/hand-review';
+import type {Hand} from '../lib/types';
 let db:PGlite;
 let pool:Pool;
 before(async()=>{
@@ -49,6 +51,19 @@ test('post edits enforce author and membership, preserve images, and rollback ev
  await assert.rejects(saveRailPost(pool,'a',{groupId:'g',kind:'update',body:'Bad photo',startSession:'cash',images:['not an image']}));
  assert.deepEqual((await db.query('SELECT count(*)::int AS n FROM rail_activity_events')).rows,count);
  assert.equal((await db.query('SELECT * FROM rail_sessions')).rows.length,0);
+});
+
+test('step-by-step hand reviews retain optional details, opponents and attached images through save and edit',async()=>{
+ const base:Hand={game:'NL Hold’em',stakes:'',stack:'$300',hero:'Ah',board:'',position:'BTN',pot:'',action:'',question:'',result:'Still hidden',revealed:false};
+ const hand=withReview(base,{format:'cash',blinds:'$1 / $3',opponents:[{cards:'',position:'BB',stack:'$450'}],notes:'Villain raised the river.'});
+ const saved=await saveRailPost(pool,'a',{groupId:'g',kind:'hand',hand,images:['data:image/jpeg;base64,/9j/2Q==']});
+ const read=(await db.query<{hand:Hand}>('SELECT hand FROM rail_posts WHERE id=$1',[saved.id])).rows[0].hand;
+ assert.deepEqual(read.review,hand.review);assert.equal(read.hero,'Ah');assert.equal(read.revealed,false);
+ await saveRailPost(pool,'a',{groupId:'g',kind:'hand',hand:withReview(read,{format:'tournament',event:'Sunday Main',ante:'1000'}),keepImages:[0]},saved.id);
+ const edited=(await db.query<{hand:Hand}>('SELECT hand FROM rail_posts WHERE id=$1',[saved.id])).rows[0].hand;
+ assert.equal(edited.review?.event,'Sunday Main');assert.equal(edited.review?.opponents[0].stack,'$450');
+ assert.equal((await db.query('SELECT * FROM rail_post_images WHERE post_id=$1',[saved.id])).rows.length,1);
+ await assert.rejects(saveRailPost(pool,'b',{groupId:'g',kind:'hand',hand:edited},saved.id));
 });
 test('watching is scoped, idempotent, and cannot unlock a private group',async()=>{
  await assert.rejects(act('c','watch',{enabled:true}));

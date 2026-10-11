@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createEquityShareDraft,equityShareRequest,equityShareSummary,equityShareUrl} from '../lib/equity-share';
 import type {Hand} from '../lib/types';
+import {withReview} from '../lib/hand-review';
 
 const players=[{cards:'ah qh',position:'BTN'},{cards:'Ks Kd',position:'BB'},{cards:'Jc Tc',position:'SB'}];
 const source:Hand={game:'NL Hold’em',hero:'2c 3c',board:'',position:'UTG',stakes:'$1 / $3',stack:'100 BB',pot:'$120',action:'Preflop: BTN raised, BB called.',question:'How would you play the turn?',result:'Private hidden showdown notes',revealed:false};
@@ -47,4 +48,14 @@ test('sharing identifies uncalculated and estimated equity and rejects incomplet
  assert.throws(()=>createEquityShareDraft(players,'Qs 9h',null),/3, 4, or 5/);
  assert.throws(()=>createEquityShareDraft(players,'Ah 9h 4c',null),/cannot appear twice/);
  assert.throws(()=>equityShareRequest(createEquityShareDraft(players,'',null),{kind:'room',id:'room'},{context:'x'.repeat(5000),action:'',question:''}),/5,000/);
+});
+
+test('sharing a guided review preserves game details and current opponents without restoring stale action notes',()=>{
+ const guided=withReview(source,{format:'cash',blinds:'$1 / $3',notes:'Original draft notes'});
+ const draft=createEquityShareDraft(players.map(player=>({...player,stack:'100 BB'})),'Qs 9h 4c 7h',result,guided);
+ assert.equal(draft.hand.review?.blinds,'$1 / $3');assert.equal(draft.hand.review?.opponents.length,2);
+ assert.equal(draft.hand.review?.opponents[1].cards,'Jc Tc');assert.equal(draft.hand.review?.opponents[1].stack,'100 BB');
+ const request=equityShareRequest(draft,{kind:'rail',id:'my-rail'},{context:'',action:'Revised action',question:''});
+ assert.ok('hand' in request.payload);assert.equal(request.payload.hand?.review?.notes,'Revised action');assert.equal(request.payload.hand?.action,'Revised action');
+ assert.doesNotMatch(JSON.stringify(request.payload),/Private hidden showdown notes/);
 });

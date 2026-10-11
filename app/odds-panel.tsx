@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {Plus,Share2,Trash2} from 'lucide-react';
 import {calculateMultiwayOdds,type MultiwayOddsResult} from '@/lib/odds';
 import {EQUITY_POSITIONS} from '@/lib/equity-seats';
+import {reviewPlayers} from '@/lib/hand-review';
 import type {Group,Hand} from '@/lib/types';
 import {createEquityShareDraft,type EquityShareDraft} from '@/lib/equity-share';
 import EquityShareComposer from './equity-share-composer';
@@ -12,10 +13,10 @@ import './odds-panel.css';
 
 export default function OddsPanel({hand,groups,activeGroupId,userId}:{hand?:Hand|null;groups:Group[];activeGroupId:string;userId:string}){
  const [shareDraft,setShareDraft]=useState<EquityShareDraft|null>(null);
- const [players,setPlayers]=useState<EquityPlayer[]>(()=>[{id:'hero',cards:hand?.hero||'',position:hand?.position||''},{id:'opponent-1',cards:'',position:''}]);
+ const [players,setPlayers]=useState<EquityPlayer[]>(()=>hand?reviewPlayers(hand):[{id:'hero',cards:'',position:''},{id:'opponent-1',cards:'',position:''}]);
  const [board,setBoard]=useState(hand?.board||''),[active,setActive]=useState('hero');
  const [result,setResult]=useState<MultiwayOddsResult|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[progress,setProgress]=useState(0);
- const nextOpponent=useRef(2),calculation=useRef<AbortController|null>(null),editorHeading=useRef<HTMLHeadingElement>(null),focusEditor=useRef(false);
+ const nextOpponent=useRef(players.length),calculation=useRef<AbortController|null>(null),editorHeading=useRef<HTMLHeadingElement>(null),focusEditor=useRef(false);
  useEffect(()=>()=>calculation.current?.abort(),[]);
  useEffect(()=>{if(focusEditor.current){editorHeading.current?.focus({preventScroll:true});editorHeading.current?.scrollIntoView({block:'nearest',behavior:'smooth'});focusEditor.current=false}},[active]);
  const activeIndex=players.findIndex(player=>player.id===active),player=players[activeIndex];
@@ -36,7 +37,7 @@ export default function OddsPanel({hand,groups,activeGroupId,userId}:{hand?:Hand
  }
  if(shareDraft)return <EquityShareComposer draft={shareDraft} groups={groups} activeGroupId={activeGroupId} userId={userId} onBack={()=>setShareDraft(null)}/>;
  return <form className="post-form equity-calculator" onSubmit={run}>
-  <div className="equity-intro"><p>Review a hand with up to four opponents. Tap a seat to choose cards and position, or tap the board. Seats follow position clockwise.</p>{hand&&<p className="form-hint">Your cards, position and board were copied from the discussion.</p>}</div>
+  <div className="equity-intro"><p>Review a hand with up to four opponents. Tap a seat to choose cards and position, or tap the board. Seats follow position clockwise.</p>{hand&&<p className="form-hint">Known hands, positions and board were copied from the discussion.</p>}</div>
   <div className="equity-toolbar"><span>{players.length} players · {players.length-1} of 4 opponents</span><button type="button" className="outline" disabled={busy||players.length===5} onClick={addOpponent}><Plus size={16} aria-hidden="true"/>Add opponent</button></div>
   <EquityTable players={players} board={board} active={active} result={result} disabled={busy} onSelect={selectEditor}/>
   <section className="equity-editor" aria-labelledby="equity-editor-title">

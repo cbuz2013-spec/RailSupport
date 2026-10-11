@@ -1,8 +1,9 @@
 import {parseCards,type MultiwayOddsResult} from './odds';
 import type {Hand} from './types';
 import {postSchema} from './validation';
+import {withReview} from './hand-review';
 
-export type EquitySharePlayer={cards:string;position:string};
+export type EquitySharePlayer={cards:string;position:string;stack?:string};
 export type EquityShareDraft={players:EquitySharePlayer[];hand:Hand;result:MultiwayOddsResult|null};
 export type ShareDestination={kind:'rail';id:string}|{kind:'room';id:string}|{kind:'table';audience:'friends'|'public'};
 export type ShareNotes={context:string;action:string;question:string};
@@ -17,7 +18,9 @@ export function createEquityShareDraft(players:EquitySharePlayer[],board:string,
  const community=parseCards(board),known=[...hands.flatMap(player=>parseCards(player.cards)),...community];
  if(![0,3,4,5].includes(community.length))throw Error('Choose 3, 4, or 5 board cards, or clear the board for preflop, before sharing.');
  if(new Set(known).size!==known.length)throw Error('A card cannot appear twice.');
- return {players:hands,result,hand:{game:'NL Hold’em',hero:hands[0].cards,board:community.join(' '),position:hands[0].position,stakes:source?.stakes||'',stack:source?.stack||'',pot:source?.pot||'',action:source?.action||'',question:source?.question||'',result:'',revealed:false}};
+ const hand:Hand={game:'NL Hold’em',hero:hands[0].cards,board:community.join(' '),position:hands[0].position,stakes:source?.stakes||'',stack:hands[0].stack??source?.stack??'',pot:source?.pot||'',action:source?.action||'',question:source?.question||'',result:'',revealed:false};
+ if(source?.review)hand.review={...source.review,opponents:hands.slice(1).map(player=>({cards:player.cards,position:player.position,stack:player.stack||''})),equity:result||undefined};
+ return {players:hands,result,hand};
 }
 
 export function equityShareSummary(draft:EquityShareDraft):string{
@@ -25,7 +28,7 @@ export function equityShareSummary(draft:EquityShareDraft):string{
  const count=parseCards(hand.board).length,street=count===0?'Preflop':count===3?'Flop':count===4?'Turn':'River';
  return [
   `Hand history · ${hand.game} · ${street}`,
-  ...[hand.stakes&&`Stakes / event: ${hand.stakes}`,hand.stack&&`Effective stack: ${hand.stack}`,hand.pot&&`Pot: ${hand.pot}`].filter(Boolean),
+  ...[hand.stakes&&`Stakes / event: ${hand.stakes}`,hand.stack&&`${hand.review?"Your stack":"Effective stack"}: ${hand.stack}`,hand.pot&&`Pot: ${hand.pot}`].filter(Boolean),
   ...players.map((player,index)=>`${index===0?'Your hand':`Opponent ${index}`}${player.position?` (${player.position})`:''}: ${player.cards}${result?` · ${(result.players[index].equity*100).toFixed(1)}% equity`:''}`),
   `Board: ${hand.board||'No community cards (preflop)'}`,
   result?`${result.exact?'Exact':'Estimated'} equity · ${result.trials.toLocaleString('en-US')} ${result.exact?(result.trials===1?'runout':'runouts'):'sampled runouts'}. Includes shares of tied pots.`:'Equity not calculated.',
@@ -34,7 +37,8 @@ export function equityShareSummary(draft:EquityShareDraft):string{
 
 export function equityShareRequest(draft:EquityShareDraft,destination:ShareDestination,notes:ShareNotes){
  const body=[equityShareSummary(draft),notes.context.trim()].filter(Boolean).join('\n\n');
- const hand={...draft.hand,action:notes.action.trim(),question:notes.question.trim()};
+ let hand={...draft.hand,action:notes.action.trim(),question:notes.question.trim()};
+ if(hand.review)hand=withReview(hand,{actionMode:'notes',notes:hand.action});
  if(destination.kind==='rail'){
   const parsed=postSchema.safeParse({groupId:destination.id,kind:'hand',body,hand});
   if(!parsed.success)throw Error(parsed.error.issues[0].message);
