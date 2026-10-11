@@ -3,7 +3,7 @@ import type {Hand} from './types';
 import {postSchema} from './validation';
 import {withReview} from './hand-review';
 
-export type EquitySharePlayer={cards:string;position:string;stack?:string};
+export type EquitySharePlayer={cards:string;position:string;stack?:string;stackUnit?:import('./types').StackUnit};
 export type EquityShareDraft={players:EquitySharePlayer[];hand:Hand;result:MultiwayOddsResult|null};
 export type ShareDestination={kind:'rail';id:string}|{kind:'room';id:string}|{kind:'table';audience:'friends'|'public'};
 export type ShareNotes={context:string;action:string;question:string};
@@ -19,7 +19,7 @@ export function createEquityShareDraft(players:EquitySharePlayer[],board:string,
  if(![0,3,4,5].includes(community.length))throw Error('Choose 3, 4, or 5 board cards, or clear the board for preflop, before sharing.');
  if(new Set(known).size!==known.length)throw Error('A card cannot appear twice.');
  const hand:Hand={game:'NL Hold’em',hero:hands[0].cards,board:community.join(' '),position:hands[0].position,stakes:source?.stakes||'',stack:hands[0].stack??source?.stack??'',pot:source?.pot||'',action:source?.action||'',question:source?.question||'',result:'',revealed:false};
- if(source?.review)hand.review={...source.review,opponents:hands.slice(1).map(player=>({cards:player.cards,position:player.position,stack:player.stack||''})),equity:result||undefined};
+ hand.review=withReview(hand,{...source?.review,streetEquities:undefined,stackUnit:hands[0].stackUnit??source?.review?.stackUnit,opponents:hands.slice(1).map(player=>({cards:player.cards,position:player.position,stack:player.stack||'',stackUnit:player.stackUnit})),equity:result||undefined}).review;
  return {players:hands,result,hand};
 }
 

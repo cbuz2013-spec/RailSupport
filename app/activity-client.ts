@@ -1,6 +1,7 @@
+import type {Reaction,ReactionCounts} from '@/lib/reactions';
 import type {PostScope} from '@/lib/activity';
 export type Mention={id:string;name:string};
-export type ActivityState={scope:PostScope;id:string;canEdit:boolean;canRemove:boolean;canComment:boolean;watching:boolean;hasSession:boolean;likes:number;liked:boolean;comments:number};
+export type ActivityState={scope:PostScope;id:string;canEdit:boolean;canRemove:boolean;canComment:boolean;watching:boolean;hasSession:boolean;likes:number;liked:boolean;myReaction:Reaction|null;reactions:ReactionCounts;comments:number};
 export async function activityRequest<T>(data?:Record<string,unknown>,params:Record<string,string>={},signal?:AbortSignal):Promise<T>{
  const r=await fetch('/api/activity?'+new URLSearchParams(params),data?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),signal}:{cache:'no-store',signal});
  const d=await r.json();if(!r.ok)throw Error(d.error||'Could not save your activity.');return d;

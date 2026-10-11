@@ -6,7 +6,7 @@ const suits:Record<string,string>={s:'♠',h:'♥',d:'♦',c:'♣'};
 const suitNames:Record<string,string>={s:'spades',h:'hearts',d:'diamonds',c:'clubs'};
 const rankNames:Record<string,string>={A:'Ace',K:'King',Q:'Queen',J:'Jack',T:'10'};
 
-export function EquityCards({value,count}:{value:string;count:2|5}){
+export function EquityCards({value,count}:{value:string;count:2|3|4|5}){
  const cards=value.trim().split(/\s+/).filter(Boolean);
  return <span className="equity-cards">{Array.from({length:count},(_,index)=>{
   const card=cards[index],rank=card?.[0].toUpperCase(),suit=card?.[1]?.toLowerCase();

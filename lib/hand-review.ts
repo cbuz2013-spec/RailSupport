@@ -6,14 +6,14 @@ export function reviewDetails(hand:Hand):HandReview {
  return hand.review||{format:'',blinds:'',ante:'',event:'',level:'',remaining:'',opponents:[{cards:'',position:'',stack:''}],actionMode:'notes',notes:hand.action,streets:{preflop:'',flop:'',turn:'',river:''}};
 }
 export function reviewPlayers(hand:Hand){
- return [{id:'hero',cards:hand.hero,position:hand.position,stack:hand.stack},...reviewDetails(hand).opponents.map((player,index)=>({...player,id:`opponent-${index+1}`}))];
+ return [{id:'hero',cards:hand.hero,position:hand.position,stack:hand.stack,stackUnit:hand.review?.stackUnit},...reviewDetails(hand).opponents.map((player,index)=>({...player,id:`opponent-${index+1}`}))];
 }
 export function reviewAction(review:HandReview){
  return review.actionMode==='notes'?review.notes:STREETS.filter(street=>review.streets[street].trim()).map(street=>`${street[0].toUpperCase()+street.slice(1)}: ${review.streets[street].trim()}`).join('\n\n');
 }
 export function withReview(hand:Hand,patch:Partial<HandReview>,clearEquity=false):Hand {
  const review={...reviewDetails(hand),...patch};
- if(clearEquity)delete review.equity;
+ if(clearEquity){delete review.equity;delete review.streetEquities;}
  return {...hand,review,action:reviewAction(review)};
 }
 export function equityUnavailable(hand:Hand):string {

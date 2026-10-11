@@ -1,13 +1,14 @@
 'use client';
 import PostTimestamp from './post-timestamp';
-import Image from 'next/image';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {Heart,MessageCircle,Pencil,Trash2,Check} from 'lucide-react';
+import {MessageCircle,Pencil,Trash2,Check,Bell,Reply} from 'lucide-react';
 import type {PostScope} from '@/lib/activity';
 import {activityRequest,loadActivityState,activeMentions,activityChanged,type ActivityState,type Mention} from './activity-client';
 import {useNotifications} from './notifications';
 import MentionInput from './mention-input';
-type Comment={id:string;userId:string;name:string;body:string;created:string;edited?:string;mentions:string[];canEdit:boolean;canRemove:boolean;likes:number;liked:boolean};
+import ReactionButton from './reaction-button';
+import type {Reaction,ReactionCounts} from '@/lib/reactions';
+type Comment={id:string;userId:string;name:string;body:string;created:string;edited?:string;mentions:string[];canEdit:boolean;canRemove:boolean;likes:number;liked:boolean;myReaction:Reaction|null;reactions:ReactionCounts};
 type Thread={comments:Comment[];nextBefore:string|null};
 export default function PostActivity({scope,postId,author,body,postMentions=[],onEdit,onChanged,children}:{scope:PostScope;postId:string;author:Mention;body:string;postMentions?:string[];onEdit?:()=>void;onChanged?:()=>void;children?:React.ReactNode}){
  const [state,setState]=useState<ActivityState|null>(null),[thread,setThread]=useState<Thread|null>(null),[expanded,setExpanded]=useState(false),[error,setError]=useState(''),[status,setStatus]=useState(''),[busy,setBusy]=useState(false);
@@ -33,12 +34,15 @@ export default function PostActivity({scope,postId,author,body,postMentions=[],o
  const commentEditing=thread?.comments.find(c=>c.id===editing);
  return <div className="post-activity">
  <div className="post-actions">
-  <button className={'join-rail-button '+(state?.watching?'joined':'')} aria-pressed={!!state?.watching} disabled={busy||!state} title={state?.hasSession?'Get updates from this tournament or cash-game rail':'Get updates from this conversation'} onClick={async()=>{
+  <div className="social-primary-actions">
+  {scope!=='announcement'&&<ReactionButton value={state?.myReaction} counts={state?.reactions} disabled={busy||!state?.canComment} onChange={reaction=>act('react',{reaction})}/>}
+  <button type="button" className={'social-action '+(state?.watching?'is-active':'')} aria-pressed={!!state?.watching} disabled={busy||!state} title={state?.hasSession?'Get updates from this tournament or cash-game rail':'Get updates from this conversation'} onClick={async()=>{
    const enabled=!state?.watching;
    const push=enabled&&n&&!n.deviceOn?n.enable():Promise.resolve('');
-   if(await act('watch',{enabled})){setStatus(enabled?'Joined this rail. Updates will appear in Notifications.':'Left this rail. These alerts are off.');const message=await push;if(message)setStatus(message)}
-  }}><Image src="/railsocial-logo-light.png" alt="" width={100} height={35}/><span>{state?.watching?<><Check size={14}/> On rail</>:'Join rail'}</span></button>
-  {scope!=='announcement'&&<><button aria-pressed={!!state?.liked} disabled={busy||!state?.canComment} onClick={()=>void act('like',{enabled:!state?.liked})}><Heart size={17} fill={state?.liked?'currentColor':'none'}/>Like{state?.likes?' · '+state.likes:''}</button><button aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}><MessageCircle size={17}/>Comments{state?.comments?' · '+state.comments:''}</button><button disabled={!state?.canComment} onClick={()=>reply(author)}>Reply</button></>}
+   if(await act('watch',{enabled})){setStatus(enabled?'Following this rail. Updates will appear in Notifications.':'Unfollowed this rail. These alerts are off.');const message=await push;if(message)setStatus(message)}
+  }}>{state?.watching?<Check size={18} aria-hidden="true"/>:<Bell size={18} aria-hidden="true"/>}<span>{state?.watching?'Following':'Follow rail'}</span></button>
+  {scope!=='announcement'&&<><button type="button" className="social-action" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}><MessageCircle size={18} aria-hidden="true"/><span>Comments</span>{!!state?.comments&&<small>{state.comments}</small>}</button><button type="button" className="social-action" disabled={!state?.canComment} onClick={()=>reply(author)}><Reply size={18} aria-hidden="true"/><span>Reply</span></button></>}
+  </div>
   {children}
   {state?.canEdit&&<button onClick={()=>onEdit?onEdit():edit('post',body)}><Pencil size={15}/>Edit</button>}
   {state?.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this post and its comments?'))void act('deletePost',{},onChanged)}}><Trash2 size={15}/>Delete</button>}
@@ -51,7 +55,7 @@ export default function PostActivity({scope,postId,author,body,postMentions=[],o
   {thread?.comments.length===0&&<p className="muted">No comments yet.</p>}
   {thread?.comments.map(c=><article className="activity-comment" key={c.id}><a className="profile-name" href={'/?profile='+encodeURIComponent(c.userId)}>{c.name}</a>
    {editing===c.id?<form className="activity-editor" onSubmit={e=>{e.preventDefault();void act('editComment',{commentId:c.id,body:editBody,mentions:[...(commentEditing?.mentions||[]),...activeMentions(editBody,editMentions)]},()=>setEditing(''))}}><MentionInput label="Edit comment" value={editBody} onChange={setEditBody} mentions={editMentions} onMentions={setEditMentions} context={context}/><div className="room-actions"><button className="primary" disabled={busy||!editBody.trim()}>Save comment</button><button type="button" className="outline" onClick={()=>setEditing('')}>Cancel</button></div></form>:<p>{c.body}</p>}
-   <small><PostTimestamp created={c.created} edited={c.edited}/></small><div className="comment-controls"><button disabled={busy||!state?.canComment} aria-pressed={c.liked} onClick={()=>void act('likeComment',{commentId:c.id,enabled:!c.liked})}><Heart size={14} fill={c.liked?'currentColor':'none'}/>Like{c.likes?' · '+c.likes:''}</button><button disabled={!state?.canComment} onClick={()=>reply({id:c.userId,name:c.name})}>Reply</button>{c.canEdit&&<button onClick={()=>edit(c.id,c.body)}>Edit</button>}{c.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this comment?'))void act('deleteComment',{commentId:c.id})}}>Delete</button>}</div>
+   <small><PostTimestamp created={c.created} edited={c.edited}/></small><div className="comment-controls"><ReactionButton value={c.myReaction} counts={c.reactions} disabled={busy||!state?.canComment} onChange={reaction=>act('reactComment',{commentId:c.id,reaction})}/><button type="button" className="social-action" disabled={!state?.canComment} onClick={()=>reply({id:c.userId,name:c.name})}><Reply size={18} aria-hidden="true"/>Reply</button>{c.canEdit&&<button onClick={()=>edit(c.id,c.body)}>Edit</button>}{c.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this comment?'))void act('deleteComment',{commentId:c.id})}}>Delete</button>}</div>
   </article>)}
   {thread?.nextBefore&&<button className="outline" disabled={busy} onClick={async()=>{try{const more=await activityRequest<Thread>(undefined,{comments:'1',scope,postId,before:thread.nextBefore!});setThread({...more,comments:[...thread.comments,...more.comments]})}catch(e){setError((e as Error).message)}}}>Earlier comments</button>}
  </section>}

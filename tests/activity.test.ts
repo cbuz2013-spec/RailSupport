@@ -36,6 +36,32 @@ const inbox=async(u:string)=>(await notificationInbox(db,u)).items;
 const act=(user:string,action:string,extra:Record<string,unknown>={})=>mutateActivity(db,user,{scope:'rail',postId:'p',action,...extra});
 const subscription=(suffix='one')=>({endpoint:'https://fcm.googleapis.com/fcm/send/'+suffix,keys:{p256dh:Buffer.alloc(65,1).toString('base64url'),auth:Buffer.alloc(16,2).toString('base64url')}});
 
+test('poker reactions preserve old hearts, change/remove without duplicate alerts, and never alter follows',async()=>{
+ await act('b','like',{enabled:true});await act('b','watch',{enabled:true});
+ await db.exec(await readFile(new URL('../scripts/reactions-2.4.sql',import.meta.url),'utf8'));
+ let state=(await activityStates(db,'b',[{scope:'rail',id:'p'}]))[0];assert.equal(state.myReaction,'heart');assert.equal(state.watching,true);
+ for(const reaction of ['nice_hand','donkey','fish','shark'])await act('b','react',{reaction});
+ state=(await activityStates(db,'b',[{scope:'rail',id:'p'}]))[0];assert.equal(state.myReaction,'shark');assert.deepEqual(state.reactions,{shark:1});assert.equal(state.watching,true);
+ await processActivityEvents(db,50);assert.equal((await inbox('a')).filter(n=>n.kind==='like').length,1);
+ await act('b','react',{reaction:null});state=(await activityStates(db,'b',[{scope:'rail',id:'p'}]))[0];assert.equal(state.myReaction,null);assert.deepEqual(state.reactions,{});assert.equal(state.watching,true);
+ await act('b','watch',{enabled:false});await act('b','react',{reaction:'fish'});assert.equal((await activityStates(db,'b',[{scope:'rail',id:'p'}]))[0].watching,false);
+ await assert.rejects(act('c','react',{reaction:'heart'}));await assert.rejects(act('b','react',{reaction:'invalid'}));
+ await db.exec("INSERT INTO rail_blocks(blocker_id,blocked_id) VALUES('a','b')");await assert.rejects(act('b','react',{reaction:'shark'}));assert.deepEqual((await activityStates(db,'a',[{scope:'rail',id:'p'}]))[0].reactions,{});
+});
+
+test('reactions work on rooms, Table Talk and comments with existing access rules',async()=>{
+ for(const [scope,postId] of [['room','rp'],['table','tp']] as const){
+  await mutateActivity(db,'b',{action:'react',scope,postId,reaction:'nice_hand'});
+  assert.deepEqual((await activityStates(db,'b',[{scope,id:postId}]))[0].reactions,{nice_hand:1});
+ }
+ await assert.rejects(mutateActivity(db,'c',{action:'react',scope:'room',postId:'rp',reaction:'fish'}));
+ const comment=await act('a','comment',{body:'A comment'});await act('b','reactComment',{commentId:comment.id,reaction:'donkey'});
+ let thread=await activityComments(db,'b','rail','p');assert.equal(thread.comments[0].myReaction,'donkey');assert.deepEqual(thread.comments[0].reactions,{donkey:1});
+ await act('b','reactComment',{commentId:comment.id,reaction:'heart'});await processActivityEvents(db,50);assert.equal((await inbox('a')).filter(n=>n.kind==='comment_like').length,1);
+ await act('b','reactComment',{commentId:comment.id,reaction:null});thread=await activityComments(db,'b','rail','p');assert.deepEqual(thread.comments[0].reactions,{});
+ await assert.rejects(act('c','reactComment',{commentId:comment.id,reaction:'shark'}));
+});
+
 test('optional post fields preserve zero, allow partial hands, reject malformed cards and empty posts',()=>{
  for(const details of [{body:'Hello'},{tournament:{chips:0}},{tournament:{status:'Out'}},{hand:{question:'Which line?'}},{hand:{position:'BTN'}},{images:['data:image/jpeg;base64,test']}])assert.equal(postSchema.safeParse({groupId:'g',kind:'hand',...details}).success,true);
  for(const details of [{},{tournament:{bigBlind:0}},{hand:{hero:'Ah Ah'}},{hand:{hero:'Ah'}},{hand:{board:'2c 3c'}}])assert.equal(postSchema.safeParse({groupId:'g',kind:'hand',...details}).success,false);

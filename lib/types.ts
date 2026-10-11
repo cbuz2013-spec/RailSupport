@@ -1,6 +1,8 @@
 export type Group = {id:string;name:string;description:string;kind:'Friends & family'|'Study group'|'Backers';owner:string;code?:string;members:number};
-export type ReviewOpponent={cards:string;position:string;stack:string};
-export type HandReview={format:''|'cash'|'tournament';blinds:string;ante:string;event:string;level:string;remaining:string;opponents:ReviewOpponent[];actionMode:'notes'|'streets';notes:string;streets:{preflop:string;flop:string;turn:string;river:string};equity?:import('./odds').MultiwayOddsResult};
+export type StackUnit=''|'bb'|'chips'|'currency';
+export type StreetEquities=Partial<Record<'preflop'|'flop'|'turn'|'river',{key:string;result:import('./odds').MultiwayOddsResult}>>;
+export type ReviewOpponent={cards:string;position:string;stack:string;stackUnit?:StackUnit};
+export type HandReview={format:''|'cash'|'tournament';blinds:string;ante:string;event:string;level:string;remaining:string;totalPlayers?:string;bigBlind?:string;blindUnit?:StackUnit;stackUnit?:StackUnit;streetEquities?:StreetEquities;opponents:ReviewOpponent[];actionMode:'notes'|'streets';notes:string;streets:{preflop:string;flop:string;turn:string;river:string};equity?:import('./odds').MultiwayOddsResult};
 export type Hand = {game:string;stakes:string;position:string;stack:string;hero:string;board:string;pot:string;action:string;question:string;result?:string;revealed:boolean;review?:HandReview};
 export type Tournament = {event:string;chips?:number;bigBlind?:number;remaining?:number;status:'Playing'|'On break'|'Bagged'|'Cashed'|'Out';gameType?:'tournament'|'cash'};
 export type Comment = {id:string;userId:string;name:string;body:string;created:string};

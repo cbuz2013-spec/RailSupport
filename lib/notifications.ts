@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {RoomError,type RoomDatabase} from './rooms';
 import {activityHref,contentFor,type ActivityScope} from './activity';
 
-export const notificationWords:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted an update to a rail you joined',comment:'commented on a post',mention:'tagged you',like:'liked your post',comment_like:'liked your comment',follow:'started following you',session:'started a tournament or cash-game rail'};
+export const notificationWords:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted an update to a rail you joined',comment:'commented on a post',mention:'tagged you',like:'reacted to your post',comment_like:'reacted to your comment',follow:'started following you',session:'started a tournament or cash-game rail'};
 type Event={id:string;scope:ActivityScope;target_id:string;actor_id:string;kind:string;detail:{id?:string;mentions?:string[];previousMentions?:string[];comment?:boolean};created:string};
 type Notification={id:string;recipient_id:string;actor_id:string;scope:ActivityScope;target_id:string;kind:string;href:string};
 

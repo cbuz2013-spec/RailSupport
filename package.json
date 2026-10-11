@@ -1,6 +1,6 @@
 {
   "name": "railsupport",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --wasm-num-compilation-tasks=1 --liftoff-only --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "db:setup": "tsx scripts/setup-db.ts",
-    "preview:rooms": "node --wasm-num-compilation-tasks=1 --liftoff-only --import tsx scripts/local-room-preview.ts"
+    "preview:rooms": "node --wasm-num-compilation-tasks=1 --liftoff-only --import tsx scripts/local-room-preview.ts",
+    "prebuild": "node scripts/migrate-reactions.mjs"
   },
   "dependencies": {
     "better-auth": "1.7.6",
