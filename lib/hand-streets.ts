@@ -16,7 +16,12 @@ export function stackInBB(stack:string,unit:StackUnit|undefined,bigBlind:string|
  const blind=Number(bigBlind.replace(/,/g,''));return blind>0&&Number.isFinite(blind)?value/blind:null;
 }
 export function stackLabel(stack:string,unit:StackUnit|undefined,bigBlind?:string,blindUnit?:StackUnit){
- const bb=stackInBB(stack,unit,bigBlind,blindUnit);return bb===null?(stack.trim()?`${stack}${unit&&unit!=='bb'?' '+unit:''} · BB unknown`:'— BB'):`${bb.toLocaleString('en-US',{maximumFractionDigits:1})} BB`;
+ const bb=stackInBB(stack,unit,bigBlind,blindUnit),raw=stack.trim();
+ if(!raw)return '—';
+ const bbText=bb===null?'':`${bb.toLocaleString('en-US',{maximumFractionDigits:1})} BB`;
+ if(unit==='chips')return `${raw} chips${bbText?' · '+bbText:''}`;
+ if(unit==='currency')return `${raw} cash${bbText?' · '+bbText:''}`;
+ return bbText||`${raw} · BB unknown`;
 }
 export function streetInput(hand:Hand,street:Street){
  const count=boardCounts[street];let cards:string[],hands:string[][];

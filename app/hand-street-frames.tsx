@@ -7,6 +7,7 @@ import {handHeader,savedStreetEquity,stackLabel,streetInput,streetName,type Stre
 import {calculateMultiwayOdds,type MultiwayOddsResult} from '@/lib/odds';
 import EquityTable,{EquityCards} from './equity-table';
 import StreetReactions from './street-reactions';
+import {streetActionText} from '@/lib/hand-actions';
 import type {PostScope} from '@/lib/activity';
 import './odds-panel.css';
 import './hand-review.css';
@@ -26,7 +27,7 @@ function StreetFrame({hand,street,enabled,postId,scope}:{hand:Hand;street:Street
   }).catch(err=>{if(!controller.signal.aborted){setError((err as Error).message);setProgress(null)}});
   return()=>controller.abort();
  },[enabled,input.key,input.reason,!!saved,retry]);
- const action=review.actionMode==='streets'?review.streets[street]:'';
+ const action=review.actionMode==='streets'?streetActionText(review,street):'';
  return <section className="street-frame" aria-label={`${streetName(street)} hand review`}>
   <header className="street-frame-title"><strong>{streetName(street)}</strong><span>{street==='preflop'?'Before the flop':input.reason.includes('not entered')?'Board incomplete':'Community cards'}</span></header>
   <EquityTable players={players.map(p=>({...p,stackLabel:stackLabel(p.stack,p.stackUnit,review.bigBlind,review.blindUnit)}))} board={input.board} active="" result={result||null} disabled={false} readOnly onSelect={()=>{}} center={<span className="review-table-center"><strong>{review.event||(review.format==='cash'?'Cash Game':'Hand review')}</strong>{review.location&&<small>{review.location}</small>}<small>{review.blinds||hand.stakes||'Blinds not entered'}{review.ante?` · Ante ${review.ante}`:''}</small>{review.format==='tournament'&&<small>Level {review.level||'—'} · {review.remaining||'—'} / {review.totalPlayers||'—'} players</small>}</span>}/>

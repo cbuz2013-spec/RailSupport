@@ -189,3 +189,14 @@ test('revoking the inviter or blocking them suppresses queued invitation deliver
  await db.exec("DELETE FROM rail_members WHERE user_id='b'");assert.equal((await inbox('c')).length,0);let delivered=0;await deliverPush(db,async()=>{delivered++});assert.equal(delivered,0);
  await assert.rejects(people(db,'c',new URLSearchParams({inviteGroup:'g'})));
 });
+
+test('ordered street actions and chosen stack units persist with photos through database save/edit',async()=>{
+ const hand=withReview({game:'NL Hold’em',stakes:'',position:'UTG',stack:'42000',hero:'',board:'',pot:'',action:'',question:'',revealed:false},{stackUnit:'chips',actionMode:'streets',opponents:[{cards:'',position:'SB',stack:'25',stackUnit:'bb'}],actions:{preflop:[{playerId:'hero',position:'UTG',kind:'raise',amount:'3',unit:'bb'}],flop:[{playerId:'opponent-1',position:'SB',kind:'check',amount:'',unit:'bb'},{playerId:'hero',position:'UTG',kind:'bet',amount:'1500',unit:'chips'}]}});
+ const saved=await saveRailPost(pool,'a',{groupId:'g',kind:'hand',hand,images:['data:image/jpeg;base64,/9j/2Q==']});
+ const read=(await db.query<{hand:Hand}>('SELECT hand FROM rail_posts WHERE id=$1',[saved.id])).rows[0].hand;
+ assert.deepEqual(read.review?.actions,hand.review?.actions);assert.equal(read.stack,'42000');assert.equal(read.review?.stackUnit,'chips');assert.match(read.action,/Bet 1500 chips/);
+ const edited=withReview({...read,stack:'42'},{stackUnit:'bb'});await saveRailPost(pool,'a',{groupId:'g',kind:'hand',hand:edited,keepImages:[0]},saved.id);
+ const stored=(await db.query<{hand:Hand}>('SELECT hand FROM rail_posts WHERE id=$1',[saved.id])).rows[0].hand;
+ assert.equal(stored.stack,'42');assert.equal(stored.review?.stackUnit,'bb');assert.deepEqual(stored.review?.actions,hand.review?.actions);assert.equal(stored.review?.opponents[0].stack,'25');
+ assert.equal((await db.query('SELECT * FROM rail_post_images WHERE post_id=$1',[saved.id])).rows.length,1);
+});
