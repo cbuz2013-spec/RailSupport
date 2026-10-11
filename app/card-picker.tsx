@@ -28,7 +28,7 @@ function CardFace({card}:{card:string}){
  </svg>;
 }
 
-type Props={label:string;value:string;onChange:(value:string)=>void;maxCards:2|5;unavailable?:string;hint?:string;disabled?:boolean};
+type Props={label:string;value:string;onChange:(value:string)=>void;maxCards:1|2|3|5;unavailable?:string;hint?:string;disabled?:boolean};
 
 export default function CardPicker({label,value,onChange,maxCards,unavailable='',hint,disabled=false}:Props){
  const id=useId();

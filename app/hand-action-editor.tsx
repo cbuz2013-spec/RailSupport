@@ -19,6 +19,7 @@ export default function HandActionEditor({hand,street,onChange}:{hand:Hand;stree
  }
  function undo(){onChange({actions:{...review.actions,[street]:actions.slice(0,-1)}});setSizing(null);setError('');}
  return <section className="hand-action-editor" aria-label={`${streetName(street)} action entry`}>
+  <h4>{streetName(street)} action</h4>
   <p className="form-hint">{street==='preflop'?'Preflop: UTG → MP → LJ → HJ → CO → BTN → SB → BB.':'After the flop: SB → BB → UTG → MP → LJ → HJ → CO → BTN.'} Only entered players are included. If Heads-up table is selected, button/SB acts first preflop and BB acts first postflop.</p>
   <p className="form-hint">Use the buttons or just add notes. Folded and all-in players are skipped on later streets; skipped notes do not imply a fold.</p>
   {state.error?<p className="form-hint" role="status">{state.error}</p>:state.current?<>

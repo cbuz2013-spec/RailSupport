@@ -7,7 +7,7 @@ import {postSchema} from '@/lib/validation';
 import {activityRequest,activeMentions,type Mention} from './activity-client';
 import MentionInput from './mention-input';
 import HandReviewFlow from './hand-review-flow';
-import {withReview} from '@/lib/hand-review';
+import {REVIEW_SHARE_STEP,withReview} from '@/lib/hand-review';
 const emptyHand:Hand={game:'NL Hold’em',stakes:'',position:'',stack:'',hero:'',board:'',pot:'',action:'',question:'',result:'',revealed:false};
 import {resizePhoto} from '@/lib/photo-resize';
 export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSave,busy}:{groupId:string;initial?:Post;kind:'hand'|'update';mode:string;onSave:(data:Record<string,unknown>)=>Promise<boolean>;busy:boolean}){
@@ -24,7 +24,7 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSa
   try{const loaded=await Promise.all(Array.from(files).map(resizePhoto));setImages(old=>[...old,...loaded])}catch(e){setError((e as Error).message)}finally{setPhotoBusy(false)}
  }
  async function submit(e:React.FormEvent){
-  e.preventDefault();if(kind==='hand'&&reviewStep<9)return;setError('');const number=(s:string)=>s.trim()===''?undefined:Number(s);
+  e.preventDefault();if(kind==='hand'&&reviewStep!==REVIEW_SHARE_STEP)return;setError('');const number=(s:string)=>s.trim()===''?undefined:Number(s);
   const startSession=sessionChoice==='new-tournament'?'tournament':sessionChoice==='new-cash'?'cash':undefined;
   const hasStats=!!(chips||bigBlind||remaining||event||sessionChoice)||status!=='Playing';
   const tournament=hasStats?{event,chips:number(chips),bigBlind:number(bigBlind),remaining:number(remaining),status,gameType:startSession||sessions.find(s=>s.id===sessionChoice)?.kind||initial?.tournament?.gameType||'tournament'}:undefined;

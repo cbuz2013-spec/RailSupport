@@ -4,7 +4,7 @@ import {ArrowLeft,Share2} from 'lucide-react';
 import Image from 'next/image';
 import {resizePhoto} from '@/lib/photo-resize';
 import HandReviewFlow from './hand-review-flow';
-import {reviewPlayers,withReview} from '@/lib/hand-review';
+import {REVIEW_SHARE_STEP,reviewPlayers} from '@/lib/hand-review';
 import type {Group} from '@/lib/types';
 import type {Room,RoomDirectory} from '@/lib/rooms-validation';
 import {equityShareRequest,equityShareSummary,equityShareUrl,type EquityShareDraft,type ShareDestination} from '@/lib/equity-share';
@@ -37,7 +37,7 @@ export default function EquityShareComposer({draft,groups,activeGroupId,userId,o
  const target:ShareDestination|null=rail?{kind:'rail',id:rail.id}:room?{kind:'room',id:room.id}:destination==='table:friends'?{kind:'table',audience:'friends'}:destination==='table:public'?{kind:'table',audience:'public'}:null;
  const audience=rail?`Only members of ${rail.name} can see this hand.`:room?`Visible to signed-in members who can view ${room.name}.`:destination==='table:friends'?'Friends only: visible to people you follow who also follow you.':'Public: visible to anyone signed in to Rail Social.';
  async function submit(event:React.FormEvent){
-  event.preventDefault();if(sending.current||photoBusy||!target||step!==9)return;
+  event.preventDefault();if(sending.current||photoBusy||!target||step!==REVIEW_SHARE_STEP)return;
   sending.current=true;setBusy(true);setError('');
   let url='';
   try{

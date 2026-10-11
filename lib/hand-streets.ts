@@ -1,3 +1,4 @@
+import {hasBoardGaps,knownBoardCards,streetBoardSlots} from './hand-board';
 import type {Hand,StackUnit,StreetEquities} from './types';
 import {reviewDetails,reviewPlayers,STREETS} from './hand-review';
 import {calculateMultiwayOdds,parseCards,type MultiwayOddsResult} from './odds';
@@ -24,21 +25,22 @@ export function stackLabel(stack:string,unit:StackUnit|undefined,bigBlind?:strin
  return bbText||`${raw} · BB unknown`;
 }
 export function streetInput(hand:Hand,street:Street){
- const count=boardCounts[street];let cards:string[],hands:string[][];
- try{cards=parseCards(hand.board);hands=reviewPlayers(hand).map(player=>parseCards(player.cards))}catch{return {board:'',key:'',reason:'Some cards are invalid. Edit the hand to calculate equity.'}}
- const board=cards.slice(0,count).join(' '),key=JSON.stringify([hands,board]);
- if(cards.length<count)return {board,key,reason:`${streetName(street)} not entered. Add ${count} board cards to see this street’s equity.`};
- if(hands.some(cards=>cards.length!==2))return {board,key,reason:'Equity unavailable: each player needs two known cards.'};
+ let slots:string[],cards:string[],hands:string[][];
+ try{slots=streetBoardSlots(hand,street);cards=parseCards(knownBoardCards(hand).join(' '));hands=reviewPlayers(hand).map(player=>parseCards(player.cards))}catch{return {board:'',slots:[],key:'',reason:'Some cards are invalid. Edit the hand to calculate equity.'}}
+ const missing=slots.indexOf(''),board=(missing===-1?slots:slots.slice(0,missing)).join(' '),key=JSON.stringify([hands,board]);
+ if(missing!==-1)return {board,slots,key,reason:`${streetName(street)} board not entered completely. Fill the missing cards up to this street for equity, or keep them blank.`};
+ if(hands.some(cards=>cards.length!==2))return {board,slots,key,reason:'Equity unavailable: each player needs two known cards.'};
  const known=[...hands.flat(),...cards];
- if(new Set(known).size!==known.length)return {board,key,reason:'A card is used more than once. Edit the hand to calculate equity.'};
- return {board,key,reason:''};
+ if(new Set(known).size!==known.length)return {board,slots,key,reason:'A card is used more than once. Edit the hand to calculate equity.'};
+ return {board,slots,key,reason:''};
 }
+
 export function savedStreetEquity(hand:Hand,street:Street):MultiwayOddsResult|undefined{
  const input=streetInput(hand,street);if(input.reason)return;
  const snapshot=hand.review?.streetEquities?.[street];
  if(snapshot?.key===input.key&&snapshot.result.players.length===reviewPlayers(hand).length)return snapshot.result;
  // The previous release saved equity only for its full entered board.
- if(hand.review?.equity&&parseCards(hand.board).length===boardCounts[street]&&hand.review.equity.players.length===reviewPlayers(hand).length)return hand.review.equity;
+ if(hand.review?.equity&&!hasBoardGaps(hand)&&parseCards(hand.board).length===boardCounts[street]&&hand.review.equity.players.length===reviewPlayers(hand).length)return hand.review.equity;
 }
 export async function calculateStreetEquities(hand:Hand,options:{signal?:AbortSignal;onProgress?:(n:number)=>void}={}):Promise<StreetEquities>{
  const available=STREETS.filter(street=>!streetInput(hand,street).reason),hands=reviewPlayers(hand).map(player=>player.cards),results:StreetEquities={};

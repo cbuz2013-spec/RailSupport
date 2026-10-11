@@ -3,7 +3,9 @@ import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {Banknote,Plus,Trash2,Trophy} from 'lucide-react';
 import type {Hand,HandReview,StackUnit} from '@/lib/types';
 import {EQUITY_POSITIONS} from '@/lib/equity-seats';
-import {reviewDetails,reviewPlayers,REVIEW_STEPS,STREETS,withReview} from '@/lib/hand-review';
+import {reviewDetails,reviewPlayers,REVIEW_STEPS,REVIEW_SHARE_STEP,REVIEW_CONTEXT_STEP,STREETS,withReview,withStreetBoard} from '@/lib/hand-review';
+import {knownBoardCards,reviewBoard,streetBoardSlots} from '@/lib/hand-board';
+import {EquityCards} from './equity-table';
 import CardPicker from './card-picker';
 import HandReviewSummary from './hand-review-summary';
 import HandActionEditor from './hand-action-editor';
@@ -11,7 +13,8 @@ import './odds-panel.css';
 import './hand-review.css';
 
 export default function HandReviewFlow({hand,onChange,step,onStep,busy,children}:{hand:Hand;onChange:(hand:Hand)=>void;step:number;onStep:(step:number)=>void;busy:boolean;children:ReactNode}){
- const review=reviewDetails(hand),players=reviewPlayers(hand);
+ const review=reviewDetails(hand),players=reviewPlayers(hand),board=reviewBoard(hand);
+ const boardStreet=step>=4&&step<=6?STREETS[step-3] as 'flop'|'turn'|'river':null;
  const [active,setActive]=useState('hero');
  const heading=useRef<HTMLHeadingElement>(null);
  useEffect(()=>{heading.current?.focus({preventScroll:true});heading.current?.scrollIntoView({block:'nearest'});},[step]);
@@ -26,9 +29,9 @@ export default function HandReviewFlow({hand,onChange,step,onStep,busy,children}
  function removeOpponent(index:number){update({opponents:review.opponents.filter((_,i)=>i!==index-1)},true);setActive('hero');}
  function go(next:number){onStep(next);}
  const textField=(key:'blinds'|'ante'|'event'|'level'|'remaining'|'totalPlayers'|'bigBlind'|'location'|'startingStack'|'buyIn'|'guarantee',label:string,max:number,placeholder?:string)=><label className="field" key={key}>{label} (optional)<input value={review[key]||''} maxLength={max} placeholder={placeholder} onChange={event=>update({[key]:event.target.value})}/></label>;
- return <div className={"review-flow review-step-"+step}>
+ return <div className={"review-flow review-step-"+step+(step===REVIEW_CONTEXT_STEP?" review-context-step":"")}>
   <div className="review-progress" aria-label={`Step ${step+1} of ${REVIEW_STEPS.length}: ${REVIEW_STEPS[step]}`}><span>Step {step+1} of {REVIEW_STEPS.length}</span><span>{REVIEW_STEPS[step]}</span><progress max={REVIEW_STEPS.length} value={step+1} aria-label="Hand review progress"/></div>
-  <h3 ref={heading} tabIndex={-1} className="review-heading">{['What were you playing?','Where were you playing?','Where were you in the game?','Your hand and opponents','The community cards','Action on the flop','Action on the turn','Action on the river','Context and photos','Review and share your hand'][step]}</h3>
+  <h3 ref={heading} tabIndex={-1} className="review-heading">{['What were you playing?','Where were you playing?','Where were you in the game?','Preflop: hands and action','Flop: cards and action','Turn: card and action','River: card and action','Context and photos','Review and share your hand'][step]}</h3>
   <p className="form-hint">Every detail is optional. Skip any screen; Back keeps what you entered.</p>
   <fieldset className="review-fields" disabled={busy}>
    {step===0&&<div className="review-game-options">
@@ -41,25 +44,29 @@ export default function HandReviewFlow({hand,onChange,step,onStep,busy,children}
     <div className="stack-entry"><label className="field">Your current stack (optional)<input value={hand.stack} maxLength={30} inputMode="decimal" placeholder={review.stackUnit==='chips'?'e.g. 45,000':'e.g. 45'} onChange={e=>changePlayer(0,{stack:e.target.value,stackUnit:review.stackUnit||'bb'})}/></label><label className="field">Your stack unit<select value={review.stackUnit||(hand.stack?'':'bb')} onChange={e=>changePlayer(0,{stackUnit:e.target.value as StackUnit})}>{hand.stack&&!review.stackUnit&&<option value="">Choose units</option>}{review.stackUnit==='currency'&&<option value="currency">Cash amount (saved)</option>}<option value="chips">Chips</option><option value="bb">Big blinds</option></select></label></div>
    </>}
    {step===3&&<>
-    <div className="review-player-tabs" role="group" aria-label="Choose a player or board">{players.map((item,index)=><button type="button" key={item.id} aria-pressed={active===item.id} onClick={()=>setActive(item.id)}>{index===0?'You':`Opponent ${index}`}<small>{item.cards||'Cards optional'}</small></button>)}</div>
+    <div className="review-player-tabs" role="group" aria-label="Choose a player">{players.map((item,index)=><button type="button" key={item.id} aria-pressed={active===item.id} onClick={()=>setActive(item.id)}>{index===0?'You':`Opponent ${index}`}<small>{item.cards||'Cards optional'}</small></button>)}</div>
     {players.length===2&&<label className="action-all-in"><input type="checkbox" checked={review.headsUp||false} onChange={e=>update({headsUp:e.target.checked})}/>Heads-up table (only two players were dealt in)</label>}
     <div className="equity-toolbar"><span>{review.opponents.length} of 4 opponents</span><button type="button" className="outline" disabled={review.opponents.length===4} onClick={addOpponent}><Plus size={16} aria-hidden="true"/>Add opponent</button></div>
-    {active==='board'?<CardPicker label="Board (optional)" value={hand.board} maxCards={5} unavailable={players.map(item=>item.cards).join(' ')} onChange={board=>onChange({...withReview(hand,{},true),board})} hint="Select any known community cards, or leave them blank." disabled={busy}/>:player&&<>
+    {player&&<>
      <div className="review-player-heading"><h4>{playerName}</h4>{activeIndex>0&&review.opponents.length>1&&<button type="button" className="equity-remove" onClick={()=>removeOpponent(activeIndex)}><Trash2 size={15} aria-hidden="true"/>Remove opponent</button>}</div>
      <label className="field">Position (optional)<select aria-label={`${playerName} position`} value={player.position} onChange={event=>changePlayer(activeIndex,{position:event.target.value})}><option value="">Not specified</option>{player.position&&!EQUITY_POSITIONS.some(item=>item.value===player.position)&&<option value={player.position}>{player.position}</option>}{EQUITY_POSITIONS.map(position=><option key={position.value} value={position.value}>{position.label} ({position.value})</option>)}</select></label>
      {activeIndex>0&&<div className="stack-entry"><label className="field">{playerName} stack (optional)<input value={player.stack} maxLength={30} placeholder="e.g. 45" onChange={e=>changePlayer(activeIndex,{stack:e.target.value,stackUnit:player.stackUnit||'bb'})}/></label><label className="field">Stack unit<select value={player.stackUnit||''} onChange={e=>changePlayer(activeIndex,{stackUnit:e.target.value as StackUnit})}><option value="">Not specified</option><option value="bb">Big blinds</option><option value="chips">Chips</option><option value="currency">Cash amount</option></select></label></div>}
-     <CardPicker key={active} label={`${playerName} cards (optional)`} value={player.cards} maxCards={2} unavailable={[hand.board,...players.filter(item=>item.id!==active).map(item=>item.cards)].join(' ')} onChange={cards=>changePlayer(activeIndex,{cards})} hint="Tap the cards you know. Unknown cards can stay blank." disabled={busy}/>
+     <CardPicker key={active} label={`${playerName} cards (optional)`} value={player.cards} maxCards={2} unavailable={[knownBoardCards(hand).join(' '),...players.filter(item=>item.id!==active).map(item=>item.cards)].join(' ')} onChange={cards=>changePlayer(activeIndex,{cards})} hint="Tap the cards you know. Unknown cards can stay blank." disabled={busy}/>
     </>}
+    <HandActionEditor hand={hand} street="preflop" onChange={update}/>
    </>}
-   {step===4&&<><CardPicker label="Flop, turn and river (optional)" value={hand.board} maxCards={5} unavailable={players.map(p=>p.cards).join(' ')} onChange={board=>onChange({...withReview(hand,{},true),board})} hint="Cards 1–3 are the flop, card 4 is the turn and card 5 is the river. Leave future streets blank."/><details><summary>Preflop action (optional)</summary><HandActionEditor hand={hand} street="preflop" onChange={update}/></details></>}
-   {step>=5&&step<=7&&<HandActionEditor key={STREETS[step-4]} hand={hand} street={STREETS[step-4]} onChange={update}/>}
-   {step===8&&<><label className="field">Additional action notes (optional)<textarea value={review.notes} onChange={e=>update({notes:e.target.value})} rows={4} maxLength={5000}/></label><label className="field">Pot size (optional)<input value={hand.pot} maxLength={30} onChange={e=>onChange({...hand,pot:e.target.value})}/></label><label className="field">Your question (optional)<input value={hand.question} maxLength={500} onChange={e=>onChange({...hand,question:e.target.value})}/></label>{children}</>}
-   {step===9&&<><HandReviewSummary hand={hand}/>{hand.question&&<p><strong>Question:</strong> {hand.question}</p>}{children}</>}
+   {boardStreet&&<>
+    {boardStreet!=='flop'&&<div className="review-board-context"><span>Board before the {boardStreet}</span><EquityCards value="" slots={streetBoardSlots(hand,boardStreet==='turn'?'flop':'turn')} count={boardStreet==='turn'?3:4}/></div>}
+    <CardPicker key={boardStreet} label={`${boardStreet==='flop'?'Flop cards':boardStreet==='turn'?'Turn card':'River card'} (optional)`} value={board[boardStreet]} maxCards={boardStreet==='flop'?3:1} unavailable={[...players.map(p=>p.cards),...(['flop','turn','river'] as const).filter(street=>street!==boardStreet).map(street=>board[street])].join(' ')} onChange={value=>onChange(withStreetBoard(hand,boardStreet,value))} hint={boardStreet==='flop'?'Choose up to three flop cards, then record the flop action below.':'Choose this street’s card, then record its action below. Earlier cards can stay blank.'} disabled={busy}/>
+    <HandActionEditor key={boardStreet} hand={hand} street={boardStreet} onChange={update}/>
+   </>}
+   {step===REVIEW_CONTEXT_STEP&&<><label className="field">Additional action notes (optional)<textarea value={review.notes} onChange={e=>update({notes:e.target.value})} rows={4} maxLength={5000}/></label><label className="field">Pot size (optional)<input value={hand.pot} maxLength={30} onChange={e=>onChange({...hand,pot:e.target.value})}/></label><label className="field">Your question (optional)<input value={hand.question} maxLength={500} onChange={e=>onChange({...hand,question:e.target.value})}/></label>{children}</>}
+   {step===REVIEW_SHARE_STEP&&<><HandReviewSummary hand={hand}/>{hand.question&&<p><strong>Question:</strong> {hand.question}</p>}{children}</>}
   </fieldset>
   <nav className="review-navigation" aria-label="Hand review steps">
    {step>0&&<button type="button" className="outline" disabled={busy} onClick={()=>go(step-1)}>Back</button>}
-   {step<9&&<button type="button" className="text-link" disabled={busy} onClick={()=>go(step+1)}>Skip for now</button>}
-   {step>0&&step<9&&<button type="button" className="primary" disabled={busy} onClick={()=>go(step+1)}>Continue</button>}
+   {step<REVIEW_SHARE_STEP&&<button type="button" className="text-link" disabled={busy} onClick={()=>go(step+1)}>Skip for now</button>}
+   {step>0&&step<REVIEW_SHARE_STEP&&<button type="button" className="primary" disabled={busy} onClick={()=>go(step+1)}>Continue</button>}
   </nav>
  </div>;
 }

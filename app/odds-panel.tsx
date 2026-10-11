@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {Plus,Share2,Trash2} from 'lucide-react';
 import {calculateMultiwayOdds,type MultiwayOddsResult} from '@/lib/odds';
 import {EQUITY_POSITIONS} from '@/lib/equity-seats';
+import {hasBoardGaps} from '@/lib/hand-board';
 import {reviewPlayers} from '@/lib/hand-review';
 import type {Group,Hand} from '@/lib/types';
 import {createEquityShareDraft,type EquityShareDraft} from '@/lib/equity-share';
@@ -37,7 +38,7 @@ export default function OddsPanel({hand,groups,activeGroupId,userId}:{hand?:Hand
  }
  if(shareDraft)return <EquityShareComposer draft={shareDraft} groups={groups} activeGroupId={activeGroupId} userId={userId} onBack={()=>setShareDraft(null)}/>;
  return <form className="post-form equity-calculator" onSubmit={run}>
-  <div className="equity-intro"><p>Review a hand with up to four opponents. Tap a seat to choose cards and position, or tap the board. Seats follow position clockwise.</p>{hand&&<p className="form-hint">Known hands, positions and board were copied from the discussion.</p>}</div>
+  <div className="equity-intro"><p>Review a hand with up to four opponents. Tap a seat to choose cards and position, or tap the board. Seats follow position clockwise.</p>{hand&&<p className="form-hint">{hasBoardGaps(hand)?'Some earlier board cards are missing in this discussion. The calculator uses only the complete board prefix; later cards stay in the review unless you change the board here.':'Known hands, positions and board were copied from the discussion.'}</p>}</div>
   <div className="equity-toolbar"><span>{players.length} players · {players.length-1} of 4 opponents</span><button type="button" className="outline" disabled={busy||players.length===5} onClick={addOpponent}><Plus size={16} aria-hidden="true"/>Add opponent</button></div>
   <EquityTable players={players} board={board} active={active} result={result} disabled={busy} onSelect={selectEditor}/>
   <section className="equity-editor" aria-labelledby="equity-editor-title">

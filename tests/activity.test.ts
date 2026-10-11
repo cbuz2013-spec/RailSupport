@@ -8,7 +8,7 @@ import {processActivityEvents,notificationInbox,deliverPush,savePushDevice,valid
 import {saveRailPost} from '../lib/save-rail-post';
 import {postSchema} from '../lib/validation';
 import {mutateCommunity,people} from '../lib/community';
-import {withReview} from '../lib/hand-review';
+import {withReview,withStreetBoard} from '../lib/hand-review';
 import type {Hand} from '../lib/types';
 let db:PGlite;
 let pool:Pool;
@@ -198,5 +198,19 @@ test('ordered street actions and chosen stack units persist with photos through 
  const edited=withReview({...read,stack:'42'},{stackUnit:'bb'});await saveRailPost(pool,'a',{groupId:'g',kind:'hand',hand:edited,keepImages:[0]},saved.id);
  const stored=(await db.query<{hand:Hand}>('SELECT hand FROM rail_posts WHERE id=$1',[saved.id])).rows[0].hand;
  assert.equal(stored.stack,'42');assert.equal(stored.review?.stackUnit,'bb');assert.deepEqual(stored.review?.actions,hand.review?.actions);assert.equal(stored.review?.opponents[0].stack,'25');
+ assert.equal((await db.query('SELECT * FROM rail_post_images WHERE post_id=$1',[saved.id])).rows.length,1);
+});
+
+
+test('separate board streets survive save/edit with missing flop, action, hidden result and photos',async()=>{
+ let hand=withStreetBoard(withStreetBoard(withReview({game:'NL Hold’em',stakes:'',position:'UTG',stack:'40',hero:'Ah Ad',board:'',pot:'',action:'',question:'',revealed:false,result:'Keep hidden'},{stackUnit:'bb',opponents:[{cards:'Kh Kd',position:'SB',stack:'30'}],actionMode:'streets',streets:{preflop:'Raise and call',flop:'',turn:'Check',river:'Fold'}}),'turn','Qs'),'river','2h');
+ const saved=await saveRailPost(pool,'a',{groupId:'g',kind:'hand',hand,images:['data:image/jpeg;base64,/9j/2Q==']});
+ const read=(await db.query<{hand:Hand}>('SELECT hand FROM rail_posts WHERE id=$1',[saved.id])).rows[0].hand;
+ assert.equal(read.board,'');assert.deepEqual(read.review?.boardByStreet,{flop:'',turn:'Qs',river:'2h'});
+ assert.equal(read.result,'Keep hidden');assert.equal(read.revealed,false);assert.match(read.action,/Turn: Check/);
+ hand=withStreetBoard(read,'flop','3s 4d 5c');
+ await saveRailPost(pool,'a',{groupId:'g',kind:'hand',hand,keepImages:[0]},saved.id);
+ const edited=(await db.query<{hand:Hand}>('SELECT hand FROM rail_posts WHERE id=$1',[saved.id])).rows[0].hand;
+ assert.equal(edited.board,'3s 4d 5c Qs 2h');assert.equal(edited.review?.streets.river,'Fold');assert.equal(edited.result,'Keep hidden');
  assert.equal((await db.query('SELECT * FROM rail_post_images WHERE post_id=$1',[saved.id])).rows.length,1);
 });
