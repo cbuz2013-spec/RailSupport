@@ -1,6 +1,6 @@
 import type {Hand,HandReview} from './types';
 
-export const REVIEW_STEPS=['Game type','Game details','Cards & opponents','Equity','Action & notes','Review & share'] as const;
+export const REVIEW_STEPS=['Game type','Event details','Current situation','Players','Board','Flop action','Turn action','River action','Context & photos','Review & share'] as const;
 export const STREETS=['preflop','flop','turn','river'] as const;
 export function reviewDetails(hand:Hand):HandReview {
  return hand.review||{format:'',blinds:'',ante:'',event:'',level:'',remaining:'',opponents:[{cards:'',position:'',stack:''}],actionMode:'notes',notes:hand.action,streets:{preflop:'',flop:'',turn:'',river:''}};

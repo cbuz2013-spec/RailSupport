@@ -1,3 +1,4 @@
+import {guardMember} from '@/lib/safety';
 import {scheduleActivity} from '@/lib/activity-dispatch';
 import {randomUUID,randomBytes} from 'node:crypto';
 import {auth} from '@/lib/auth';
@@ -14,6 +15,7 @@ export async function GET(req:Request){
  if(!configured())return out({error:'Shared accounts and data are not connected yet.'},503);
  try{
   const session=await auth().api.getSession({headers:req.headers});if(!session)return out({error:'Sign in to see your private rails.'},401);
+  await guardMember(db(),session.user.id);
   const uid=session.user.id,params=new URL(req.url).searchParams,id=params.get('group');
   if(!id){const [groups,identity]=await Promise.all([db().query('SELECT g.id,g.name,g.description,g.kind,g.owner,g.code,(SELECT count(*)::int FROM rail_members WHERE group_id=g.id) members FROM rail_groups g JOIN rail_members m ON m.group_id=g.id WHERE m.user_id=$1 ORDER BY g.created',[uid]),db().query('SELECT u.name,pr.photo FROM "user" u LEFT JOIN rail_profiles pr ON pr.user_id=u.id WHERE u.id=$1',[uid])]);return out({user:{id:uid,name:identity.rows[0]?.name||session.user.name,photo:identity.rows[0]?.photo||''},groups:groups.rows});}
   if(!await member(id,uid))return out({error:'You are not a member of this rail.'},403);
@@ -22,18 +24,19 @@ export async function GET(req:Request){
   const blocked=await db().query('SELECT blocker_id,blocked_id FROM rail_blocks WHERE blocker_id=$1 OR blocked_id=$1',[uid]);const hidden=new Set(blocked.rows.map(r=>r.blocker_id===uid?r.blocked_id:r.blocker_id));
   const result=posts.rows.map((p:Post)=>{if(p.hand&&!p.hand.revealed&&p.userId!==uid){p.hand={...p.hand};delete p.hand.result;}return {...p,comments:comments.rows.filter(c=>c.post_id===p.id&&!hidden.has(c.user_id)),votes:{Fold:votes.rows.filter(v=>v.post_id===p.id&&v.choice==='Fold').length,Call:votes.rows.filter(v=>v.post_id===p.id&&v.choice==='Call').length,Raise:votes.rows.filter(v=>v.post_id===p.id&&v.choice==='Raise').length},myVote:votes.rows.find(v=>v.post_id===p.id&&v.user_id===uid)?.choice};});
   return out({posts:result,members:members.rows,following:following.rows.map(r=>r.followed_id)});
- }catch(e){console.error('Rail read failed',e);return out({error:'Could not load your rail. Please try again.'},503);}
+ }catch(e){if(e instanceof Error&&e.message.startsWith('Community safety filter:'))return out({error:e.message},400);if(e instanceof RoomError)return out({error:e.message},e.status);console.error('Rail read failed',e);return out({error:'Could not load your rail. Please try again.'},503);}
 }
 export async function POST(req:Request){
  if(!configured())return out({error:'Shared accounts and data are not connected yet.'},503);
  try{
   if(req.headers.get('origin')!==new URL(process.env.BETTER_AUTH_URL!).origin)return out({error:'Invalid request origin.'},403);
   const session=await auth().api.getSession({headers:req.headers});if(!session)return out({error:'Please sign in.'},401);
+  await guardMember(db(),session.user.id,true);
   const raw=await req.text();if(raw.length>1300000)return out({error:'This update is too large.'},413);
   const data=JSON.parse(raw);const uid=session.user.id;scheduleActivity();
   if(data.action==='create'){
    const name=String(data.name||'').trim(),kind=String(data.kind||'');if(!name||name.length>60||!['Friends & family','Study group','Backers'].includes(kind))return out({error:'Enter a rail name and type.'},400);
-   const id=randomUUID(),code=randomBytes(18).toString('hex');const client=await db().connect();try{await client.query('BEGIN');await client.query('INSERT INTO rail_groups(id,name,description,kind,owner,code) VALUES($1,$2,$3,$4,$5,$6)',[id,name,String(data.description||'').slice(0,200),kind,uid,code]);await client.query('INSERT INTO rail_members VALUES($1,$2)',[id,uid]);await client.query('COMMIT');}catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}return out({id});
+   const id=randomUUID(),code=randomBytes(18).toString('hex');const client=await db().connect();try{await client.query('BEGIN');await client.query('INSERT INTO rail_groups(id,name,description,kind,owner,code) VALUES($1,$2,$3,$4,$5,$6)',[id,name,String(data.description||'').slice(0,200),kind,uid,code]);await client.query('INSERT INTO rail_members VALUES($1,$2)',[id,uid]);await client.query('COMMIT');}catch(e){if(e instanceof Error&&e.message.startsWith('Community safety filter:'))return out({error:e.message},400);await client.query('ROLLBACK');throw e;}finally{client.release();}return out({id});
   }
   if(data.action==='join'){const input=String(data.code||'').trim();let code=input;try{const url=new URL(input);code=url.searchParams.get('invite')||input}catch{const match=input.match(/Invite code:\s*([a-f0-9]{36})/i);if(match)code=match[1]}if(!/^[a-f0-9]{36}$/i.test(code))return out({error:'Paste a valid Rail Social invite link or code.'},400);const g=await db().query('SELECT id,owner FROM rail_groups WHERE code=$1',[code.toLowerCase()]);if(!g.rowCount)return out({error:'That invite code was not found.'},404);const blocked=await db().query('SELECT 1 FROM rail_blocks WHERE (blocker_id=$1 AND blocked_id=$2) OR (blocker_id=$2 AND blocked_id=$1)',[uid,g.rows[0].owner]);if(blocked.rowCount)return out({error:'This rail is not available.'},403);await db().query('INSERT INTO rail_members VALUES($1,$2) ON CONFLICT DO NOTHING',[g.rows[0].id,uid]);return out({id:g.rows[0].id});}
   if(data.action==='post'||data.action==='editPost')return out(await saveRailPost(db(),uid,data,data.action==='editPost'?String(data.postId||''):undefined));
@@ -46,5 +49,5 @@ export async function POST(req:Request){
   else if(data.action==='delete'){if(p.user_id!==uid)return out({error:'Only the author can delete a post.'},403);await db().query('DELETE FROM rail_posts WHERE id=$1',[p.id]);}
   else return out({error:'Unknown action.'},400);
   return out({ok:true});
- }catch(e){if(e instanceof RoomError)return out({error:e.message},e.status);console.error('Rail write failed',e);return out({error:'Could not save. Please try again; your draft is unchanged.'},503);}
+ }catch(e){if(e instanceof Error&&e.message.startsWith('Community safety filter:'))return out({error:e.message},400);if(e instanceof RoomError)return out({error:e.message},e.status);console.error('Rail write failed',e);return out({error:'Could not save. Please try again; your draft is unchanged.'},503);}
 }

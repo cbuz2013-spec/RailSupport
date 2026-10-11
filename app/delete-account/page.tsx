@@ -1,0 +1,2 @@
+import AccountSettings from '../account-settings';
+export default function DeleteAccount(){return <main className="standalone-page"><a href="/">Back to Rail Social</a><h1>Delete your Rail Social account</h1><p>Sign in to the account you want to delete, then use Delete my account below. Your password confirms the request. If you cannot sign in, <a href="/forgot-password?next=%2Fdelete-account">recover your password</a> first.</p><AccountSettings/><p><a href="/help">Help and support</a> · <a href="/privacy">Data handling</a></p></main>}

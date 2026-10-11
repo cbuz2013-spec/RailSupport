@@ -41,11 +41,11 @@ test('sharing routes to the selected destination and preserves all opponents, th
  assert.equal(equityShareUrl({kind:'table',audience:'friends'},'me','post-1'),'/?profile=me&post=post-1');
 });
 
-test('sharing identifies uncalculated and estimated equity and rejects incomplete or duplicate hands',()=>{
+test('sharing identifies uncalculated and estimated equity and imports partial hands and rejects duplicate cards',()=>{
  assert.match(equityShareSummary(createEquityShareDraft(players,'',null)),/Equity not calculated/);
  assert.match(equityShareSummary(createEquityShareDraft(players,'',{...result,exact:false})),/Estimated equity/);
- assert.throws(()=>createEquityShareDraft([{cards:'Ah Qh',position:''},{cards:'',position:''}],'',null),/Opponent 1/);
- assert.throws(()=>createEquityShareDraft(players,'Qs 9h',null),/3, 4, or 5/);
+ assert.equal(createEquityShareDraft([{cards:'Ah Qh',position:''},{cards:'',position:''}],'',result).result,null);
+ assert.equal(createEquityShareDraft(players,'Qs 9h',result).result,null);
  assert.throws(()=>createEquityShareDraft(players,'Ah 9h 4c',null),/cannot appear twice/);
  assert.throws(()=>equityShareRequest(createEquityShareDraft(players,'',null),{kind:'room',id:'room'},{context:'x'.repeat(5000),action:'',question:''}),/5,000/);
 });

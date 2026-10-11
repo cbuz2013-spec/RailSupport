@@ -42,10 +42,10 @@ export async function readRoom(database: RoomDatabase, userId: string, roomId: s
     database.query<RoomHost>(`SELECT u.id,u.name,'owner' AS role FROM rail_rooms r JOIN "user" u ON u.id=r.owner_id WHERE r.id=$1
       UNION ALL SELECT u.id,u.name,CASE WHEN h.accepted THEN 'host' ELSE 'invited' END AS role
       FROM rail_room_hosts h JOIN "user" u ON u.id=h.user_id WHERE h.room_id=$1 AND (h.accepted OR $2) ORDER BY role,name`,[roomId,room.role==='owner']),
-    database.query<Announcement>(`SELECT a.id,a.body,u.name,a.created,a.user_id AS "userId",a.edited,a.mentions FROM rail_room_announcements a JOIN "user" u ON u.id=a.user_id
+    database.query<Announcement>(`SELECT a.id,a.pinned,a.body,u.name,a.created,a.user_id AS "userId",a.edited,a.mentions FROM rail_room_announcements a JOIN "user" u ON u.id=a.user_id
       WHERE a.room_id=$2 AND NOT EXISTS(SELECT 1 FROM rail_blocks b WHERE (b.blocker_id=$1 AND b.blocked_id=a.user_id) OR (b.blocker_id=a.user_id AND b.blocked_id=$1))
-      AND ($3::text IS NULL OR (a.created,a.id)<(SELECT created,id FROM rail_room_announcements WHERE id=$3 AND room_id=$2))
-      ORDER BY (a.id=$4) DESC,a.created DESC,a.id DESC LIMIT 21`,[userId,roomId,before,focus]),
+      AND ($3::text IS NULL OR (a.pinned,a.created,a.id)<(SELECT pinned,created,id FROM rail_room_announcements WHERE id=$3 AND room_id=$2))
+      ORDER BY (a.id=$4) DESC,a.pinned DESC,a.created DESC,a.id DESC LIMIT 21`,[userId,roomId,before,focus]),
   ]);
   return {room,hosts:hosts.rows,announcements:announcements.rows.slice(0,20),nextBefore:announcements.rows.length>20?announcements.rows[19].id:null};
 }

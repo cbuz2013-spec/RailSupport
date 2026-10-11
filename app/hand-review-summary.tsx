@@ -5,8 +5,8 @@ import {EquityCards} from './equity-table';
 import './hand-review.css';
 import './odds-panel.css';
 
-export default function HandReviewSummary({hand,equityOnly=false}:{hand:Hand;equityOnly?:boolean}){
- if(!equityOnly)return <HandStreetFrames hand={hand}/>;
+export default function HandReviewSummary({hand,equityOnly=false,postId,scope}:{hand:Hand;equityOnly?:boolean;postId?:string;scope?:import('@/lib/activity').PostScope}){
+ if(!equityOnly)return <HandStreetFrames hand={hand} postId={postId} scope={scope}/>;
  if(!hand.review)return null;
  const review=reviewDetails(hand),players=reviewPlayers(hand),equity=review.equity;
  const details=[review.format==='cash'?'Cash game':review.format==='tournament'?'Tournament':'',review.blinds&&`Blinds: ${review.blinds}`,review.format==='tournament'&&review.ante&&`Ante: ${review.ante}`,review.format==='tournament'&&review.event,review.format==='tournament'&&review.level&&`Level: ${review.level}`,review.format==='tournament'&&review.remaining&&`Players remaining: ${review.remaining}`].filter(Boolean);

@@ -3,8 +3,8 @@ import {z} from 'zod';
 import {RoomError,type RoomDatabase} from './rooms';
 import {activityHref,contentFor,type ActivityScope} from './activity';
 
-export const notificationWords:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted an update to a rail you joined',comment:'commented on a post',mention:'tagged you',like:'reacted to your post',comment_like:'reacted to your comment',follow:'started following you',session:'started a tournament or cash-game rail'};
-type Event={id:string;scope:ActivityScope;target_id:string;actor_id:string;kind:string;detail:{id?:string;mentions?:string[];previousMentions?:string[];comment?:boolean};created:string};
+export const notificationWords:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted an update to a rail you joined',comment:'commented on a post',mention:'tagged you',street_preflop:'reacted to your preflop action',street_flop:'reacted to your flop action',street_turn:'reacted to your turn action',street_river:'reacted to your river action',like:'reacted to your post',comment_like:'reacted to your comment',follow:'started following you',session:'started a tournament or cash-game rail'};
+type Event={id:string;scope:ActivityScope;target_id:string;actor_id:string;kind:string;detail:{id?:string;mentions?:string[];previousMentions?:string[];comment?:boolean;street?:string};created:string};
 type Notification={id:string;recipient_id:string;actor_id:string;scope:ActivityScope;target_id:string;kind:string;href:string};
 
 // A saved endpoint is a capability. Accept only browser push providers, never arbitrary URLs.
@@ -54,6 +54,9 @@ async function expandEvent(database:RoomDatabase,e:Event){
  }else if(e.kind==='follow'){
   if(!(await database.query('SELECT 1 FROM rail_follows WHERE follower_id=$1 AND followed_id=$2',[e.actor_id,target])).rows.length)return;
   recipients.set(target,'follow');c=await contentFor(database,e.actor_id,'profile',e.actor_id);
+ }else if(e.kind==='like'&&e.detail.street){
+  if(!(await database.query('SELECT 1 FROM rail_street_reactions WHERE scope=$1 AND post_id=$2 AND user_id=$3 AND street=$4',[e.scope,target,e.actor_id,e.detail.street])).rows.length)return;
+  recipients.set(c.user_id,'street_'+e.detail.street);
  }else if(e.kind==='like'){
   if(!(await database.query('SELECT 1 FROM rail_activity_likes WHERE scope=$1 AND target_id=$2 AND user_id=$3 AND NOT is_comment',[e.scope,target,e.actor_id])).rows.length)return;
   recipients.set(c.user_id,'like');
@@ -74,7 +77,7 @@ async function expandEvent(database:RoomDatabase,e:Event){
  }
  for(const [id,kind] of recipients){
   const once=['like','comment_like','follow'].includes(e.kind);
-  const key=once?[e.scope,e.target_id,e.actor_id,e.kind,id].join(':'):[e.id,id].join(':');
+  const key=once?[e.scope,e.target_id,e.actor_id,e.detail.street?e.kind+':'+e.detail.street:e.kind,id].join(':'):[e.id,id].join(':');
   await enqueueNotification(database,e,id,kind,c,key);
  }
 }

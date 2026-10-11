@@ -9,13 +9,7 @@ import MentionInput from './mention-input';
 import HandReviewFlow from './hand-review-flow';
 import {withReview} from '@/lib/hand-review';
 const emptyHand:Hand={game:'NL Hold’em',stakes:'',position:'',stack:'',hero:'',board:'',pot:'',action:'',question:'',result:'',revealed:false};
-async function resizePhoto(file:File){
- if(!/^image\/(jpeg|png|webp|heic|heif)$/.test(file.type)||file.size>12_000_000)throw Error('Choose a JPG, PNG, WebP, or HEIC photo under 12 MB.');
- const bitmap=await createImageBitmap(file),canvas=document.createElement('canvas'),scale=Math.min(1,1600/Math.max(bitmap.width,bitmap.height));
- canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext('2d');
- if(!ctx){bitmap.close();throw Error('Photo processing is unavailable.')};ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
- for(const quality of [.78,.64,.48,.32]){const value=canvas.toDataURL('image/jpeg',quality);if(value.length<=400000)return value}throw Error('Choose a smaller photo.');
-}
+import {resizePhoto} from '@/lib/photo-resize';
 export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSave,busy}:{groupId:string;initial?:Post;kind:'hand'|'update';mode:string;onSave:(data:Record<string,unknown>)=>Promise<boolean>;busy:boolean}){
  const [kind,setKind]=useState(initial?.kind||defaultKind),[body,setBody]=useState(initial?.body||''),[hand,setHand]=useState<Hand>(initial?.hand||emptyHand);
  const [chips,setChips]=useState(String(initial?.tournament?.chips??'')),[bigBlind,setBigBlind]=useState(String(initial?.tournament?.bigBlind??'')),[remaining,setRemaining]=useState(String(initial?.tournament?.remaining??''));
@@ -30,7 +24,7 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSa
   try{const loaded=await Promise.all(Array.from(files).map(resizePhoto));setImages(old=>[...old,...loaded])}catch(e){setError((e as Error).message)}finally{setPhotoBusy(false)}
  }
  async function submit(e:React.FormEvent){
-  e.preventDefault();if(kind==='hand'&&reviewStep<5)return;setError('');const number=(s:string)=>s.trim()===''?undefined:Number(s);
+  e.preventDefault();if(kind==='hand'&&reviewStep<9)return;setError('');const number=(s:string)=>s.trim()===''?undefined:Number(s);
   const startSession=sessionChoice==='new-tournament'?'tournament':sessionChoice==='new-cash'?'cash':undefined;
   const hasStats=!!(chips||bigBlind||remaining||event||sessionChoice)||status!=='Playing';
   const tournament=hasStats?{event,chips:number(chips),bigBlind:number(bigBlind),remaining:number(remaining),status,gameType:startSession||sessions.find(s=>s.id===sessionChoice)?.kind||initial?.tournament?.gameType||'tournament'}:undefined;
@@ -71,5 +65,5 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSa
 }
 
 export function StackStats({value,onUpdate}:{value:Tournament;onUpdate?:()=>void}){
- return <div className="tournament-card"><div className="tournament-label"><span>{value.event||(value.gameType==='cash'?'Cash-game rail':'Tournament update')}</span><span className="status">{value.status}</span></div><div className="stats"><div><span>CHIPS</span><strong>{value.chips?.toLocaleString()??'—'}</strong></div><div><span>CURRENT BIG BLIND</span><strong>{value.bigBlind?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS LEFT</span><strong>{value.remaining?.toLocaleString()??'—'}</strong></div></div><div className="stack-footer">{value.chips!==undefined&&!!value.bigBlind&&<span>{(value.chips/value.bigBlind).toFixed(1)} BB</span>}{onUpdate&&<button className="outline" onClick={onUpdate}>Update stack</button>}</div></div>;
+ return <div className="tournament-card"><div className="tournament-label"><span>{value.event||(value.gameType==='cash'?'Cash-game rail':'Tournament update')}</span><span className="status">{value.status}</span></div><p className="form-hint">{[value.location,value.stakes&&'Stakes '+value.stakes,value.buyIn&&'Buy-in '+value.buyIn,value.guarantee&&'Guarantee '+value.guarantee,value.startingStack&&'Starting stack '+value.startingStack].filter(Boolean).join(' · ')}</p><div className="stats"><div><span>CHIPS</span><strong>{value.chips?.toLocaleString()??'—'}</strong></div><div><span>CURRENT BIG BLIND</span><strong>{value.bigBlind?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS LEFT</span><strong>{value.remaining?.toLocaleString()??'—'}</strong></div></div><div className="stack-footer">{value.chips!==undefined&&!!value.bigBlind&&<span>{(value.chips/value.bigBlind).toFixed(1)} BB</span>}{onUpdate&&<button className="outline" onClick={onUpdate}>Update stack</button>}</div></div>;
 }

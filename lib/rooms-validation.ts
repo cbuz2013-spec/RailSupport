@@ -32,7 +32,7 @@ export type Room = RoomFields & {
   role: 'owner' | 'host' | 'member';
 };
 export type RoomHost = {id: string; name: string; role: 'owner' | 'host' | 'invited'};
-export type Announcement = {userId:string;mentions:string[];edited?:string;id: string; body: string; name: string; created: string};
+export type Announcement = {pinned?:boolean;userId:string;mentions:string[];edited?:string;id: string; body: string; name: string; created: string};
 export type RoomDetail = {room: Room; hosts: RoomHost[]; announcements: Announcement[]; nextBefore: string | null};
 export type RoomDirectory = {
   rooms: Room[]; nextOffset: number | null; canCreate: boolean;

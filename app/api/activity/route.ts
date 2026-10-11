@@ -1,3 +1,5 @@
+import {guardMember} from '@/lib/safety';
+import {reactionPeople,streetState,reactStreet} from '@/lib/street-reactions';
 import {auth} from '@/lib/auth';
 import {configured,db} from '@/lib/db';
 import {RoomError} from '@/lib/rooms';
@@ -13,9 +15,11 @@ async function handle(req:Request,write:boolean){
  if(!configured())return out({error:'Account setup is incomplete.'},503);
  if(write&&req.headers.get('origin')!==new URL(process.env.BETTER_AUTH_URL!).origin)return out({error:'Invalid request origin.'},403);
  try{
-  const user=(await auth().api.getSession({headers:req.headers}))?.user;if(!user)return out({error:'Sign in to view your activity.'},401);
+  const user=(await auth().api.getSession({headers:req.headers}))?.user;if(!user)return out({error:'Sign in to view your activity.'},401); await guardMember(db(),user.id,req.method==='POST');
   if(!write){
    const p=new URL(req.url).searchParams;
+   if(p.has('reactions'))return out(await reactionPeople(db(),user.id,Object.fromEntries(p)));
+   if(p.has('streetState'))return out(await streetState(db(),user.id,Object.fromEntries(p)));
    if(p.has('mentions'))return out({people:await mentionCandidates(db(),user.id,p)});
    if(p.has('sessions'))return out({sessions:await userSessions(db(),user.id,(p.get('groupId')||'').slice(0,100))});
    if(p.has('comments'))return out(await activityComments(db(),user.id,z.enum(scopes).parse(p.get('scope')),z.string().min(1).max(100).parse(p.get('postId')),p.get('before')||undefined));
@@ -23,6 +27,7 @@ async function handle(req:Request,write:boolean){
   }
   const raw=await req.text();if(raw.length>24000)return out({error:'This request is too large.'},413);
   const d=JSON.parse(raw);
+  if(d.action==='reactStreet'){scheduleActivity();return out(await reactStreet(db(),user.id,d));}
   if(d.action==='states')return out({states:await activityStates(db(),user.id,d.targets)});
   if(d.action==='read'){
    const id=d.id===undefined?null:z.string().min(1).max(100).parse(d.id);
@@ -37,7 +42,7 @@ async function handle(req:Request,write:boolean){
    await db().query('DELETE FROM rail_push_devices WHERE user_id=$1 AND endpoint=$2',[user.id,endpoint]);return out({ok:true});
   }
   scheduleActivity();return out(await mutateActivity(db(),user.id,d));
- }catch(e){
+ }catch(e){if(e instanceof Error&&e.message.startsWith('Community safety filter:'))return out({error:e.message},400);
   if(e instanceof RoomError)return out({error:e.message},e.status);
   if(e instanceof z.ZodError||e instanceof SyntaxError)return out({error:'Please check the form and try again.'},400);
   console.error('Activity request failed',e instanceof Error?e.name:'unknown');return out({error:'Could not load your activity. Please retry.'},503);

@@ -68,3 +68,5 @@ button:focus-visible,a:focus-visible{outline-color:var(--focus)}
  .mobile-nav .mobile-new{background:var(--primary);color:var(--on-primary)}
  .room-pages .community-section .panel.community-section{padding:18px}
 }
+
+.standalone-page{max-width:780px;margin:0 auto;padding:80px 20px 40px}.standalone-page h1,.standalone-page h2{margin:24px 0 16px}.standalone-page p,.standalone-page li{line-height:1.65;margin:12px 0}.standalone-page a{text-decoration:underline}.report-control{margin-top:12px}.post-form li{padding:10px 0;overflow-wrap:anywhere}.post-form ul{padding-left:18px}button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #2ca778;outline-offset:3px}@media(max-width:720px){.mobile-nav{grid-template-columns:repeat(5,minmax(0,1fr))}}

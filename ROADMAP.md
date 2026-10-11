@@ -70,6 +70,23 @@ Deployed and verified October 11. [Release record](docs/rail-social-2.4-release-
 - [x] **Street frames** — Swipe left/right through preflop, flop, turn and river, each with its own equities and obvious tabs/arrows/swipe guidance.
 - [x] **Light/dark toggle** — Top of every page; green-and-white light mode and a readable dark green poker-felt theme, with the selection remembered.
 
+## Next version under discussion — October 11
+
+Planning only. The [next-version plan](docs/next-version-plan-2026-10-11.md) records the screen order and confirmed decisions; current production remains 2.4.
+
+**Implementation and deployment are on hold while the user adds further requirements.**
+
+- [ ] **My Rails navigation** — Replace My Rail and Groups in the bottom menu with one My Rails destination, preserving access to groups and game sessions.
+- [ ] **Phone home-screen logo** — Use the Rail Social logo instead of the single R for installed web-app and iPhone home-screen icons.
+- [ ] **So sick reaction** — Sick face with a speech bubble reading So sick; retain the existing poker reactions.
+- [ ] **Follow this post wording** — Rename the post control and preserve existing subscriptions.
+- [ ] **See who reacted** — Open reaction summaries to see people and their chosen reactions, respecting content access and blocking.
+- [ ] **Game-session setup** — Tournament/Cash Game inside a private group, with the relevant optional event/location/buy-in/stack details. Private-group creation remains separate.
+- [ ] **Skippable hand-review screens** — Separate event details, current situation, players, board, each street's action, and context/notes.
+- [ ] **Calculator to hand review** — Share hand opens the hand-review wizard at Tournament/Cash Game and imports cards, positions, board and compatible details for optional completion before publishing.
+- [ ] **Poker-table street frames** — Player cards, positions, stacks and equities around a table, with event information in the center and action below.
+- [ ] **Street reactions** — Independent reactions and counts for each street's action section, separate from the overall post.
+
 ## Deployed, with verification or feature work remaining
 
 - [ ] **Browser push:** opt-in, delivery queue, retries and expired-device cleanup are deployed. Verify receipt on physical phones; permission is required per device. Native app push is a later task.

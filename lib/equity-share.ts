@@ -12,11 +12,11 @@ export function createEquityShareDraft(players:EquitySharePlayer[],board:string,
  if(players.length<2||players.length>5)throw Error('Choose your hand and 1 to 4 opponents before sharing.');
  const hands=players.map((player,index)=>{
   const cards=parseCards(player.cards);
-  if(cards.length!==2)throw Error(`Choose two cards for ${index===0?'your hand':`Opponent ${index}`} before sharing.`);
+  if(cards.length>2)throw Error('Use at most two cards per player.');
   return {...player,cards:cards.join(' ')};
  });
- const community=parseCards(board),known=[...hands.flatMap(player=>parseCards(player.cards)),...community];
- if(![0,3,4,5].includes(community.length))throw Error('Choose 3, 4, or 5 board cards, or clear the board for preflop, before sharing.');
+ const community=parseCards(board);if(hands.some(p=>parseCards(p.cards).length!==2)||![0,3,4,5].includes(community.length))result=null;const known=[...hands.flatMap(player=>parseCards(player.cards)),...community];
+ if(community.length>5)throw Error('Choose 3, 4, or 5 board cards, or clear the board for preflop, before sharing.');
  if(new Set(known).size!==known.length)throw Error('A card cannot appear twice.');
  const hand:Hand={game:'NL Hold’em',hero:hands[0].cards,board:community.join(' '),position:hands[0].position,stakes:source?.stakes||'',stack:hands[0].stack??source?.stack??'',pot:source?.pot||'',action:source?.action||'',question:source?.question||'',result:'',revealed:false};
  hand.review=withReview(hand,{...source?.review,streetEquities:undefined,stackUnit:hands[0].stackUnit??source?.review?.stackUnit,opponents:hands.slice(1).map(player=>({cards:player.cards,position:player.position,stack:player.stack||'',stackUnit:player.stackUnit})),equity:result||undefined}).review;
@@ -25,7 +25,7 @@ export function createEquityShareDraft(players:EquitySharePlayer[],board:string,
 
 export function equityShareSummary(draft:EquityShareDraft):string{
  const {hand,players,result}=draft;
- const count=parseCards(hand.board).length,street=count===0?'Preflop':count===3?'Flop':count===4?'Turn':'River';
+ const count=parseCards(hand.board).length,street=count===0?'Preflop':count===3?'Flop':count===4?'Turn':count===5?'River':'Partial board';
  return [
   `Hand history · ${hand.game} · ${street}`,
   ...[hand.stakes&&`Stakes / event: ${hand.stakes}`,hand.stack&&`${hand.review?"Your stack":"Effective stack"}: ${hand.stack}`,hand.pot&&`Pot: ${hand.pot}`].filter(Boolean),
@@ -38,7 +38,7 @@ export function equityShareSummary(draft:EquityShareDraft):string{
 export function equityShareRequest(draft:EquityShareDraft,destination:ShareDestination,notes:ShareNotes){
  const body=[equityShareSummary(draft),notes.context.trim()].filter(Boolean).join('\n\n');
  let hand={...draft.hand,action:notes.action.trim(),question:notes.question.trim()};
- if(hand.review)hand=withReview(hand,{actionMode:'notes',notes:hand.action});
+ if(hand.review)hand=withReview(hand,notes.action.trim()!==draft.hand.action?{actionMode:'notes',notes:notes.action.trim()}:{});
  if(destination.kind==='rail'){
   const parsed=postSchema.safeParse({groupId:destination.id,kind:'hand',body,hand});
   if(!parsed.success)throw Error(parsed.error.issues[0].message);
@@ -47,8 +47,8 @@ export function equityShareRequest(draft:EquityShareDraft,destination:ShareDesti
  const history=[body,hand.action&&`Action by street:\n${hand.action}`,hand.question&&`Question: ${hand.question}`].filter(Boolean).join('\n\n');
  if(history.length>5000)throw Error('This hand history is over 5,000 characters. Shorten the context or action before sharing.');
  return destination.kind==='room'
-  ?{path:'/api/community',payload:{action:'post',roomId:destination.id,body:history}}
-  :{path:'/api/table-talk',payload:{action:'post',kind:'topic',audience:destination.audience,body:history,location:''}};
+  ?{path:'/api/community',payload:{action:'post',roomId:destination.id,body:history,hand}}
+  :{path:'/api/table-talk',payload:{action:'post',kind:'topic',audience:destination.audience,body:history,location:'',hand}};
 }
 
 export function equityShareUrl(destination:ShareDestination,userId:string,postId?:string){

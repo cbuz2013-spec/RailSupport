@@ -1,3 +1,4 @@
+import {guardMember} from '@/lib/safety';
 import {scheduleActivity} from '@/lib/activity-dispatch';
 import {auth} from '@/lib/auth';
 import {configured,db} from '@/lib/db';
@@ -8,6 +9,7 @@ export const maxDuration=90;
 export const dynamic='force-dynamic';
 const out=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store'}});
 function failure(error:unknown) {
+  if(error instanceof Error&&error.message.startsWith('Community safety filter:'))return out({error:error.message},400);
   if(error instanceof RoomError)return out({error:error.message},error.status);
   if(error instanceof SyntaxError)return out({error:'Invalid request.'},400);
   console.error('Room Pages request failed',error instanceof Error?error.name:'Unknown error');
@@ -17,7 +19,7 @@ export async function GET(req:Request) {
   if(!configured())return out({error:'Account setup is incomplete.'},503);
   try {
     const user=(await auth().api.getSession({headers:req.headers}))?.user;
-    if(!user)return out({error:'Sign in to explore rooms.'},401);
+    if(!user)return out({error:'Sign in to explore rooms.'},401); await guardMember(db(),user.id,req.method==='POST');
     const params=new URL(req.url).searchParams,id=params.get('id');
     if((id?.length||0)>100||(params.get('before')?.length||0)>100)throw new RoomError('Invalid room link.');
     return out(id?await readRoom(db(),user.id,id,params.get('before'),(params.get('focus')||'').slice(0,100)):await listRooms(db(),user.id,params));
@@ -28,7 +30,7 @@ export async function POST(req:Request) {
   if(req.headers.get('origin')!==new URL(process.env.BETTER_AUTH_URL!).origin)return out({error:'Invalid request origin.'},403);
   try {
     const user=(await auth().api.getSession({headers:req.headers}))?.user;
-    if(!user)return out({error:'Sign in first.'},401);
+    if(!user)return out({error:'Sign in first.'},401); await guardMember(db(),user.id,req.method==='POST');
     scheduleActivity();
     const raw=await req.text();
     if(raw.length>16000)return out({error:'Room details are too long.'},413);

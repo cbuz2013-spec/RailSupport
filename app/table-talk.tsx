@@ -1,4 +1,6 @@
 'use client';
+import HandReviewSummary from './hand-review-summary';
+import type {Hand} from '@/lib/types';
 import PostTimestamp from './post-timestamp';
 import {useCallback,useEffect,useState} from 'react';
 import PostActivity from './post-activity';
@@ -6,7 +8,7 @@ import MentionInput from './mention-input';
 import {activeMentions,type Mention} from './activity-client';
 import {Heart,MessageCircle,MapPin,Globe,Users} from 'lucide-react';
 type TalkComment={id:string;userId:string;name:string;body:string;created:string};
-type TalkPost={id:string;userId:string;name:string;kind:string;audience:'public'|'friends';body:string;location:string;created:string;edited?:string;mentions:string[];likes:number;liked:boolean;comments:TalkComment[]};
+type TalkPost={hand?:Hand;id:string;userId:string;name:string;kind:string;audience:'public'|'friends';body:string;location:string;created:string;edited?:string;mentions:string[];likes:number;liked:boolean;comments:TalkComment[]};
 export default function TableTalk({id,me,relationshipVersion}:{id:string;me:string;relationshipVersion:number}){
  const [posts,setPosts]=useState<TalkPost[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[busy,setBusy]=useState(false),[more,setMore]=useState(false);
  const [body,setBody]=useState(''),[location,setLocation]=useState(''),[kind,setKind]=useState('status'),[audience,setAudience]=useState('friends');
@@ -41,7 +43,7 @@ export default function TableTalk({id,me,relationshipVersion}:{id:string;me:stri
   {posts.map(post=><article className="talk-post" key={post.id} aria-label={post.name+' Table Talk post'}>
    <header><strong>{post.name}</strong><div className="talk-meta"><span>{post.kind}</span><PostTimestamp created={post.created} edited={post.edited}/><span>{post.audience==='friends'?<Users size={13}/>:<Globe size={13}/>} {post.audience==='friends'?'Friends only':'Public'}</span></div></header>
    <p className="talk-body">{post.body}</p>{post.location&&<p className="talk-location"><MapPin size={14}/>{post.location}</p>}
-   <PostActivity scope="table" postId={post.id} author={{id:post.userId,name:post.name}} body={post.body} postMentions={post.mentions} onChanged={()=>void load().catch(e=>setError(e.message))}/>
+   {post.hand&&<HandReviewSummary hand={post.hand} scope="table" postId={post.id}/>}<PostActivity scope="table" postId={post.id} author={{id:post.userId,name:post.name}} body={post.body} postMentions={post.mentions} onChanged={()=>void load().catch(e=>setError(e.message))}/>
   </article>)}
   {more&&<button className="outline" disabled={busy} onClick={async()=>{setBusy(true);try{await load(posts.at(-1)?.id)}catch(e){setError((e as Error).message)}finally{setBusy(false)}}}>Load more posts</button>}
  </section>

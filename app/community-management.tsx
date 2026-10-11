@@ -1,0 +1,17 @@
+'use client';
+import {useEffect,useState} from 'react';
+type Member={id:string;name:string};
+type Invite={id:string;name:string;destination:string;status:string;created:string};
+type Data={group:{id:string;name:string;owner:string}|null;members:Member[];invitations:Invite[];history:Invite[]};
+export async function manageRequest(body:Record<string,unknown>){const r=await fetch('/api/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw Error(d.error||'Could not save.');return d;}
+export default function CommunityManagement({groupId,userId,onChanged}:{groupId?:string;userId?:string;onChanged?:()=>void}){
+ const [data,setData]=useState<Data|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[revision,setRevision]=useState(0);
+ useEffect(()=>{const c=new AbortController();fetch('/api/manage?'+new URLSearchParams(groupId?{groupId}:{}),{signal:c.signal}).then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error);setData(d)}).catch(e=>{if(!c.signal.aborted)setError(e.message)});return()=>c.abort()},[groupId,revision]);
+ async function act(body:Record<string,unknown>,confirm?:string){if(confirm&&!window.confirm(confirm))return;setBusy(true);setError('');try{await manageRequest(body);setNotice('Saved.');setRevision(v=>v+1);onChanged?.()}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+ return <section className="post-form" aria-label="Membership and invitations"><h3>{data?.group?'Manage '+data.group.name:'Invitation history'}</h3>{error&&<p className="error" role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}{data?.group&&<>
+ {data.group.owner===userId?<><ul>{data.members.map(m=><li key={m.id}>{m.name}{m.id===userId?' · Owner':<span className="room-actions"><button type="button" className="text-link" disabled={busy} onClick={()=>void act({action:'removeMember',groupId,userId:m.id},'Remove '+m.name+' from this private group?')}>Remove</button><button type="button" className="text-link" disabled={busy} onClick={()=>void act({action:'transferGroup',groupId,userId:m.id},'Make '+m.name+' the owner? You will become a regular member.')}>Make owner</button></span>}</li>)}</ul><button type="button" className="outline" disabled={busy} onClick={()=>void act({action:'rotateInvite',groupId},'Replace the group invite link? Old links will stop working.')}>Replace invite link</button></>:<button type="button" className="outline" disabled={busy} onClick={()=>void act({action:'leaveGroup',groupId},'Leave this private group? You will lose access to its posts.')}>Leave group</button>}
+ </>}
+ <h4>Sent invitations</h4>{data?.invitations.length===0&&<p>No pending invitations.</p>}{data?.invitations.map(i=><div key={i.id}><p>{i.name} · {i.destination} · {i.status}</p><button type="button" className="text-link" disabled={busy} onClick={()=>void act({action:'resendInvite',invitationId:i.id})}>Resend</button> <button type="button" className="text-link" disabled={busy} onClick={()=>void act({action:'revokeInvite',invitationId:i.id},'Withdraw this invitation?')}>Withdraw</button></div>)}
+ <details><summary>Invitation history</summary>{data?.history.length===0&&<p>New invitation activity will appear here.</p>}{data?.history.map(i=><p key={i.id}>{i.name} · {i.destination} · {i.status}<br/><small>{new Date(i.created).toLocaleString()}</small></p>)}</details>
+ </section>;
+}

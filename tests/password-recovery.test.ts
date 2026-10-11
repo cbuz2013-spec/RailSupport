@@ -46,6 +46,7 @@ test('password recovery completes once, revokes sessions, rejects expired links 
   const sent:Array<{text:string;to:string[]}>=[];
   t.mock.method(globalThis,'fetch',async(_url:unknown,options:RequestInit)=>{sent.push(JSON.parse(String(options.body)));return Response.json({id:'synthetic-email'});});
   const signup=await auth.api.signUpEmail({body:{name:'Recovery Test',email:fixture.user.email,password:'OriginalPassword123!'}});
+  assert.equal(sent.length,1);assert.match(sent[0].text,/Verify your Rail Social email/);sent.length=0;
   const oldSession=signup.token!;
   let ip=10;
   const call=(action:string,body:Record<string,unknown>,address='192.0.2.'+ip++)=>auth.handler(new Request(origin+'/api/auth/'+action,{method:'POST',headers:{'Content-Type':'application/json',Origin:origin,'x-forwarded-for':address},body:JSON.stringify(body)}));

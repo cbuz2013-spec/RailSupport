@@ -11,6 +11,7 @@ async function main() {
   process.env.BETTER_AUTH_URL='http://127.0.0.1:3100';
   process.env.BETTER_AUTH_SECRET=randomBytes(32).toString('hex');
   process.env.RAILSUPPORT_READY='true';
+  process.env.RESEND_API_KEY='';process.env.RAILSOCIAL_EMAIL_FROM='';process.env.VAPID_PRIVATE_KEY='';
   Object.assign(process.env,{NODE_ENV:'development'});
   const database=await PGlite.create();
   const server=new PGLiteSocketServer({db:database,host:'127.0.0.1',port:5439,maxConnections:6});
@@ -26,6 +27,7 @@ async function main() {
     users.push(result.user.id);
   }
   process.env.RAILSOCIAL_ROOM_CREATOR_IDS=users[0];
+  await db().query('INSERT INTO rail_admins(user_id) VALUES($1)',[users[0]]);
   const {mutateRoom}=await import('../lib/rooms');
   for(const [name,city,description] of [
     ['The River Room','Austin, Texas','A friendly place to find your next game and your poker people. Meet our hosts and keep up with room announcements.'],

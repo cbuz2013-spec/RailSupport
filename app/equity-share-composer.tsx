@@ -1,11 +1,17 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {ArrowLeft,Share2} from 'lucide-react';
+import Image from 'next/image';
+import {resizePhoto} from '@/lib/photo-resize';
+import HandReviewFlow from './hand-review-flow';
+import {reviewPlayers,withReview} from '@/lib/hand-review';
 import type {Group} from '@/lib/types';
 import type {Room,RoomDirectory} from '@/lib/rooms-validation';
 import {equityShareRequest,equityShareSummary,equityShareUrl,type EquityShareDraft,type ShareDestination} from '@/lib/equity-share';
 
 export default function EquityShareComposer({draft,groups,activeGroupId,userId,onBack}:{draft:EquityShareDraft;groups:Group[];activeGroupId:string;userId:string;onBack:()=>void}){
+ const [images,setImages]=useState<string[]>([]),[photoBusy,setPhotoBusy]=useState(false);
+ const [hand,setHand]=useState(draft.hand),[step,setStep]=useState(0);
  const [destination,setDestination]=useState(groups.some(group=>group.id===activeGroupId)?`rail:${activeGroupId}`:'table:friends');
  const [rooms,setRooms]=useState<Room[]>([]),[loading,setLoading]=useState(true),[roomError,setRoomError]=useState(''),[revision,setRevision]=useState(0);
  const [context,setContext]=useState(''),[action,setAction]=useState(draft.hand.action),[question,setQuestion]=useState(draft.hand.question);
@@ -31,11 +37,12 @@ export default function EquityShareComposer({draft,groups,activeGroupId,userId,o
  const target:ShareDestination|null=rail?{kind:'rail',id:rail.id}:room?{kind:'room',id:room.id}:destination==='table:friends'?{kind:'table',audience:'friends'}:destination==='table:public'?{kind:'table',audience:'public'}:null;
  const audience=rail?`Only members of ${rail.name} can see this hand.`:room?`Visible to signed-in members who can view ${room.name}.`:destination==='table:friends'?'Friends only: visible to people you follow who also follow you.':'Public: visible to anyone signed in to Rail Social.';
  async function submit(event:React.FormEvent){
-  event.preventDefault();if(sending.current||!target)return;
+  event.preventDefault();if(sending.current||photoBusy||!target||step!==9)return;
   sending.current=true;setBusy(true);setError('');
   let url='';
   try{
-   const request=equityShareRequest(draft,target,{context,action,question});
+   const request=equityShareRequest({...draft,hand,players:reviewPlayers(hand),result:hand.review?.equity||null},target,{context,action:hand.action,question:hand.question});
+   if(target.kind==='rail')Object.assign(request.payload,{images});
    const response=await fetch(request.path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request.payload)});
    const data=await response.json();if(!response.ok)throw Error(data.error||'Could not share this hand. Your draft is unchanged.');
    url=equityShareUrl(target,userId,data.id);setSavedUrl(url);
@@ -45,7 +52,7 @@ export default function EquityShareComposer({draft,groups,activeGroupId,userId,o
  }
  return <form className="post-form equity-share" onSubmit={submit}>
   <div className="equity-share-heading"><h3 ref={heading} tabIndex={-1}>Share this hand</h3><button type="button" className="text-link" disabled={busy} onClick={onBack}><ArrowLeft size={15}/>Back to calculator</button></div>
-  <p className="muted">Review the hand history, choose where it goes, and add any action or question before posting.</p>
+  <p className="muted">Your cards, positions and board are imported. Add any details you want before sharing.</p><HandReviewFlow hand={hand} onChange={setHand} step={step} onStep={setStep} busy={busy}>
   <label className="field">Share to<select aria-label="Share to" value={destination} disabled={busy} onChange={event=>{setDestination(event.target.value);setError('')}} required>
    {groups.length>0&&<optgroup label="My private rails">{groups.map(group=><option key={group.id} value={`rail:${group.id}`}>{group.name}</option>)}</optgroup>}
    {rooms.length>0&&<optgroup label="Followed rooms">{rooms.map(item=><option key={item.id} value={`room:${item.id}`}>{item.name}</option>)}</optgroup>}
@@ -54,12 +61,10 @@ export default function EquityShareComposer({draft,groups,activeGroupId,userId,o
   <p className="form-hint">{audience}</p>
   {loading&&<p className="form-hint" role="status">Loading followed rooms…</p>}
   {roomError&&<p className="error" role="alert">{roomError} <button type="button" className="text-link" disabled={busy} onClick={()=>setRevision(value=>value+1)}>Retry rooms</button></p>}
-  <pre className="equity-share-history" aria-label="Hand history preview">{equityShareSummary(draft)}</pre>
-  <label className="field">Context (optional)<textarea aria-label="Context (optional)" value={context} disabled={busy} onChange={event=>setContext(event.target.value)} rows={3} maxLength={4000} placeholder="What should people know about this hand?"/></label>
-  <label className="field">Action by street (optional)<textarea aria-label="Action by street (optional)" value={action} disabled={busy} onChange={event=>setAction(event.target.value)} rows={4} maxLength={5000} placeholder="Preflop: …&#10;Flop: …&#10;Turn: …&#10;River: …"/></label>
-  <label className="field">Your question (optional)<input aria-label="Your question (optional)" value={question} disabled={busy} onChange={event=>setQuestion(event.target.value)} maxLength={500} placeholder="What would you do here?"/></label>
+  <label className="field">Context (optional)<textarea value={context} disabled={busy} onChange={e=>setContext(e.target.value)} rows={3} maxLength={4000}/></label>
+  {rail&&<div className="review-attachments"><label className="field">Attach images (optional)<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/heic,image/heif" disabled={busy||photoBusy} onChange={async e=>{const files=Array.from(e.target.files||[]);e.target.value='';if(images.length+files.length>3){setError('Use up to three photos.');return}setPhotoBusy(true);setError('');try{const added=await Promise.all(files.map(resizePhoto));setImages(old=>[...old,...added])}catch(e){setError((e as Error).message)}finally{setPhotoBusy(false)}}}/></label><div className="photo-previews">{images.map((src,i)=><div key={i}><Image src={src} alt={'Photo '+(i+1)} width={140} height={105} unoptimized/><button type="button" onClick={()=>setImages(old=>old.filter((_,j)=>j!==i))}>Remove photo</button></div>)}</div>{photoBusy&&<p role="status">Preparing photos…</p>}</div>}
   <p className="form-hint">Share completed hands for review. Only the cards, equity snapshot, and details shown here will be posted.</p>
   {error&&<p className="error" role="alert">{error}</p>}
-  {savedUrl?<p role="status">Hand shared. <a className="text-link" href={savedUrl}>View your post</a></p>:<button className="primary" disabled={busy||!target}><Share2 size={16}/>{busy?'Sharing…':'Post hand history'}</button>}
- </form>;
+  {savedUrl?<p role="status">Hand shared. <a className="text-link" href={savedUrl}>View your post</a></p>:<button type="submit" className="primary" disabled={busy||photoBusy||!target}><Share2 size={16}/>{busy?'Sharing…':'Post hand history'}</button>}
+ </HandReviewFlow></form>;
 }

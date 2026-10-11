@@ -1,4 +1,5 @@
 'use client';
+import ReportButton from './report-button';
 import PostTimestamp from './post-timestamp';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {MessageCircle,Pencil,Trash2,Check,Bell,Reply} from 'lucide-react';
@@ -35,18 +36,19 @@ export default function PostActivity({scope,postId,author,body,postMentions=[],o
  return <div className="post-activity">
  <div className="post-actions">
   <div className="social-primary-actions">
-  {scope!=='announcement'&&<ReactionButton value={state?.myReaction} counts={state?.reactions} disabled={busy||!state?.canComment} onChange={reaction=>act('react',{reaction})}/>}
+  {scope!=='announcement'&&<ReactionButton context={{scope,postId}} value={state?.myReaction} counts={state?.reactions} disabled={busy||!state?.canComment} onChange={reaction=>act('react',{reaction})}/>}
   <button type="button" className={'social-action '+(state?.watching?'is-active':'')} aria-pressed={!!state?.watching} disabled={busy||!state} title={state?.hasSession?'Get updates from this tournament or cash-game rail':'Get updates from this conversation'} onClick={async()=>{
    const enabled=!state?.watching;
    const push=enabled&&n&&!n.deviceOn?n.enable():Promise.resolve('');
-   if(await act('watch',{enabled})){setStatus(enabled?'Following this rail. Updates will appear in Notifications.':'Unfollowed this rail. These alerts are off.');const message=await push;if(message)setStatus(message)}
-  }}>{state?.watching?<Check size={18} aria-hidden="true"/>:<Bell size={18} aria-hidden="true"/>}<span>{state?.watching?'Following':'Follow rail'}</span></button>
+   if(await act('watch',{enabled})){setStatus(enabled?'Following this post. Updates will appear in Notifications.':'Unfollowed this post. These alerts are off.');const message=await push;if(message)setStatus(message)}
+  }}>{state?.watching?<Check size={18} aria-hidden="true"/>:<Bell size={18} aria-hidden="true"/>}<span>{state?.watching?'Following':'Follow this post'}</span></button>
   {scope!=='announcement'&&<><button type="button" className="social-action" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}><MessageCircle size={18} aria-hidden="true"/><span>Comments</span>{!!state?.comments&&<small>{state.comments}</small>}</button><button type="button" className="social-action" disabled={!state?.canComment} onClick={()=>reply(author)}><Reply size={18} aria-hidden="true"/><span>Reply</span></button></>}
   </div>
   {children}
   {state?.canEdit&&<button onClick={()=>onEdit?onEdit():edit('post',body)}><Pencil size={15}/>Edit</button>}
   {state?.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this post and its comments?'))void act('deletePost',{},onChanged)}}><Trash2 size={15}/>Delete</button>}
  </div>
+ <ReportButton scope={scope} targetId={postId}/>
  {error&&<p className="error" role="alert">{error}</p>}{status&&<p className="form-hint" role="status">{status}</p>}
  {editing==='post'&&<form className="activity-editor" onSubmit={e=>{e.preventDefault();void act('editPost',{body:editBody,mentions:[...postMentions,...activeMentions(editBody,editMentions)]},()=>{setEditing('');onChanged?.()})}}><MentionInput label="Edit post" value={editBody} onChange={setEditBody} mentions={editMentions} onMentions={setEditMentions} context={context} maxLength={scope==='announcement'?3000:5000}/><div className="room-actions"><button className="primary" disabled={busy||!editBody.trim()}>Save changes</button><button type="button" className="outline" onClick={()=>setEditing('')}>Cancel</button></div></form>}
  {expanded&&scope!=='announcement'&&<section className="activity-comments" aria-label="Comments">
@@ -55,7 +57,8 @@ export default function PostActivity({scope,postId,author,body,postMentions=[],o
   {thread?.comments.length===0&&<p className="muted">No comments yet.</p>}
   {thread?.comments.map(c=><article className="activity-comment" key={c.id}><a className="profile-name" href={'/?profile='+encodeURIComponent(c.userId)}>{c.name}</a>
    {editing===c.id?<form className="activity-editor" onSubmit={e=>{e.preventDefault();void act('editComment',{commentId:c.id,body:editBody,mentions:[...(commentEditing?.mentions||[]),...activeMentions(editBody,editMentions)]},()=>setEditing(''))}}><MentionInput label="Edit comment" value={editBody} onChange={setEditBody} mentions={editMentions} onMentions={setEditMentions} context={context}/><div className="room-actions"><button className="primary" disabled={busy||!editBody.trim()}>Save comment</button><button type="button" className="outline" onClick={()=>setEditing('')}>Cancel</button></div></form>:<p>{c.body}</p>}
-   <small><PostTimestamp created={c.created} edited={c.edited}/></small><div className="comment-controls"><ReactionButton value={c.myReaction} counts={c.reactions} disabled={busy||!state?.canComment} onChange={reaction=>act('reactComment',{commentId:c.id,reaction})}/><button type="button" className="social-action" disabled={!state?.canComment} onClick={()=>reply({id:c.userId,name:c.name})}><Reply size={18} aria-hidden="true"/>Reply</button>{c.canEdit&&<button onClick={()=>edit(c.id,c.body)}>Edit</button>}{c.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this comment?'))void act('deleteComment',{commentId:c.id})}}>Delete</button>}</div>
+   <small><PostTimestamp created={c.created} edited={c.edited}/></small><div className="comment-controls"><ReactionButton context={{scope,postId,commentId:c.id}} value={c.myReaction} counts={c.reactions} disabled={busy||!state?.canComment} onChange={reaction=>act('reactComment',{commentId:c.id,reaction})}/><button type="button" className="social-action" disabled={!state?.canComment} onClick={()=>reply({id:c.userId,name:c.name})}><Reply size={18} aria-hidden="true"/>Reply</button>{c.canEdit&&<button onClick={()=>edit(c.id,c.body)}>Edit</button>}{c.canRemove&&<button disabled={busy} onClick={()=>{if(window.confirm('Delete this comment?'))void act('deleteComment',{commentId:c.id})}}>Delete</button>}</div>
+   <ReportButton scope={scope} targetId={postId} commentId={c.id} label="Report comment"/>
   </article>)}
   {thread?.nextBefore&&<button className="outline" disabled={busy} onClick={async()=>{try{const more=await activityRequest<Thread>(undefined,{comments:'1',scope,postId,before:thread.nextBefore!});setThread({...more,comments:[...thread.comments,...more.comments]})}catch(e){setError((e as Error).message)}}}>Earlier comments</button>}
  </section>}
