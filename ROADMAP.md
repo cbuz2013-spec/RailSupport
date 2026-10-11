@@ -1,6 +1,6 @@
 # Rail Social — current build roadmap
 
-Updated **October 11, 2026**. **Current deployed release: 2.4, with poker reactions, separate Follow rail controls, uniform action buttons, BB-aware hand reviews, street equity frames and light/dark felt themes.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 11, 2026**. **Current deployed release: 2.5 — My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
@@ -70,22 +70,21 @@ Deployed and verified October 11. [Release record](docs/rail-social-2.4-release-
 - [x] **Street frames** — Swipe left/right through preflop, flop, turn and river, each with its own equities and obvious tabs/arrows/swipe guidance.
 - [x] **Light/dark toggle** — Top of every page; green-and-white light mode and a readable dark green poker-felt theme, with the selection remembered.
 
-## Next version under discussion — October 11
+## Completed release 2.5 — October 11
 
-Planning only. The [next-version plan](docs/next-version-plan-2026-10-11.md) records the screen order and confirmed decisions; current production remains 2.4.
+Built on the existing app and deployed as commit `141d949`. [Release and verification record](docs/release-2.5-2026-10-11.md); [feature specification](docs/next-version-plan-2026-10-11.md). 79 automated tests, TypeScript and local/cloud production builds passed.
 
-**Implementation and deployment are on hold while the user adds further requirements.**
+- [x] **My Rails** navigation and Rail Social logo assets for home-screen installation.
+- [x] **So sick**, **Follow this post**, reaction identity lists and separate street reactions.
+- [x] **Tournament/Cash Game setup** inside existing private groups, with optional details and invitation handoff.
+- [x] **Ten optional hand-review screens** and calculator-to-review import with editable cards/positions/board.
+- [x] **Poker-table street frames** showing hands, positions, stacks, event information and street-specific equities, with action below.
+- [x] **Account controls** for verification/resend, email/password changes, sessions and protected deletion; real inbox completion still needs confirmation.
+- [x] **Safety and support** reports, moderation/actions, restrictions, basic text screening, request limits and help/privacy pages.
+- [x] **Community management** group transfer/removal/leave, invitation withdrawal/resend/history, room transfer/pinning and league time zones/archive/correction history.
+- [x] **League rules preserved** — host-entered points and shared ranks.
 
-- [ ] **My Rails navigation** — Replace My Rail and Groups in the bottom menu with one My Rails destination, preserving access to groups and game sessions.
-- [ ] **Phone home-screen logo** — Use the Rail Social logo instead of the single R for installed web-app and iPhone home-screen icons.
-- [ ] **So sick reaction** — Sick face with a speech bubble reading So sick; retain the existing poker reactions.
-- [ ] **Follow this post wording** — Rename the post control and preserve existing subscriptions.
-- [ ] **See who reacted** — Open reaction summaries to see people and their chosen reactions, respecting content access and blocking.
-- [ ] **Game-session setup** — Tournament/Cash Game inside a private group, with the relevant optional event/location/buy-in/stack details. Private-group creation remains separate.
-- [ ] **Skippable hand-review screens** — Separate event details, current situation, players, board, each street's action, and context/notes.
-- [ ] **Calculator to hand review** — Share hand opens the hand-review wizard at Tournament/Cash Game and imports cards, positions, board and compatible details for optional completion before publishing.
-- [ ] **Poker-table street frames** — Player cards, positions, stacks and equities around a table, with event information in the center and action below.
-- [ ] **Street reactions** — Independent reactions and counts for each street's action section, separate from the overall post.
+These checkoffs describe delivered feature scope. Entire stages 1–3 remain partially open for the provider, physical-device and accessibility checks below.
 
 ## Deployed, with verification or feature work remaining
 
@@ -93,15 +92,15 @@ Planning only. The [next-version plan](docs/next-version-plan-2026-10-11.md) rec
 - [ ] **Email delivery:** domain verification and provider test acceptance passed. Confirm a real user receives the reset message.
 - [ ] **Photo management:** rail-post photos support compression and editing (up to three). Finish physical-device orientation, format and retry checks.
 - [ ] **Preferences and reminders:** post/session watches and device push on/off exist. Per-room/category controls and schedule-aware reminders remain.
-- [ ] **Rail/room/league management:** the foundation works; member removal/ownership transfer, invitation history/revocation, pinned announcements and league correction history remain.
+- [ ] **Safety and operations:** advanced image screening and broader abuse/accessibility review remain. Manual snapshot recovery was exercised; automated daily snapshots are not enabled by the provider. See the release record for the finalized restore and data comparison.
 
 ## Next actions, in order
 
-1. **By Oct 10:** verify real reset-email receipt and push receipt on physical phones; record the evidence.
-2. **By Oct 11:** implement email ownership verification and safe resend/change-address handling.
-3. **By Oct 12:** complete account/session settings and deletion; decide the native app approach and start publisher/provider setup.
-4. **Oct 13–16:** add reporting/moderation/support controls and prove backup restoration.
-5. Continue the remaining social/room controls, event tools, mobile apps and monetization in the sequence below.
+1. **By Oct 12:** confirm actual verification/reset/change-email inbox delivery and sensitive account settings; complete phone push receipt checks (original Oct 10 goal remains overdue).
+2. **By Oct 12:** decide the native app approach and start publisher/provider setup.
+3. **By Oct 16:** enable an available automatic-backup option, document a strictly isolated restore procedure, and complete the broader abuse review.
+4. **By Oct 22:** finish physical-phone photo/icon behavior and the cross-product keyboard/accessibility audit.
+5. Continue notifications/preferences/reminders, event tools, mobile apps and monetization in the sequence below.
 
 ## Build order and aggressive completion goals
 
@@ -109,9 +108,9 @@ All goals are end of day **America/New_York, 2026**. Dates are stretch targets r
 
 | Order | Stage | Current position | Complete-by goal |
 | --- | --- | --- | --- |
-| 1 | Accounts and recovery | Reset complete; delivery check, verification, settings and deletion remain | Oct 12 |
-| 2 | Safety, permissions and support | Current permissions/blocking implemented; moderation, support and restore testing remain | Oct 16 |
-| 3 | Social, room and league controls | Core community live; administration and device/accessibility finish remain | Oct 22 |
+| 1 | Accounts and recovery | Account features deployed; actual inbox and sensitive-settings completion checks remain | Oct 12 |
+| 2 | Safety, permissions and support | Reports/moderation/support live; automatic backups and broader abuse review remain | Oct 16 |
+| 3 | Social, room and league controls | Administration deployed; physical-device and accessibility checks remain | Oct 22 |
 | 4 | Notifications and destination links | Inbox complete; web push deployed; phone verification, preferences and reminder work remain | Oct 28 |
 | 5 | Live tournament tools | Player sessions and stack updates live; event lifecycle, QR join, board, clock and scoring integration remain | Nov 5 |
 | 6 | iPhone and Android apps | Native app implementation and signed physical-device builds remain | Nov 13 |
@@ -134,6 +133,7 @@ Apple/Google publisher setup, testing eligibility and ad/video/billing-provider 
 
 The finished-product scope remains accounts/recovery, rails, social connections, rooms, leagues, notifications, live tournament tools, native apps, ads/paid plans, video, analytics and branding. Real-money game hosting, deposits, payouts and GG game-engine integration are outside this build. Individual branded listings require their own eligible approval.
 
+- [2.5 release evidence](docs/release-2.5-2026-10-11.md).
 - [Current detailed checklist](docs/rail-social-build-checklist-2026-10-08.md).
 - [2.3 implementation and release evidence](docs/rail-social-2.3-validation.md): 48 automated tests, isolated API/browser checks, builds and live checks. The later timestamp update passed build/browser checks and exact-deployment verification in its release task.
 - [Password-recovery evidence](PASSWORD-RECOVERY-2026-10-09.md).

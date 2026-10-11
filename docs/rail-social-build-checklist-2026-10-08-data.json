@@ -1,0 +1,701 @@
+{
+  "date": "2026-10-08",
+  "year": 2026,
+  "stages": [
+    {
+      "n": 1,
+      "title": "Accounts and recovery",
+      "due": "2026-10-12",
+      "depends": "Start here. Verified domain/sender and account access are prerequisites.",
+      "gate": "Reset, sign-in, settings and deletion flows pass end-to-end checks.",
+      "tasks": [
+        {
+          "id": "1.1",
+          "name": "Verified email delivery",
+          "due": "2026-10-09",
+          "how": "Connect a verified sender so account messages reach the correct address; confirm delivery and failure handling.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Sender domain phabfive.com is verified and Resend is connected. Provider test acceptance and failure handling passed; receipt in a real user inbox still needs confirmation."
+        },
+        {
+          "id": "1.2",
+          "name": "Forgot password",
+          "due": "2026-10-10",
+          "how": "Send a single-use, expiring reset link; let the user set a new password and return to sign-in.",
+          "status": "complete",
+          "completed": true,
+          "completed_at": "2026-10-09",
+          "progress": "Completed Oct 9: deployed single-use, 30-minute reset links, session revocation and invitation-preserving recovery; local end-to-end and production route checks passed."
+        },
+        {
+          "id": "1.3",
+          "name": "Email verification",
+          "due": "2026-10-11",
+          "how": "Confirm email ownership and provide resend/change-address handling without stranding existing accounts.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Verification and resend are deployed, with confirmation-based email changes and session revocation. Signup email behavior passed automated checks; actual inbox completion remains unverified."
+        },
+        {
+          "id": "1.4",
+          "name": "Account and session settings",
+          "due": "2026-10-12",
+          "how": "Allow secure email/password changes and sign-out of other sessions after sensitive account changes.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Email/password settings, session list/revocation and sign-out with push detachment are deployed. Sensitive email/password changes still need a real-account end-to-end confirmation."
+        },
+        {
+          "id": "1.5",
+          "name": "Account deletion",
+          "due": "2026-10-12",
+          "how": "Add in-app and public web deletion requests with clear handling of posts, files and league history.",
+          "status": "complete",
+          "completed": true,
+          "progress": "In-app password-confirmed deletion and public deletion instructions deployed. Atomic cleanup, ownership protection and anonymized league history passed isolated database tests.",
+          "completed_at": "2026-10-11"
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "title": "Safety, permissions and support",
+      "due": "2026-10-16",
+      "depends": "After 1. Apply these controls to every later feature.",
+      "gate": "Unauthorized actions are denied; reports can be resolved and a backup restored.",
+      "tasks": [
+        {
+          "id": "2.1",
+          "name": "Report content and users",
+          "due": "2026-10-13",
+          "how": "Add report actions that save the reason and relevant content for moderator review.",
+          "status": "complete",
+          "completed": true,
+          "progress": "Post, comment and profile reports save reasons and snapshots with access checks. Isolated reporting and comment-removal tests passed.",
+          "completed_at": "2026-10-11"
+        },
+        {
+          "id": "2.2",
+          "name": "Moderation console",
+          "due": "2026-10-14",
+          "how": "Let authorized moderators review reports, remove content and restrict abusive accounts with an action log.",
+          "status": "complete",
+          "completed": true,
+          "progress": "Moderator report queue, resolve/dismiss/remove, restrictions/restore and action history deployed. Unauthorized and authorized API cases passed.",
+          "completed_at": "2026-10-11"
+        },
+        {
+          "id": "2.3",
+          "name": "Role and privacy enforcement",
+          "due": "2026-10-15",
+          "how": "Check owner, host and member rights on the server; keep private rails separate from rooms.",
+          "status": "complete",
+          "completed": true,
+          "completed_at": "2026-10-09",
+          "progress": "Completed for the current web product Oct 9: owner/host/member rights, private-rail isolation, author-only editing, blocking and invitation consent are enforced and tested. Extend these checks as new features are added."
+        },
+        {
+          "id": "2.4",
+          "name": "Abuse and upload protection",
+          "due": "2026-10-15",
+          "how": "Filter objectionable content, limit abusive requests and reject unsupported or oversized uploads.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Conservative text rules, per-user write/report limits and format/size validation deployed and tested. Automated image-content screening and broader abuse audit remain."
+        },
+        {
+          "id": "2.5",
+          "name": "Help, privacy and community rules",
+          "due": "2026-10-16",
+          "how": "Publish working support, privacy, deletion and community-standard screens, including required safety contacts.",
+          "status": "complete",
+          "completed": true,
+          "progress": "Public help, privacy, deletion and community rules plus authenticated support/appeals deployed; help route verified on staged production.",
+          "completed_at": "2026-10-11"
+        },
+        {
+          "id": "2.6",
+          "name": "Backup and recovery baseline",
+          "due": "2026-10-16",
+          "how": "Automate database protection and prove a test restore before later schema changes.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Manual snapshot and recovery comparison completed; the restore finalized a replacement production branch. Original data retained; all existing content matched. Daily snapshot scheduling was rejected as unavailable; establish automation and a strictly isolated rehearsal procedure."
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "title": "Complete social, room and league controls",
+      "due": "2026-10-22",
+      "depends": "After 1-2. Extend the live 2.2 foundation; do not rebuild it.",
+      "gate": "Members and hosts can manage their own content, invitations and rooms correctly.",
+      "tasks": [
+        {
+          "id": "3.1",
+          "name": "Rail membership controls",
+          "due": "2026-10-17",
+          "how": "Add missing leave/remove-member, invite-revoke and owner-transfer controls with confirmation.",
+          "status": "complete",
+          "completed": true,
+          "progress": "Leave/remove-member, ownership transfer and invitation withdrawal deployed. Transfer/removal permissions and revoked watches/invites passed regression tests.",
+          "completed_at": "2026-10-11"
+        },
+        {
+          "id": "3.2",
+          "name": "Invitation management",
+          "due": "2026-10-18",
+          "how": "Show pending, accepted, declined and expired invites; let senders withdraw or resend eligible invitations.",
+          "status": "complete",
+          "completed": true,
+          "progress": "Pending invitation management, resend/withdraw and history deployed and tested. History records subsequent transitions; historical deleted invitations cannot be reconstructed.",
+          "completed_at": "2026-10-11"
+        },
+        {
+          "id": "3.3",
+          "name": "Room administration",
+          "due": "2026-10-19",
+          "how": "Complete host removal, room access controls and pinned announcements while preserving owner permissions.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Room transfer, accepted-host checks and pinned announcements implemented alongside existing owner/host permissions. Full new room-administration browser walkthrough remains to verify."
+        },
+        {
+          "id": "3.4",
+          "name": "Post and photo management",
+          "due": "2026-10-20",
+          "how": "Finish supported edit/delete flows, image orientation/compression and useful upload retry messages.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Post/photo edits and deletion retained; orientation-aware compression and unsupported-format retry guidance deployed. Physical-device orientation/format and retry checks remain; maximum three photos per private-rail post."
+        },
+        {
+          "id": "3.5",
+          "name": "League administration finish",
+          "due": "2026-10-21",
+          "how": "Add missing time-zone handling, roster removal, season archive and correction history around existing schedules/results.",
+          "status": "complete",
+          "completed": true,
+          "progress": "League time zones with DST validation, soft roster removal, archived seasons and correction history deployed and tested. Host-entered points and shared ranks retained.",
+          "completed_at": "2026-10-11"
+        },
+        {
+          "id": "3.6",
+          "name": "Mobile web and accessibility finish",
+          "due": "2026-10-22",
+          "how": "Fix keyboard, focus, empty/loading/error states and small-screen layouts across existing social and solver flows.",
+          "status": "partial",
+          "completed": false,
+          "progress": "My Rails navigation, optional ten-screen review, table frames and accessible reaction controls deployed. A 390-pixel local flow passed; comprehensive keyboard/screen-reader/device audit remains."
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "title": "Notifications and destination links",
+      "due": "2026-10-28",
+      "depends": "After 3. Reuse the event service in the native apps.",
+      "gate": "An allowed alert is delivered once and opens the correct destination; muted alerts stay off.",
+      "tasks": [
+        {
+          "id": "4.1",
+          "name": "Notification inbox",
+          "due": "2026-10-23",
+          "how": "Store invitation, reply and game-update alerts with unread counts and read-state controls.",
+          "status": "complete",
+          "completed": true,
+          "completed_at": "2026-10-09",
+          "progress": "Completed Oct 9: stored invitation, watched-post/stack, reply/tag, like, follow and followed-session alerts, unread counts and mark-read controls are deployed and tested."
+        },
+        {
+          "id": "4.2",
+          "name": "Reliable delivery service",
+          "due": "2026-10-24",
+          "how": "Queue alerts, retry temporary failures and prevent duplicate sends or stale reminders.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Durable event/outbox queues, duplicate prevention, access rechecks and retries are implemented and tested with a stubbed push sender. Immediate delivery runs after writes, with activity-driven retries and a daily fallback. Physical-device delivery and future scheduled-reminder handling remain to verify."
+        },
+        {
+          "id": "4.3",
+          "name": "Browser push",
+          "due": "2026-10-26",
+          "how": "Register supported browsers for opt-in push and handle permission denial and expired subscriptions.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Browser opt-in, service worker, production push credentials, permission handling and expired-device cleanup are deployed. This stays unchecked until receipt is verified on physical phones."
+        },
+        {
+          "id": "4.4",
+          "name": "Notification preferences and reminders",
+          "due": "2026-10-27",
+          "how": "Offer per-room/category mute controls and game reminders that update when schedules change.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Join/leave a post or session watch and device-wide push on/off are delivered. Per-room/category mute preferences and schedule-aware reminders remain."
+        },
+        {
+          "id": "4.5",
+          "name": "Secure deep-link routing",
+          "due": "2026-10-28",
+          "how": "Preserve rail, room and event destinations through sign-in; validate membership before opening content.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Rail/room invitation handoffs, post/session links and membership checks exist. Complete the signed-out destination audit and routing for future event/native screens."
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Live tournament tools",
+      "due": "2026-11-05",
+      "depends": "After 3-4. Extend the existing manual tournament-update posts.",
+      "gate": "A test event runs from setup through results without leaking private data or giving live solver advice.",
+      "tasks": [
+        {
+          "id": "5.1",
+          "name": "Event setup and lifecycle",
+          "due": "2026-10-29",
+          "how": "Create room-linked tournaments with schedule, blind structure and draft/live/finished states.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Player-created tournament/cash-game sessions are delivered. Organizer-managed room events, blind structures and the full draft/live/finished lifecycle remain."
+        },
+        {
+          "id": "5.2",
+          "name": "QR and link join",
+          "due": "2026-10-30",
+          "how": "Generate event join codes; a scan opens the correct event and applies its membership rules.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "5.3",
+          "name": "Live stack and status board",
+          "due": "2026-11-02",
+          "how": "Show timestamped chip-count/status updates and reconnect cleanly; clearly identify self-reported data.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Timestamped chip/big-blind/players-left updates and watch notifications are delivered. A consolidated live board, reconnect behavior and self-reported labels remain."
+        },
+        {
+          "id": "5.4",
+          "name": "Blind clock and event updates",
+          "due": "2026-11-03",
+          "how": "Synchronize levels, breaks and organizer corrections from the server so devices stay consistent.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "5.5",
+          "name": "Event chat and completed-hand posts",
+          "due": "2026-11-04",
+          "how": "Keep moderated discussion inside the event; only completed hands enter review/solver workflows.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Private-rail comments and optional completed-hand reviews exist. Dedicated moderated event discussion remains."
+        },
+        {
+          "id": "5.6",
+          "name": "Results and league connection",
+          "due": "2026-11-05",
+          "how": "Finalize event results, record corrections and update linked league standings without duplicate scoring.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "title": "iPhone and Android apps",
+      "due": "2026-11-13",
+      "depends": "Feasibility check starts Oct 9; implement after stable APIs in 3-5.",
+      "gate": "Signed iOS/Android builds install and complete core flows on physical phones.",
+      "tasks": [
+        {
+          "id": "6.1",
+          "name": "Mobile architecture decision",
+          "due": "2026-10-12",
+          "how": "Prove authentication, native push, deep links and ad SDK compatibility before choosing the shared-client approach.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "6.2",
+          "name": "App shells and secure sessions",
+          "due": "2026-11-06",
+          "how": "Build native navigation and secure sign-in/session storage around the existing Rail Social backend.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "6.3",
+          "name": "Camera, photos and native sharing",
+          "due": "2026-11-09",
+          "how": "Connect phone media selection and share sheets with permissions, progress and recovery from cancelled actions.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "6.4",
+          "name": "Native push and app links",
+          "due": "2026-11-10",
+          "how": "Deliver iOS/Android alerts and open the right screen from a cold start or expired session.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "6.5",
+          "name": "Offline and error recovery",
+          "due": "2026-11-12",
+          "how": "Show connection state, preserve safe drafts and prevent duplicate writes after reconnecting.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "6.6",
+          "name": "Signed device-test builds",
+          "due": "2026-11-13",
+          "how": "Configure app IDs, certificates and builds; verify accessibility, crashes and core flows on both platforms.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "title": "Ads and paid room plans",
+      "due": "2026-11-20",
+      "depends": "After 6; billing/SDK feasibility should be checked during the Oct 12 spike.",
+      "gate": "Test ads and sandbox purchases work; rights and privacy choices remain correct across devices.",
+      "tasks": [
+        {
+          "id": "7.1",
+          "name": "In-app ad placements",
+          "due": "2026-11-14",
+          "how": "Integrate test ad units into selected browsing screens while keeping account and private-rail tasks clear.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "7.2",
+          "name": "Consent and ad controls",
+          "due": "2026-11-16",
+          "how": "Add required consent/tracking choices, frequency limits, app-ads.txt and a remote switch to turn ads off.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "7.3",
+          "name": "Free, Standard and Premium rights",
+          "due": "2026-11-17",
+          "how": "Define plan limits and enforce the correct room capabilities on the server; final prices remain configurable.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "7.4",
+          "name": "Store billing and purchase validation",
+          "due": "2026-11-18",
+          "how": "Implement applicable platform purchase flows and server-side receipt validation before granting paid access.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "7.5",
+          "name": "Renewal, restore and cancellation",
+          "due": "2026-11-19",
+          "how": "Keep entitlements correct after renewals, refunds, cancellations and restored purchases.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "7.6",
+          "name": "Labeled sponsor placement controls",
+          "due": "2026-11-20",
+          "how": "Let authorized admins configure clearly labeled in-product sponsor slots with dates and an off switch.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "title": "Store-ready release and operations",
+      "due": "2026-11-25",
+      "depends": "After 1-7. Publisher verification and required platform testing run in parallel.",
+      "gate": "A releasable build and complete submission package are ready; approval remains external.",
+      "tasks": [
+        {
+          "id": "8.1",
+          "name": "Regression and permission audit",
+          "due": "2026-11-21",
+          "how": "Exercise accounts, rails, rooms, events, media, notifications and purchases with authorized test accounts.",
+          "status": "partial",
+          "completed": false,
+          "progress": "The 2.3 web release passed 48 automated tests, local API/browser checks and builds; the timestamp update also passed build/browser checks. Final cross-product acceptance remains after native apps, events and purchases exist."
+        },
+        {
+          "id": "8.2",
+          "name": "Performance and accessibility audit",
+          "due": "2026-11-23",
+          "how": "Fix launch-blocking slow paths, crash cases, screen-reader issues and poor-connection behavior.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "8.3",
+          "name": "Production monitoring and rollback",
+          "due": "2026-11-24",
+          "how": "Connect error/delivery alerts, usage limits and a proven restore/rollback procedure.",
+          "status": "partial",
+          "completed": false,
+          "progress": "Staged production builds, promotion and live checks are in use. Operational alerts, usage limits and a proven restore/rollback exercise remain."
+        },
+        {
+          "id": "8.4",
+          "name": "Store submission packages",
+          "due": "2026-11-25",
+          "how": "Prepare signed binaries, accurate privacy/Data Safety answers, age ratings, screenshots and reviewer access.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "8.5",
+          "name": "Release-candidate sign-off",
+          "due": "2026-11-25",
+          "how": "Record test evidence and zero unresolved critical defects; keep live ads off until required approval.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "title": "Complete the advanced room product",
+      "due": "2026-12-18",
+      "depends": "After 8. Extend stable core apps; reuse permissions, plans and release checks.",
+      "gate": "All planned features pass; the advanced update is packaged for release, with no critical open defects.",
+      "tasks": [
+        {
+          "id": "9.1",
+          "name": "Room live video",
+          "due": "2026-12-04",
+          "how": "Add host-controlled room broadcasts with access checks, mute/end controls and viewer permissions.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "9.2",
+          "name": "Video replay and retention",
+          "due": "2026-12-07",
+          "how": "Provide permissioned replay where enabled, with storage limits, removal and recording controls.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "9.3",
+          "name": "Room and service analytics",
+          "due": "2026-12-09",
+          "how": "Give hosts scoped room usage summaries and admins operational health, without exposing private content.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "9.4",
+          "name": "Room branding and configuration",
+          "due": "2026-12-11",
+          "how": "Store per-room logos, colors and enabled features while keeping room data and permissions isolated.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "9.5",
+          "name": "Branded app build pipeline",
+          "due": "2026-12-16",
+          "how": "Generate room-specific mobile packages from shared code; each public listing still needs its own eligible review.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        },
+        {
+          "id": "9.6",
+          "name": "Full-product acceptance and update",
+          "due": "2026-12-18",
+          "how": "Re-test all stages together, document limitations and package the complete feature set for deployment/submission.",
+          "status": "planned",
+          "completed": false,
+          "progress": "Not yet verified as implemented."
+        }
+      ]
+    }
+  ],
+  "external": [
+    {
+      "id": "E1",
+      "name": "Provider and publisher access",
+      "due": "2026-10-09",
+      "how": "Start domain/sender, Apple/Google, billing, ad and video-provider setup. Approval delays may move dependent dates.",
+      "type": "External setup target",
+      "status": "partial",
+      "completed": false,
+      "progress": "Email domain/sender setup is complete. Apple/Google publisher, billing, ad and video-provider setup has not been verified."
+    },
+    {
+      "id": "E2",
+      "name": "Required store testing/access",
+      "due": "2026-11-27",
+      "how": "Complete platform-required testing and production-access checks before submission; no recruitment plan is included.",
+      "type": "External eligibility target",
+      "status": "planned",
+      "completed": false,
+      "progress": "External milestone not yet completed."
+    },
+    {
+      "id": "E3",
+      "name": "Submit initial apps",
+      "due": "2026-11-27",
+      "how": "Submit both eligible store packages once publisher and testing requirements have cleared.",
+      "type": "Submission target",
+      "status": "planned",
+      "completed": false,
+      "progress": "External milestone not yet completed."
+    },
+    {
+      "id": "E4",
+      "name": "Public store release",
+      "due": "2026-12-04",
+      "how": "Publish approved iOS and Android builds; actual timing depends on Apple and Google review.",
+      "type": "External approval goal",
+      "status": "planned",
+      "completed": false,
+      "progress": "External milestone not yet completed."
+    },
+    {
+      "id": "E5",
+      "name": "Live ad activation",
+      "due": "2026-12-07",
+      "how": "Link published apps, pass required AdMob readiness checks and verify controlled live ad serving.",
+      "type": "External approval goal",
+      "status": "planned",
+      "completed": false,
+      "progress": "External milestone not yet completed."
+    },
+    {
+      "id": "E6",
+      "name": "Publish the full-feature update",
+      "due": "2026-12-23",
+      "how": "Deploy the accepted full build and publish approved mobile updates; branded room listings remain individually reviewed.",
+      "type": "External approval goal",
+      "status": "planned",
+      "completed": false,
+      "progress": "External milestone not yet completed."
+    }
+  ],
+  "baseline": [
+    "Accounts, profiles and private rails",
+    "People search, following and mutual friends",
+    "Rail/room invitation handoffs and in-app invite count",
+    "Posts, photos, comments and blocking",
+    "Hand review and built-in equity calculator (Spot Solver entry replaced in 2.3)",
+    "Room profiles, host controls and follower conversations",
+    "League seasons, schedules, manual results and standings",
+    "Manual tournament-update posts"
+  ],
+  "updated": "2026-10-09",
+  "current_release": "2.5",
+  "last_verified_commit": "89f19f2148b5a4fac48432a036ca7a52e56439b2",
+  "release_additions": [
+    {
+      "name": "Green and white interface",
+      "how": "Updated green/white layout is deployed.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Easy rail creation and member suggestions",
+      "how": "Create a rail is prominent and opens the searchable invitation list immediately.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Invitation notifications",
+      "how": "Invitations appear in Notifications and People before the recipient joins; opted-in devices are queued for push.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Join rail subscriptions",
+      "how": "Logo buttons follow a post or tournament/cash session without granting private-group access.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Activity notification inbox",
+      "how": "Stack changes, tags, replies, likes, follows and followed-player sessions create permission-checked alerts.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Post and comment editing/deletion",
+      "how": "Authors can edit/delete; room hosts may remove content but cannot rewrite another author.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Automatic reply tags",
+      "how": "Replies insert a removable @tag; removing the tag suppresses the mention notification.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Optional hand-review and update fields",
+      "how": "No individual field is required. Twenty-seven isolated saves verified one-item submissions. Completely empty posts remain blocked.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Quick stack updates and photo placement",
+      "how": "Chips, current big blind and players left are first; photos follow, then other details.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Built-in equity calculator",
+      "how": "The equity calculator replaces the Spot Solver entry; tied hands contribute correctly to equity.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    },
+    {
+      "name": "Post and comment timestamps",
+      "how": "All five post/comment surfaces show date, year, local time and time zone; edits retain the original posting time.",
+      "status": "complete",
+      "completed_at": "2026-10-09"
+    }
+  ],
+  "verification_note": "Status uses release records and prior exact deployment verification. Public site/notification smoke checks passed Oct 9; a fresh Vercel management API inspection returned 403, so the recorded deployment ID was not independently re-inspected in this documentation pass.",
+  "status_updated": "2026-10-11"
+}
