@@ -1,6 +1,6 @@
 # Rail Social 2.5.1 — stack units and ordered actions
 
-Status: implemented and tested; production deployment pending.
+Status: deployed to https://railsupport.vercel.app on October 11, 2026.
 
 ## Changes
 
@@ -24,4 +24,6 @@ This is a hand-history recorder, not a complete poker betting/rules engine: it d
 
 ## Deployment
 
-Pending. Previous application release: `141d949` / `dpl_AoGreewpE5W8u3S9SVEHRrEz1y7z`.
+Code commit: `678ca2148c64cc87939841139be26de85fea0661`. Deployment: `dpl_2N19ff4UUB4E5sa6CiwyuWh3jEpL`; immutable URL: https://railsupport-jhwwwfwcj-rage-factory1.vercel.app. Cloud build passed, staged home returned HTTP 200 and private-rail API returned the expected anonymous HTTP 401. Promoted successfully to the existing production project.
+
+Previous application release: `141d949` / `dpl_AoGreewpE5W8u3S9SVEHRrEz1y7z`.

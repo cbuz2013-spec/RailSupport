@@ -626,7 +626,7 @@
     "Manual tournament-update posts"
   ],
   "updated": "2026-10-09",
-  "current_release": "2.5",
+  "current_release": "2.5.1",
   "last_verified_commit": "89f19f2148b5a4fac48432a036ca7a52e56439b2",
   "release_additions": [
     {
