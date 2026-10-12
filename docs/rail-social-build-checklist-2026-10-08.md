@@ -1,6 +1,6 @@
 # Rail Social - build checklist and completion goals
 
-**Issued October 8; status updated October 11, 2026. Current release: 2.5.5. All goals are end of day, America/New_York, in 2026.**
+**Issued October 8; status updated October 11, 2026. Current release: 2.5.6. All goals are end of day, America/New_York, in 2026.**
 
 This is the build-only plan: features, dependencies, implementation order and completion goals. It excludes acquisition, recruitment, ambassadors, influencers, marketing budgets and participation targets. Ads, paid plans and sponsor-slot controls are included only as product features to build.
 
@@ -66,6 +66,10 @@ Fixed the feed crash caused by empty board-card slots introduced with street-by-
 ### Release 2.5.5 — remove the creation banner
 
 Removed the large rail-creation banner from every page. The existing New rail button remains only in the My Rails header. Local/cloud builds, TypeScript and live deployment/script checks passed. [Release evidence](release-2.5.5-remove-rail-banner.md).
+
+### Release 2.5.6 — compact card picker
+
+Each full suit now uses a seven-card row followed by a six-card row across hand review and the equity calculator. Local/cloud builds, TypeScript and live CSS checks passed. [Release evidence](release-2.5.6-compact-card-picker.md).
 
 ### Implementation sequence
 
