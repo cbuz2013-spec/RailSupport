@@ -1,6 +1,6 @@
 # Rail Social — current build roadmap
 
-Updated **October 11, 2026**. **Current deployed release: 2.5.6 — each full suit uses two rows of seven and six cards. Removed the large rail-creation banner everywhere; the New rail button remains on My Rails. Retains the saved-hand loading fix, one hand-entry screen per street, simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 11, 2026**. **Current deployed release: 2.5.7 — repaired duplicated hand-entry controls, verified three-card flop entry and repeat actions after raises; each full suit uses two rows of seven and six cards. Removed the large rail-creation banner everywhere; the New rail button remains on My Rails. Retains the saved-hand loading fix, one hand-entry screen per street, simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
@@ -69,6 +69,11 @@ Deployed and verified October 11. [Release record](docs/rail-social-2.4-release-
 - [x] **Hand-review presentation** — Event/cash stakes first, stacks in BB, remaining/total players and level, followed by your hand and each opponent's cards, position and equity.
 - [x] **Street frames** — Swipe left/right through preflop, flop, turn and river, each with its own equities and obvious tabs/arrows/swipe guidance.
 - [x] **Light/dark toggle** — Top of every page; green-and-white light mode and a readable dark green poker-felt theme, with the selection remembered.
+
+## Completed release 2.5.7 — October 11
+
+- [x] **Repair street entry** — Give the card picker and action editor distinct identities on each street, preventing duplicated/stale controls when cards or actions change. Flop remains capped at three cards; turn and river each use one.
+- [x] **Interaction and persistence checks** — 49 tests passed, including three new React DOM tests that failed before the fix, repeated raises/calls/Undo, board editing/navigation, and isolated database save/edit with photos. Local/cloud builds and live script checks passed. [Release evidence](docs/release-2.5.7-hand-entry-repair.md).
 
 ## Completed release 2.5.6 — October 11
 

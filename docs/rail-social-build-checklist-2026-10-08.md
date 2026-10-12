@@ -1,6 +1,6 @@
 # Rail Social - build checklist and completion goals
 
-**Issued October 8; status updated October 11, 2026. Current release: 2.5.6. All goals are end of day, America/New_York, in 2026.**
+**Issued October 8; status updated October 11, 2026. Current release: 2.5.7. All goals are end of day, America/New_York, in 2026.**
 
 This is the build-only plan: features, dependencies, implementation order and completion goals. It excludes acquisition, recruitment, ambassadors, influencers, marketing budgets and participation targets. Ads, paid plans and sponsor-slot controls are included only as product features to build.
 
@@ -70,6 +70,10 @@ Removed the large rail-creation banner from every page. The existing New rail bu
 ### Release 2.5.6 — compact card picker
 
 Each full suit now uses a seven-card row followed by a six-card row across hand review and the equity calculator. Local/cloud builds, TypeScript and live CSS checks passed. [Release evidence](release-2.5.6-compact-card-picker.md).
+
+### Release 2.5.7 — hand-entry repair
+
+Fixed duplicate street card/action controls. Three new component interaction tests reproduced the problem before the fix and pass afterward, covering a three-card flop, single turn/river cards, repeat raises/calls, Undo and street navigation. All 49 selected regression/integration tests and local/cloud builds passed. [Release evidence](release-2.5.7-hand-entry-repair.md).
 
 ### Implementation sequence
 

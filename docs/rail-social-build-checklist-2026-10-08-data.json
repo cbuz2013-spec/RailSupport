@@ -626,7 +626,7 @@
     "Manual tournament-update posts"
   ],
   "updated": "2026-10-09",
-  "current_release": "2.5.6",
+  "current_release": "2.5.7",
   "last_verified_commit": "89f19f2148b5a4fac48432a036ca7a52e56439b2",
   "release_additions": [
     {
@@ -696,6 +696,6 @@
       "completed_at": "2026-10-09"
     }
   ],
-  "verification_note": "Release 2.5.6: local/cloud builds and TypeScript passed; canonical live domain confirmed READY deployment dpl_QPeZrZEhgZQ3nhtNaAe4KuionHya, homepage HTTP 200 and published CSS verified seven columns at every breakpoint. No new interactive browser or physical-device test is claimed after the prior automatic approval block. Broader task completion retains its existing release evidence and limitations.",
+  "verification_note": "Release 2.5.7: 49 selected tests passed, including three React DOM interaction regressions reproduced before the fix, plus local/cloud builds. Canonical live domain confirmed READY deployment dpl_B3Fo3CnYL9fJbXyEe2SUgUoAPrdj, homepage HTTP 200 and corrected component identities in published JavaScript. In-memory DOM tests are not a physical-device/browser session; that retest remains outstanding after the earlier browser approval block. Broader task completion retains its existing evidence and limitations.",
   "status_updated": "2026-10-11"
 }
