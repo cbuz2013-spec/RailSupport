@@ -1,6 +1,6 @@
 # Rail Social - build checklist and completion goals
 
-**Issued October 8; status updated October 11, 2026. Current release: 2.5.3. All goals are end of day, America/New_York, in 2026.**
+**Issued October 8; status updated October 11, 2026. Current release: 2.5.4. All goals are end of day, America/New_York, in 2026.**
 
 This is the build-only plan: features, dependencies, implementation order and completion goals. It excludes acquisition, recruitment, ambassadors, influencers, marketing budgets and participation targets. Ads, paid plans and sponsor-slot controls are included only as product features to build.
 
@@ -58,6 +58,10 @@ My Rails, So sick and independent street reactions, reaction attribution, game-s
 ### Release 2.5.1 — stack entry and action buttons
 
 Delivered: one Chips/BB hero-stack entry in step 3, opponent stacks retained in step 4, guided street actions with optional sizing, turn order, explicit heads-up, all-in flags and Undo. 88 tests and local/cloud builds passed; browser verification was blocked. [Release evidence](release-2.5.1-hand-actions.md).
+
+### Release 2.5.4 — saved-hand loading repair
+
+Fixed the feed crash caused by empty board-card slots introduced with street-by-street entry. Twenty focused tests, all seven saved PhabFive hand component renders, and local/cloud production builds passed. The live domain is verified against the promoted deployment; interactive phone/browser retesting remains outstanding. [Release evidence](release-2.5.4-saved-hand-crash.md).
 
 ### Implementation sequence
 

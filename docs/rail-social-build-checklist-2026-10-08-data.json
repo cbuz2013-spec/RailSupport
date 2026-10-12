@@ -626,7 +626,7 @@
     "Manual tournament-update posts"
   ],
   "updated": "2026-10-09",
-  "current_release": "2.5.3",
+  "current_release": "2.5.4",
   "last_verified_commit": "89f19f2148b5a4fac48432a036ca7a52e56439b2",
   "release_additions": [
     {
@@ -696,6 +696,6 @@
       "completed_at": "2026-10-09"
     }
   ],
-  "verification_note": "Status uses release records and prior exact deployment verification. Public site/notification smoke checks passed Oct 9; a fresh Vercel management API inspection returned 403, so the recorded deployment ID was not independently re-inspected in this documentation pass.",
+  "verification_note": "Release 2.5.4: 20 focused tests, all seven saved PhabFive hand static component renders, and local/cloud builds passed. Vercel CLI inspection of the canonical live domain confirmed READY deployment dpl_Bi1gUQBTLeGZhrKp4FX4BK4SDFcU; public homepage HTTP 200. Interactive browser access was blocked by automatic approval review; phone retest remains outstanding. Broader task completion retains its existing evidence and limitations.",
   "status_updated": "2026-10-11"
 }
