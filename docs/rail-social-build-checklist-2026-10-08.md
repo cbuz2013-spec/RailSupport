@@ -1,6 +1,6 @@
 # Rail Social - build checklist and completion goals
 
-**Issued October 8; status updated October 11, 2026. Current release: 2.5.1. All goals are end of day, America/New_York, in 2026.**
+**Issued October 8; status updated October 11, 2026. Current release: 2.5.2. All goals are end of day, America/New_York, in 2026.**
 
 This is the build-only plan: features, dependencies, implementation order and completion goals. It excludes acquisition, recruitment, ambassadors, influencers, marketing budgets and participation targets. Ads, paid plans and sponsor-slot controls are included only as product features to build.
 
@@ -109,7 +109,7 @@ Delivered: one Chips/BB hero-stack entry in step 3, opponent stacks retained in 
 - [ ] **3.3 Room administration - Oct 19.** Complete host removal, room access controls and pinned announcements while preserving owner permissions. **Status Oct 11:** Room transfer, accepted-host checks and pinned announcements implemented alongside existing owner/host permissions. Full new room-administration browser walkthrough remains to verify.
 - [ ] **3.4 Post and photo management - Oct 20.** Finish supported edit/delete flows, image orientation/compression and useful upload retry messages. **Status Oct 11:** Post/photo edits and deletion retained; orientation-aware compression and unsupported-format retry guidance deployed. Physical-device orientation/format and retry checks remain; maximum three photos per private-rail post.
 - [x] **3.5 League administration finish - Oct 21.** Add missing time-zone handling, roster removal, season archive and correction history around existing schedules/results. **Status Oct 11:** League time zones with DST validation, soft roster removal, archived seasons and correction history deployed and tested. Host-entered points and shared ranks retained.
-- [ ] **3.6 Mobile web and accessibility finish - Oct 22.** Fix keyboard, focus, empty/loading/error states and small-screen layouts across existing social and solver flows. **Status Oct 11:** My Rails navigation, optional ten-screen review, table frames and accessible reaction controls deployed. A 390-pixel local flow passed; comprehensive keyboard/screen-reader/device audit remains.
+- [ ] **3.6 Mobile web and accessibility finish - Oct 22.** Fix keyboard, focus, empty/loading/error states and small-screen layouts across existing social and solver flows. **Status Oct 11:** My Rails navigation, optional nine-screen review with cards/action together per street (2.5.2), table frames and accessible reaction controls deployed. Current static render checks passed; the earlier 2.5 flow passed a 390-pixel check, but interactive 2.5.2 verification is blocked and the comprehensive keyboard/screen-reader/device audit remains.
 
 **Done when:** Members and hosts can manage their own content, invitations and rooms correctly.
 

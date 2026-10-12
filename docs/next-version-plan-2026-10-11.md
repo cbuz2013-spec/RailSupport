@@ -36,18 +36,17 @@ All detail fields and screens are optional and skippable. Back retains entries. 
 | --- | --- |
 | 1. Game type | What were you playing? Tournament or Cash Game. |
 | 2. Event or game details | Tournament: name, location and starting stack. Cash: location, stakes and buy-in. Reuse linked session details where available. |
-| 3. Current situation | Tournament: blinds/ante, level, your current stack in BB, players remaining and total players who started. Cash: current stack in BB and any changed blinds/stakes; no tournament-only fields. |
-| 4. Players | Your hole cards and position first, then each opponent's cards, position and stack. Add/remove opponents, up to four. Keep your current stack editable here without duplicating it as a separate value. |
-| 5. Board | Separate Flop, Turn and River card slots on one screen. Each street may be left blank. |
-| 6. Flop action | Optional action entry for the flop. |
-| 7. Turn action | Optional action entry for the turn. |
-| 8. River action | Optional action entry for the river. |
-| 9. Context and notes | Free-text context, extra notes, question, optional images and hidden result. |
-| 10. Review and publish | Preview the post's table frames, then publish. |
+| 3. Current situation | Optional blinds/ante, level, remaining/total players where relevant; one hero stack with Chips / Big blinds selector. No duplicate hero-stack editor or conversion panel. |
+| 4. Preflop | Your hole cards and position, opponent hands/positions/stacks (up to four), and preflop action on one screen. |
+| 5. Flop | Up to three flop cards and flop action on one screen. |
+| 6. Turn | Turn card and turn action, with the earlier board visible. |
+| 7. River | River card and river action, with the earlier board visible. |
+| 8. Context and notes | Free-text context, extra notes, question, optional images and hidden result. |
+| 9. Review and publish | Preview the post's table frames, then publish. |
 
-Keep the existing optional preflop action data. A dedicated skippable **Preflop action** screen before Flop action is recommended for the next discussion; the user has not yet confirmed that additional screen.
+The user confirmed this combined street-entry order after release 2.5.1; it is deployed in 2.5.2. Existing Check/Bet/Call/Fold/Raise controls remain ordered by entered seats, with notes and sizes optional.
 
-Equities remain available inside the street frames when enough cards are known, so a mandatory separate equity screen does not interrupt this sequence. Missing values stay unknown. Direct BB entry should avoid unnecessary chip-conversion fields; chip/currency conversion remains available with explicit compatible units and a valid big blind.
+Equities remain inside the published street frames when enough cards are known. Missing values stay unknown. A skipped flop or turn never shifts a later card into an earlier slot; separate optional board metadata preserves those gaps. Legacy saved hands and calculator imports remain supported. See [2.5.2 release evidence](release-2.5.2-street-entry.md).
 
 ## Equity calculator to hand review
 

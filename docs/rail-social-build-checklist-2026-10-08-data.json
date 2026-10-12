@@ -187,7 +187,7 @@
           "how": "Fix keyboard, focus, empty/loading/error states and small-screen layouts across existing social and solver flows.",
           "status": "partial",
           "completed": false,
-          "progress": "My Rails navigation, optional ten-screen review, table frames and accessible reaction controls deployed. A 390-pixel local flow passed; comprehensive keyboard/screen-reader/device audit remains."
+          "progress": "My Rails navigation, optional nine-screen review with cards/action together per street (2.5.2), table frames and accessible reaction controls deployed. Current static render checks passed; the earlier 2.5 flow passed a 390-pixel check, but interactive 2.5.2 verification is blocked and the comprehensive keyboard/screen-reader/device audit remains."
         }
       ]
     },
@@ -626,7 +626,7 @@
     "Manual tournament-update posts"
   ],
   "updated": "2026-10-09",
-  "current_release": "2.5.1",
+  "current_release": "2.5.2",
   "last_verified_commit": "89f19f2148b5a4fac48432a036ca7a52e56439b2",
   "release_additions": [
     {

@@ -1,6 +1,6 @@
 # Rail Social — current build roadmap
 
-Updated **October 11, 2026**. **Current deployed release: 2.5.1 — simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 11, 2026**. **Current deployed release: 2.5.2 — one hand-entry screen per street, simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
@@ -69,6 +69,13 @@ Deployed and verified October 11. [Release record](docs/rail-social-2.4-release-
 - [x] **Hand-review presentation** — Event/cash stakes first, stacks in BB, remaining/total players and level, followed by your hand and each opponent's cards, position and equity.
 - [x] **Street frames** — Swipe left/right through preflop, flop, turn and river, each with its own equities and obvious tabs/arrows/swipe guidance.
 - [x] **Light/dark toggle** — Top of every page; green-and-white light mode and a readable dark green poker-felt theme, with the selection remembered.
+
+## Completed release 2.5.2 — October 11
+
+- [x] **One entry screen per street** — Preflop hands and action together, followed by flop cards/action, turn card/action and river card/action. The full optional flow now has nine screens.
+- [x] **Optional board gaps** — Skipping or clearing an earlier street preserves later cards in their correct slots. No missing cards or later-street equities are invented.
+- [x] **Saved hands and sharing** — Retain step-3 hero stack units, step-4 opponent stacks, photos, hidden results, action controls and calculator imports. Existing hands load without migration.
+- [x] **Test and release** — 94 automated tests, static component render checks and local/cloud production builds passed. Code `3dc5ad8` is live; browser interaction remains unverified because automatic approval review blocked the local preview. [Release evidence](docs/release-2.5.2-street-entry.md).
 
 ## Completed release 2.5.1 — October 11
 
