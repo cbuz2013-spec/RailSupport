@@ -1,6 +1,6 @@
 # Rail Social - build checklist and completion goals
 
-**Issued October 8; status updated October 11, 2026. Current release: 2.5.2. All goals are end of day, America/New_York, in 2026.**
+**Issued October 8; status updated October 11, 2026. Current release: 2.5.3. All goals are end of day, America/New_York, in 2026.**
 
 This is the build-only plan: features, dependencies, implementation order and completion goals. It excludes acquisition, recruitment, ambassadors, influencers, marketing budgets and participation targets. Ads, paid plans and sponsor-slot controls are included only as product features to build.
 
