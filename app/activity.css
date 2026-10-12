@@ -8,3 +8,8 @@
 .create-rail-banner{display:flex;align-items:center;justify-content:space-between;gap:18px;background:#e8f5ed;border:1px solid #b6d7c3;border-radius:14px;padding:18px 20px;margin-bottom:24px}.create-rail-banner strong{display:block;font-size:17px;color:#24583f}.create-rail-banner span{display:block;font-size:12px;margin-top:5px;color:#496b58}.create-rail-banner .primary{white-space:nowrap;flex-shrink:0}@media(max-width:600px){.create-rail-banner{align-items:stretch;flex-direction:column;gap:12px;padding:16px}.create-rail-banner .primary{justify-content:center;width:100%;font-size:15px}}
 
 .reaction-sick{display:inline-flex;flex-direction:column;align-items:center;line-height:1}.reaction-sick b{font-size:9px;background:var(--surface,#fff);border:1px solid currentColor;border-radius:6px;padding:2px;white-space:nowrap}.reaction-sick span{font-size:23px}.reaction-people{padding:16px;border:1px solid var(--border,#88a99a);border-radius:12px;margin:8px 0;background:var(--surface,#fff);max-height:260px;overflow:auto}.reaction-who{font-size:11px;display:block;margin-top:4px}.reaction-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+/* Keep rail creation on the felt palette without changing the light theme. */
+[data-theme=dark] .create-rail-banner{background:var(--surface);border-color:var(--line);--primary:#286448;--primary-hover:#327b59;--on-primary:var(--text)}
+[data-theme=dark] .create-rail-banner strong{color:var(--text)}
+[data-theme=dark] .create-rail-banner span{color:var(--muted)}
