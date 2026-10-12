@@ -10,7 +10,7 @@ const rankNames:Record<string,string>={A:'Ace',K:'King',Q:'Queen',J:'Jack',T:'10
 export function EquityCards({value,count,slots}:{value:string;count:2|3|4|5;slots?:string[]}){
  const cards=slots??value.trim().split(/\s+/).filter(Boolean);
  return <span className="equity-cards">{Array.from({length:count},(_,index)=>{
-  const card=cards[index],rank=card?.[0].toUpperCase(),suit=card?.[1]?.toLowerCase();
+  const card=cards[index],rank=card?.[0]?.toUpperCase(),suit=card?.[1]?.toLowerCase();
   return <span key={index} className={`equity-mini-card${!card?' is-hidden':/[hd]/.test(suit||'')?' is-red':''}`} aria-label={card?`${rankNames[rank]||rank} of ${suitNames[suit]}`:'Card not selected'}><b aria-hidden="true">{card?(rank==='T'?'10':rank):'?'}</b><span aria-hidden="true">{card?suits[suit]:'♠'}</span></span>;
  })}</span>;
 }
