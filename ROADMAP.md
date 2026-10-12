@@ -1,6 +1,6 @@
 # Rail Social — current build roadmap
 
-Updated **October 11, 2026**. **Current deployed release: 2.5.4 — fixed the saved-hand feed crash caused by blank board-card slots, retaining the My Rails-only creation banner with dark felt styling, one hand-entry screen per street, simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 11, 2026**. **Current deployed release: 2.5.5 — removed the large rail-creation banner everywhere; the New rail button remains on My Rails. Retains the saved-hand loading fix, one hand-entry screen per street, simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
@@ -69,6 +69,11 @@ Deployed and verified October 11. [Release record](docs/rail-social-2.4-release-
 - [x] **Hand-review presentation** — Event/cash stakes first, stacks in BB, remaining/total players and level, followed by your hand and each opponent's cards, position and equity.
 - [x] **Street frames** — Swipe left/right through preflop, flop, turn and river, each with its own equities and obvious tabs/arrows/swipe guidance.
 - [x] **Light/dark toggle** — Top of every page; green-and-white light mode and a readable dark green poker-felt theme, with the selection remembered.
+
+## Completed release 2.5.5 — October 11
+
+- [x] **Remove the large creation banner** — Removed from every view, including its unused light/dark styling. The existing New rail button stays in the My Rails page header only.
+- [x] **Build and deploy** — Local/cloud production builds and TypeScript passed. Canonical live deployment is READY; public scripts show 2.5.5 and New rail without the banner. [Release evidence](docs/release-2.5.5-remove-rail-banner.md).
 
 ## Completed release 2.5.4 — October 11
 

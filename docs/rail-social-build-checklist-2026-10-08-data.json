@@ -626,7 +626,7 @@
     "Manual tournament-update posts"
   ],
   "updated": "2026-10-09",
-  "current_release": "2.5.4",
+  "current_release": "2.5.5",
   "last_verified_commit": "89f19f2148b5a4fac48432a036ca7a52e56439b2",
   "release_additions": [
     {
@@ -696,6 +696,6 @@
       "completed_at": "2026-10-09"
     }
   ],
-  "verification_note": "Release 2.5.4: 20 focused tests, all seven saved PhabFive hand static component renders, and local/cloud builds passed. Vercel CLI inspection of the canonical live domain confirmed READY deployment dpl_Bi1gUQBTLeGZhrKp4FX4BK4SDFcU; public homepage HTTP 200. Interactive browser access was blocked by automatic approval review; phone retest remains outstanding. Broader task completion retains its existing evidence and limitations.",
+  "verification_note": "Release 2.5.5: local/cloud builds and TypeScript passed; canonical live domain confirmed READY deployment dpl_5vUAg6MZbNZVk2aJ9KZu9uZLw86V, homepage HTTP 200, and published scripts contain version 2.5.5 and New rail without the banner. No new interactive browser test is claimed. Prior release 2.5.4: 20 focused tests, all seven saved PhabFive hand static component renders, and local/cloud builds passed. Vercel CLI inspection of the canonical live domain confirmed READY deployment dpl_Bi1gUQBTLeGZhrKp4FX4BK4SDFcU; public homepage HTTP 200. Interactive browser access was blocked by automatic approval review; phone retest remains outstanding. Broader task completion retains its existing evidence and limitations.",
   "status_updated": "2026-10-11"
 }
