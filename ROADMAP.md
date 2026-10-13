@@ -1,8 +1,20 @@
 # Rail Social — current build roadmap
 
-Updated **October 11, 2026**. **Current deployed release: 2.5.7 — repaired duplicated hand-entry controls, verified three-card flop entry and repeat actions after raises; each full suit uses two rows of seven and six cards. Removed the large rail-creation banner everywhere; the New rail button remains on My Rails. Retains the saved-hand loading fix, one hand-entry screen per street, simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 13, 2026**. **Current deployed release: 2.5.7 — repaired duplicated hand-entry controls, verified three-card flop entry and repeat actions after raises; each full suit uses two rows of seven and six cards. Removed the large rail-creation banner everywhere; the New rail button remains on My Rails. Retains the saved-hand loading fix, one hand-entry screen per street, simpler stack units and ordered actions, plus My Rails, So sick and street reactions, poker-table hand reviews, account/safety tools and expanded community controls.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
+
+## October 13 release — implemented, publication in progress
+
+**Build and production deployment authorized October 13. Implemented for version 2.6; publication is in progress.** Full requirements: [next build list](docs/next-build-list-2026-10-13.md).
+
+- [x] **Separate posting actions** — Within a private rail, **New Post** offers only text and pictures. Keep **Tournament Update** and **Discuss a Hand** as separate specialized flows. Retain the game-starting action and rename **Cash Game Rail** to **New Game**, for starting a game within the current private rail.
+- [x] **Simpler tournament updates** — Put the written update first, optional image attachment second, then optional chips, current big blind, players left and players started; display counts such as **24 out of 73**. Keep Status. Use the current rail and remove rail-selection/new-rail controls and the bottom event/game/name fields from this update form; keep the separate **New Game** action. Use large, clearly labeled buttons and an easy mobile layout.
+
+- [x] **Quick tournament-post controls** — Keep **Update Stack** limited to chips, current big blind, players left and players started. Add an adjacent stage button showing **Registration**, **Reg Closed**, **In the Money** or **Final Table**, then a **Status** control for **Still Playing** or **Busted**, with optional winnings when busted. Use large, easy-to-tap controls and display remaining/starting players as **24 out of 73**.
+
+- [x] **Start Tournament and live follower chat** — **Start Tournament** offers optional event information, buy-in, starting stack, location and prize guarantee, then automatically creates a dedicated tournament rail and asks whom to invite. Include the stack/blind/stage/status controls. Only the creating player publishes updates and changes tournament information; followers can comment. Add a separate real-time chat, preferably on the right on desktop with an accessible phone layout, for discussion and banter. Support ongoing engagement and future ad-placement opportunities.
+- [x] **Invite-code signup and automatic follows** — A tournament invite code brings new users through a simple signup form, automatically joins them to the tournament rail and follows its player and tournament. When they join, the inviting player automatically follows them back. Preserve the invitation through signup/sign-in and support existing users without duplicate accounts, memberships or follows.
 
 ## Completed foundation
 

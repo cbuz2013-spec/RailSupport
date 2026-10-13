@@ -1,34 +1,32 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useState} from 'react';
 import Image from 'next/image';
 import {X} from 'lucide-react';
 import type {Hand,Post,Tournament} from '@/lib/types';
 import {postSchema} from '@/lib/validation';
-import {activityRequest,activeMentions,type Mention} from './activity-client';
+import {activeMentions,type Mention} from './activity-client';
 import MentionInput from './mention-input';
 import HandReviewFlow from './hand-review-flow';
 import {REVIEW_SHARE_STEP,withReview} from '@/lib/hand-review';
 const emptyHand:Hand={game:'NL Hold’em',stakes:'',position:'',stack:'',hero:'',board:'',pot:'',action:'',question:'',result:'',revealed:false};
+import {StackFields,StatusFields,countsOf,countValues} from './tournament-controls';
 import {resizePhoto} from '@/lib/photo-resize';
-export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSave,busy}:{groupId:string;initial?:Post;kind:'hand'|'update';mode:string;onSave:(data:Record<string,unknown>)=>Promise<boolean>;busy:boolean}){
- const [kind,setKind]=useState(initial?.kind||defaultKind),[body,setBody]=useState(initial?.body||''),[hand,setHand]=useState<Hand>(initial?.hand||emptyHand);
- const [chips,setChips]=useState(String(initial?.tournament?.chips??'')),[bigBlind,setBigBlind]=useState(String(initial?.tournament?.bigBlind??'')),[remaining,setRemaining]=useState(String(initial?.tournament?.remaining??''));
- const [event,setEvent]=useState(initial?.tournament?.event||''),[status,setStatus]=useState<Tournament['status']>(initial?.tournament?.status||'Playing');
- const [sessions,setSessions]=useState<{id:string;name:string;kind:string}[]>([]),[sessionChoice,setSessionChoice]=useState(initial?.sessionId||(defaultKind==='hand'?'':mode==='cash'?'new-cash':mode==='new-tournament'?'new-tournament':''));
+export default function PostComposer({groupId,initial,kind:defaultKind,mode,tournament:contextTournament,onSave,busy}:{groupId:string;tournament?:Tournament;initial?:Post;kind:'hand'|'update';mode:string;onSave:(data:Record<string,unknown>)=>Promise<boolean>;busy:boolean}){
+ const [kind]=useState(initial?.kind||defaultKind),[body,setBody]=useState(initial?.body||''),[hand,setHand]=useState<Hand>(initial?.hand||emptyHand);
+ const seed=initial?.tournament||contextTournament;
+ const showTournament=!!initial?.tournament||(!initial&&mode==='tournament');
+ const [counts,setCounts]=useState(countsOf(seed)),[status,setStatus]=useState<Tournament['status']>(seed?.status||'Playing'),[winnings,setWinnings]=useState(String(seed?.winnings??''));
  const [mentions,setMentions]=useState<Mention[]>([]),[images,setImages]=useState<string[]>([]),[keepImages,setKeepImages]=useState(Array.from({length:initial?.imageCount||0},(_,i)=>i));
  const [reviewStep,setReviewStep]=useState(0);
  const [photoBusy,setPhotoBusy]=useState(false),[error,setError]=useState('');
- useEffect(()=>{const c=new AbortController();activityRequest<{sessions:{id:string;name:string;kind:string}[]}>(undefined,{sessions:'1',groupId},c.signal).then(d=>{setSessions(d.sessions);if(!initial&&defaultKind!=='hand'&&mode==='tournament')setSessionChoice(d.sessions.find(s=>s.kind==='tournament')?.id||'new-tournament')}).catch(()=>{});return()=>c.abort()},[groupId,initial,mode,defaultKind]);
  async function photos(files:FileList|null){
   if(!files?.length)return;if(keepImages.length+images.length+files.length>3){setError('Use up to three photos.');return}setPhotoBusy(true);setError('');
   try{const loaded=await Promise.all(Array.from(files).map(resizePhoto));setImages(old=>[...old,...loaded])}catch(e){setError((e as Error).message)}finally{setPhotoBusy(false)}
  }
  async function submit(e:React.FormEvent){
-  e.preventDefault();if(kind==='hand'&&reviewStep!==REVIEW_SHARE_STEP)return;setError('');const number=(s:string)=>s.trim()===''?undefined:Number(s);
-  const startSession=sessionChoice==='new-tournament'?'tournament':sessionChoice==='new-cash'?'cash':undefined;
-  const hasStats=!!(chips||bigBlind||remaining||event||sessionChoice)||status!=='Playing';
-  const tournament=hasStats?{event,chips:number(chips),bigBlind:number(bigBlind),remaining:number(remaining),status,gameType:startSession||sessions.find(s=>s.id===sessionChoice)?.kind||initial?.tournament?.gameType||'tournament'}:undefined;
-  const parsed=postSchema.safeParse({groupId,kind,body,hand:kind==='hand'?withReview(hand,{}):undefined,tournament,images,keepImages,sessionId:startSession?undefined:sessionChoice||undefined,startSession,mentions:[...((initial as Post&{mentions?:string[]})?.mentions||[]),...activeMentions(body,mentions)]});
+  e.preventDefault();if(kind==='hand'&&reviewStep!==REVIEW_SHARE_STEP)return;setError('');
+  const tournament=showTournament?{...seed,event:seed?.event||'',chips:undefined,bigBlind:undefined,remaining:undefined,started:undefined,...countValues(counts),status,winnings:winnings!==''&&['Out','Cashed'].includes(status)?Number(winnings):undefined}:undefined;
+  const parsed=postSchema.safeParse({groupId,kind,body,hand:kind==='hand'?withReview(hand,{}):undefined,tournament,images,keepImages,sessionId:initial?.sessionId,mentions:[...(initial?.mentions||[]),...activeMentions(body,mentions)]});
   if(!parsed.success){setError(parsed.error.issues[0].message);return}
   await onSave({...parsed.data,...(initial?{postId:initial.id}:{})});
  }
@@ -45,25 +43,23 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,onSa
   {error&&<p className="error" role="alert">{error}</p>}<button type="submit" className="primary" disabled={busy||photoBusy}>{busy?'Saving…':initial?'Save changes':'Share with my rail'}</button>
  </HandReviewFlow>:<>
 
- <p className="form-hint">Every field is optional. Share only what you have.</p>
- <div className="quick-stack-fields">
-  <label className="field">Chips<input type="number" min="0" max="1000000000000" step="1" inputMode="numeric" value={chips} onChange={e=>setChips(e.target.value)} placeholder="e.g. 125000"/></label>
-  <label className="field">Current big blind<input type="number" min="0.01" max="10000000000" step="any" inputMode="decimal" value={bigBlind} onChange={e=>setBigBlind(e.target.value)} placeholder="e.g. 2000"/></label>
-  <label className="field">Players left<input type="number" min="0" max="1000000" step="1" inputMode="numeric" value={remaining} onChange={e=>setRemaining(e.target.value)} placeholder="e.g. 48"/></label>
- </div>
- {chips&&bigBlind&&Number(bigBlind)>0&&<p className="stack-equivalent">{(Number(chips)/Number(bigBlind)).toFixed(1)} big blinds</p>}
+ <MentionInput label={showTournament?'Your update (optional)':'Your post'} value={body} onChange={setBody} mentions={mentions} onMentions={setMentions} context={{groupId}} maxLength={5000}/>
  {photoFields}
- <div className="compose-toggle"><button type="button" className={kind==='update'?'selected':''} onClick={()=>setKind('update')}>Rail update</button><button type="button" onClick={()=>setKind('hand')}>Hand review</button></div>
- <MentionInput label="Your update (optional)" value={body} onChange={setBody} mentions={mentions} onMentions={setMentions} context={{groupId}} maxLength={5000}/>
- <label className="field">Tournament or cash-game rail (optional)<select value={sessionChoice} disabled={!!initial?.sessionId} onChange={e=>setSessionChoice(e.target.value)}><option value="">Just this conversation</option>{sessions.map(s=><option key={s.id} value={s.id}>{s.name||(s.kind==='cash'?'Cash-game rail':'Tournament rail')}</option>)}{initial?.sessionId&&!sessions.some(s=>s.id===initial.sessionId)&&<option value={initial.sessionId}>This post’s rail</option>}<option value="new-tournament">Start a new tournament rail</option><option value="new-cash">Start a new cash-game rail</option></select></label>
- {sessionChoice&&<p className="form-hint">People who join this session get its updates. Followers who belong to this private group are notified when a new session starts.</p>}
- <div className="form-grid"><label className="field">Event / game name (optional)<input value={event} onChange={e=>setEvent(e.target.value)} maxLength={120} placeholder="e.g. Weekend Main Event"/></label><label className="field">Status (optional)<select value={status} onChange={e=>setStatus(e.target.value as Tournament['status'])}>{['Playing','On break','Bagged','Cashed','Out'].map(s=><option key={s}>{s}</option>)}</select></label></div>
-
+ {showTournament&&<><p className="form-hint">Stack and player details are optional.</p><StackFields value={counts} onChange={setCounts}/>
+ {counts.chips&&counts.bigBlind&&Number(counts.bigBlind)>0&&<p className="stack-equivalent">{(Number(counts.chips)/Number(counts.bigBlind)).toFixed(1)} big blinds</p>}
+ <StatusFields status={status} winnings={winnings} onStatus={setStatus} onWinnings={setWinnings}/></>}
  {error&&<p className="error" role="alert">{error}</p>}<button className="primary" disabled={busy||photoBusy}>{busy?'Saving…':initial?'Save changes':'Share with my rail'}</button>
  </>}
  </form>;
 }
 
-export function StackStats({value,onUpdate}:{value:Tournament;onUpdate?:()=>void}){
- return <div className="tournament-card"><div className="tournament-label"><span>{value.event||(value.gameType==='cash'?'Cash-game rail':'Tournament update')}</span><span className="status">{value.status}</span></div><p className="form-hint">{[value.location,value.stakes&&'Stakes '+value.stakes,value.buyIn&&'Buy-in '+value.buyIn,value.guarantee&&'Guarantee '+value.guarantee,value.startingStack&&'Starting stack '+value.startingStack].filter(Boolean).join(' · ')}</p><div className="stats"><div><span>CHIPS</span><strong>{value.chips?.toLocaleString()??'—'}</strong></div><div><span>CURRENT BIG BLIND</span><strong>{value.bigBlind?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS LEFT</span><strong>{value.remaining?.toLocaleString()??'—'}</strong></div></div><div className="stack-footer">{value.chips!==undefined&&!!value.bigBlind&&<span>{(value.chips/value.bigBlind).toFixed(1)} BB</span>}{onUpdate&&<button className="outline" onClick={onUpdate}>Update stack</button>}</div></div>;
+export function StackStats({value,onUpdate,onStage,onStatus}:{value:Tournament;onUpdate?:()=>void;onStage?:()=>void;onStatus?:()=>void}){
+ const status=value.status==='Playing'?'Still Playing':value.status==='Out'?'Busted':value.status;
+ return <div className="tournament-card"><div className="tournament-label"><span>{value.event||(value.gameType==='cash'?'Cash game':'Tournament update')}</span><span className="status">{status}</span></div>
+ <p className="form-hint">{[value.location,value.stakes&&'Stakes '+value.stakes,value.buyIn&&'Buy-in '+value.buyIn,value.guarantee&&'Guarantee '+value.guarantee,value.startingStack&&'Starting stack '+value.startingStack].filter(Boolean).join(' · ')}</p>
+ <div className="stats"><div><span>CHIPS</span><strong>{value.chips?.toLocaleString()??'—'}</strong></div><div><span>CURRENT BIG BLIND</span><strong>{value.bigBlind?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS LEFT / STARTED</span><strong>{value.remaining?.toLocaleString()??'—'}{value.started!==undefined?' out of '+value.started.toLocaleString():''}</strong></div></div>
+ {value.winnings!==undefined&&['Out','Cashed'].includes(value.status)&&<p>Winnings: {value.winnings.toLocaleString(undefined,{maximumFractionDigits:2})}</p>}
+ <div className="stack-footer">{value.chips!==undefined&&!!value.bigBlind&&<span>{(value.chips/value.bigBlind).toFixed(1)} BB</span>}{!onStage&&value.stage&&<span>{value.stage}</span>}</div>
+ {onUpdate&&<div className="tournament-quick-actions"><button className="outline" onClick={onUpdate}>Update Stack</button>{value.gameType!=='cash'&&onStage&&<button className="outline" aria-label={'Tournament stage: '+(value.stage||'Set stage')} onClick={onStage}>{value.stage||'Tournament stage'}</button>}{onStatus&&<button className="outline" aria-label={'Status: '+status} onClick={onStatus}>Status: {status}</button>}</div>}
+ </div>;
 }

@@ -111,7 +111,8 @@ export async function mutateCommunity(database:RoomDatabase,userId:string,raw:un
    OR (i.room_id IS NOT NULL AND EXISTS(SELECT 1 FROM rail_rooms r WHERE r.id=i.room_id AND r.published AND ${unblocked('r.owner_id')} AND (r.owner_id=i.sender_id OR EXISTS(SELECT 1 FROM rail_room_hosts h WHERE h.room_id=r.id AND h.user_id=i.sender_id AND h.accepted) OR EXISTS(SELECT 1 FROM rail_room_follows f WHERE f.room_id=r.id AND f.user_id=i.sender_id))))) RETURNING id,sender_id,recipient_id,group_id,room_id),
    history AS (INSERT INTO rail_invitation_history(invitation_id,sender_id,recipient_id,group_id,room_id,status) SELECT id,sender_id,recipient_id,group_id,room_id,'accepted' FROM accepted),
    joined AS (INSERT INTO rail_members(group_id,user_id) SELECT group_id,$1 FROM accepted WHERE group_id IS NOT NULL ON CONFLICT DO NOTHING),
-   followed AS (INSERT INTO rail_room_follows(room_id,user_id) SELECT room_id,$1 FROM accepted WHERE room_id IS NOT NULL ON CONFLICT DO NOTHING)
+   followed AS (INSERT INTO rail_room_follows(room_id,user_id) SELECT room_id,$1 FROM accepted WHERE room_id IS NOT NULL ON CONFLICT DO NOTHING),
+   reciprocal AS (INSERT INTO rail_follows(follower_id,followed_id) SELECT a.sender_id,$1 FROM accepted a JOIN rail_groups g ON g.id=a.group_id WHERE g.tournament AND a.sender_id<>$1 ON CONFLICT DO NOTHING)
    SELECT group_id AS "groupId",room_id AS "roomId" FROM accepted`,[userId,d.invitationId]);
   return checked(result.rows);
  }
