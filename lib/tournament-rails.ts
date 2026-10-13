@@ -32,7 +32,7 @@ export async function updateTournament(pool:Pool,userId:string,raw:unknown){
  if(!parsed.success)throw new RoomError(parsed.error.issues[0].message);
  const d=parsed.data,allowed=d.part==='stack'?['chips','bigBlind','remaining','started']:d.part==='stage'?['stage']:['status','winnings'];
  if(Object.keys(d.values).some(key=>!allowed.includes(key)))throw new RoomError('Choose only fields for this update.');
- if(d.part==='status'&&!d.values.status)throw new RoomError('Choose Still Playing or Busted.');
+ if(d.part==='status'&&!d.values.status)throw new RoomError('Choose Still Playing, Finished, or Busted.');
  if(d.part==='stage'&&!d.values.stage)throw new RoomError('Choose a tournament stage.');
  const c=await pool.connect();try{
   await c.query('BEGIN');

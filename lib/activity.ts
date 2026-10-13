@@ -5,7 +5,7 @@ import {RoomError,type RoomDatabase} from './rooms';
 
 export const scopes=['rail','room','table','announcement'] as const;
 export type PostScope=typeof scopes[number];
-export type ActivityScope=PostScope|'session'|'profile'|'invitation';
+export type ActivityScope=PostScope|'session'|'profile'|'invitation'|'game';
 const posts={rail:'rail_posts',room:'rail_room_posts',table:'rail_table_posts',announcement:'rail_room_announcements'};
 const comments={rail:'rail_comments',room:'rail_room_comments',table:'rail_table_comments'};
 const likes={rail:'rail_likes',room:'rail_room_likes',table:'rail_table_likes'};
@@ -18,6 +18,7 @@ export async function contentFor(database:RoomDatabase,viewer:string,scope:Activ
  return c;
 }
 export function activityHref(c:Content){
+ if(c.scope==='game')return '/?view=games&game='+encodeURIComponent(c.id);
  if(c.scope==='invitation')return '/?view=people';
  if(c.scope==='profile')return '/?profile='+encodeURIComponent(c.id);
  if(c.scope==='session')return '/?group='+encodeURIComponent(c.group_id!)+'&session='+encodeURIComponent(c.id);

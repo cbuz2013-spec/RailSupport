@@ -4,7 +4,7 @@ import {Bell} from 'lucide-react';
 import {activityRequest} from './activity-client';
 type Item={id:string;actor:string;kind:string;href:string;created:string;readAt:string|null};
 type Inbox={items:Item[];unread:number;publicKey:string|null};
-const words:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted in a rail you joined',comment:'commented on a post',mention:'tagged you',like:'liked your post',comment_like:'liked your comment',follow:'started following you',session:'started a tournament or cash-game rail'};
+const words:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted in a rail you joined',comment:'commented on a post',mention:'tagged you',like:'liked your post',comment_like:'liked your comment',follow:'started following you',session:'started a tournament or cash-game rail',tournament_start:'started a tournament',tournament_finish:'finished a tournament'};
 const Context=createContext<{data:Inbox;error:string;refresh:()=>Promise<void>;enable:()=>Promise<string>;disable:()=>Promise<void>;deviceOn:boolean;deviceNote:string}|null>(null);
 export const useNotifications=()=>useContext(Context);
 async function detachDevice(){

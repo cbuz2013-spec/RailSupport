@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {RoomError,type RoomDatabase} from './rooms';
 import {activityHref,contentFor,type ActivityScope} from './activity';
 
-export const notificationWords:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted an update to a rail you joined',comment:'commented on a post',mention:'tagged you',street_preflop:'reacted to your preflop action',street_flop:'reacted to your flop action',street_turn:'reacted to your turn action',street_river:'reacted to your river action',like:'reacted to your post',comment_like:'reacted to your comment',follow:'started following you',session:'started a tournament or cash-game rail'};
+export const notificationWords:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted an update to a rail you joined',comment:'commented on a post',mention:'tagged you',street_preflop:'reacted to your preflop action',street_flop:'reacted to your flop action',street_turn:'reacted to your turn action',street_river:'reacted to your river action',like:'reacted to your post',comment_like:'reacted to your comment',follow:'started following you',session:'started a tournament or cash-game rail',tournament_start:'started a tournament',tournament_finish:'finished a tournament'};
 type Event={id:string;scope:ActivityScope;target_id:string;actor_id:string;kind:string;detail:{id?:string;mentions?:string[];previousMentions?:string[];comment?:boolean;street?:string};created:string};
 type Notification={id:string;recipient_id:string;actor_id:string;scope:ActivityScope;target_id:string;kind:string;href:string};
 
@@ -61,9 +61,13 @@ async function expandEvent(database:RoomDatabase,e:Event){
   if(!(await database.query('SELECT 1 FROM rail_activity_likes WHERE scope=$1 AND target_id=$2 AND user_id=$3 AND NOT is_comment',[e.scope,target,e.actor_id])).rows.length)return;
   recipients.set(c.user_id,'like');
  }else if(e.kind==='comment_like')recipients.set(commentOwner!,'comment_like');
- else if(e.kind==='session'){
+ else if(e.kind==='session'||e.kind==='tournament_finish'){
+  const session=(await database.query<{kind:string}>('SELECT kind FROM rail_sessions WHERE id=$1',[target])).rows[0];
+  if(!session)return;
+  const kind=session.kind==='tournament'?(e.kind==='tournament_finish'?'tournament_finish':'tournament_start'):'session';
+  if(session.kind==='tournament')c=await contentFor(database,e.actor_id,'game',target);
   const followers=await database.query<{follower_id:string}>('SELECT follower_id FROM rail_follows WHERE followed_id=$1',[e.actor_id]);
-  for(const f of followers.rows)recipients.set(f.follower_id,'session');
+  for(const f of followers.rows)recipients.set(f.follower_id,kind);
  }else{
   if(e.kind==='comment'){
    if(!(await database.query('SELECT 1 FROM rail_activity_comments WHERE scope=$1 AND id=$2 AND post_id=$3',[e.scope,e.detail.id,target])).rows.length)return;
@@ -77,7 +81,7 @@ async function expandEvent(database:RoomDatabase,e:Event){
  }
  for(const [id,kind] of recipients){
   const once=['like','comment_like','follow'].includes(e.kind);
-  const key=once?[e.scope,e.target_id,e.actor_id,e.detail.street?e.kind+':'+e.detail.street:e.kind,id].join(':'):[e.id,id].join(':');
+  const key=kind==='tournament_start'||kind==='tournament_finish'?['game',target,kind,id].join(':'):once?[e.scope,e.target_id,e.actor_id,e.detail.street?e.kind+':'+e.detail.street:e.kind,id].join(':'):[e.id,id].join(':');
   await enqueueNotification(database,e,id,kind,c,key);
  }
 }
@@ -108,7 +112,7 @@ export async function deliverPush(database:RoomDatabase,send?:Sender){
  for(let i=0;i<rows.length;i+=5)await Promise.all(rows.slice(i,i+5).map(async d=>{
   const allowed=d.recipient_id===d.device_user&&(await database.query(`SELECT 1 FROM rail_activity_content c WHERE c.scope=$1 AND c.id=$2 AND rail_visible_to($1,$2,$3) AND rail_unblocked($3,$4)
    AND ($5 NOT IN ('post','stack','comment') OR ($5='comment' AND c.user_id=$3) OR EXISTS(SELECT 1 FROM rail_watches w WHERE w.user_id=$3 AND ((w.scope=c.scope AND w.target_id=c.id) OR (w.scope='session' AND w.target_id=c.session_id))))
-   AND ($5<>'session' OR EXISTS(SELECT 1 FROM rail_follows WHERE follower_id=$3 AND followed_id=$4))
+   AND ($5 NOT IN ('session','tournament_start','tournament_finish') OR EXISTS(SELECT 1 FROM rail_follows WHERE follower_id=$3 AND followed_id=$4))
    AND ($5<>'follow' OR EXISTS(SELECT 1 FROM rail_follows WHERE follower_id=$4 AND followed_id=$3))`,[d.scope,d.target_id,d.recipient_id,d.actor_id,d.kind])).rows.length;
   if(!allowed||!validPushEndpoint(d.endpoint)){await database.query('DELETE FROM rail_push_outbox WHERE notification_id=$1 AND device_id=$2',[d.notification_id,d.device_id]);return}
   try{

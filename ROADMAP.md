@@ -4,6 +4,14 @@ Updated **October 13, 2026**. **Current deployed release: 2.6.0 — simple text/
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
+## October 13 — active games and tournament notifications
+
+- [x] **Followed-player tournament alerts** — Notify followers at tournament start and finish, with in-app alerts and push for opted-in devices. Repeated status saves do not duplicate alerts; blocks, unfollows and private-rail permissions are enforced.
+- [x] **Active Games navigation** — Add a bottom menu entry and a screen listing active tournament/cash games from followed players, followed rooms and joined rails. Include Players, Rooms and Rails filters; finished games leave the list.
+- [x] **Room game status and tournament finish** — Hosts can start/finish room league games. Players can choose Finished or Busted to end a tournament, with optional winnings.
+
+Version 2.7 verification and publication: [release record](docs/release-2.7-active-games.md).
+
 ## Completed October 13 — tournament rails and simple posting
 
 **Version 2.6 is live.** Release evidence: [deployment record](docs/release-2.6-tournament-rails.md). Full requirements: [next build list](docs/next-build-list-2026-10-13.md).

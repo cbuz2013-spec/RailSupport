@@ -8,7 +8,7 @@ const id=z.string().min(1).max(100);
 const text=(max:number)=>z.string().trim().min(1).max(max);
 const timezone=z.string().max(80).refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true}catch{return false}},'Choose a valid IANA time zone.').default('America/New_York');
 const leagueFields={timezone,name:z.string().trim().min(2).max(100),rules:z.string().trim().max(5000)};
-const eventFields={name:z.string().trim().min(2).max(100),starts:z.iso.datetime({offset:true}),details:z.string().trim().max(2000),status:z.enum(['scheduled','completed','cancelled'])};
+const eventFields={name:z.string().trim().min(2).max(100),starts:z.iso.datetime({offset:true}),details:z.string().trim().max(2000),status:z.enum(['scheduled','active','completed','cancelled'])};
 const actionSchema=z.discriminatedUnion('action',[
  z.object({action:z.literal('invite'),recipientId:id,groupId:id.optional(),roomId:id.optional()}).refine(d=>!!d.groupId!==!!d.roomId,'Choose one invitation destination.'),
  z.object({action:z.literal('accept'),invitationId:id}),z.object({action:z.literal('decline'),invitationId:id}),

@@ -23,7 +23,7 @@ export default function StartRail({groups,activeGroupId,onCreated,onCreateGroup}
  {kind==='tournament'&&<label className="field">Starting stack (optional)<input name="startingStack" maxLength={30} inputMode="numeric"/></label>}
  <label className="field">Location (optional)<input name="location" maxLength={120}/></label>
  {kind==='cash'?<label className="field">Stakes (optional)<input name="stakes" maxLength={60}/></label>:<label className="field">Prize guarantee (optional)<input name="guarantee" maxLength={40}/></label>}
- {kind==='tournament'&&<><p className="form-hint">Current stack and player counts (optional)</p><StackFields value={counts} onChange={setCounts}/><StatusFields status={status} winnings={winnings} onStatus={setStatus} onWinnings={setWinnings}/></>}
+ {kind==='tournament'&&<><p className="form-hint">Current stack and player counts (optional)</p><StackFields value={counts} onChange={setCounts}/><StatusFields allowFinished={false} status={status} winnings={winnings} onStatus={setStatus} onWinnings={setWinnings}/></>}
  <button className="primary" disabled={busy||!groupId}>{busy?'Starting…':kind==='tournament'?'Start Tournament':'Start Cash Game'}</button>
  </>}{error&&<p className="error" role="alert">{error}</p>}
  </form>;

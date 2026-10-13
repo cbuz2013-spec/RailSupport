@@ -54,7 +54,7 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,tour
 }
 
 export function StackStats({value,onUpdate,onStage,onStatus}:{value:Tournament;onUpdate?:()=>void;onStage?:()=>void;onStatus?:()=>void}){
- const status=value.status==='Playing'?'Still Playing':value.status==='Out'?'Busted':value.status;
+ const status=value.status==='Playing'?'Still Playing':value.status==='Out'?'Busted':value.status==='Cashed'?'Finished':value.status;
  return <div className="tournament-card"><div className="tournament-label"><span>{value.event||(value.gameType==='cash'?'Cash game':'Tournament update')}</span><span className="status">{status}</span></div>
  <p className="form-hint">{[value.location,value.stakes&&'Stakes '+value.stakes,value.buyIn&&'Buy-in '+value.buyIn,value.guarantee&&'Guarantee '+value.guarantee,value.startingStack&&'Starting stack '+value.startingStack].filter(Boolean).join(' · ')}</p>
  <div className="stats"><div><span>CHIPS</span><strong>{value.chips?.toLocaleString()??'—'}</strong></div><div><span>CURRENT BIG BLIND</span><strong>{value.bigBlind?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS LEFT / STARTED</span><strong>{value.remaining?.toLocaleString()??'—'}{value.started!==undefined?' out of '+value.started.toLocaleString():''}</strong></div></div>

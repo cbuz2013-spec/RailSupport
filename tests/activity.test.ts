@@ -17,6 +17,7 @@ before(async()=>{
  await db.exec(await readFile(new URL('../scripts/schema.sql',import.meta.url),'utf8'));
  // A rerun must preserve schema and triggers, with no duplicated events.
  await db.exec(await readFile(new URL('../scripts/activity-2.3.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../scripts/active-games-2.7.sql',import.meta.url),'utf8'));
  pool={connect:async()=>({query:async(sql:string,values?:unknown[])=>{const r=await db.query(sql,values);return {...r,rowCount:r.rows.length||r.affectedRows}},release(){}})} as unknown as Pool;
 });
 after(async()=>db.close());
@@ -101,10 +102,10 @@ test('watching is scoped, idempotent, and cannot unlock a private group',async()
  await act('b','watch',{enabled:false});await db.exec(`UPDATE rail_posts SET tournament='{"chips":1500}' WHERE id='p'`);await processActivityEvents(db);
  assert.equal((await inbox('b')).length,1);
 });
-test('new sessions notify only followers with private access; session watches cover new updates',async()=>{
+test('new tournaments notify followers without sharing private posts; session watches cover new updates',async()=>{
  await db.exec("INSERT INTO rail_follows(follower_id,followed_id) VALUES('b','a'),('c','a');DELETE FROM rail_activity_events");
  const first=await saveRailPost(pool,'a',{groupId:'g',kind:'update',startSession:'tournament',tournament:{chips:1000}});
- await processActivityEvents(db);assert.equal((await inbox('b')).length,1);assert.equal((await inbox('b'))[0].kind,'session');assert.equal((await inbox('c')).length,0);
+ await processActivityEvents(db);assert.equal((await inbox('b')).length,1);assert.equal((await inbox('b'))[0].kind,'tournament_start');assert.equal((await inbox('c')).length,1);
  await mutateActivity(db,'b',{action:'watch',scope:'rail',postId:first.id,enabled:true});
  await saveRailPost(pool,'a',{groupId:'g',kind:'update',sessionId:first.sessionId,tournament:{chips:2000}});
  await processActivityEvents(db);assert.equal((await inbox('b')).length,2);
