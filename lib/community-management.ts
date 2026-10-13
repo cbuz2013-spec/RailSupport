@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {RoomError,type RoomDatabase} from './rooms';
 import {mutateCommunity} from './community';
 const id=z.string().min(1).max(100);
-const input=z.object({action:z.enum(['leaveGroup','removeMember','transferGroup','rotateInvite','revokeInvite','resendInvite','pinAnnouncement','transferRoom']),groupId:id.optional(),roomId:id.optional(),userId:id.optional(),invitationId:id.optional(),postId:id.optional(),enabled:z.boolean().optional()});
+const input=z.object({action:z.enum(['deleteGroup','leaveGroup','removeMember','transferGroup','rotateInvite','revokeInvite','resendInvite','pinAnnouncement','transferRoom']),groupId:id.optional(),roomId:id.optional(),userId:id.optional(),invitationId:id.optional(),postId:id.optional(),enabled:z.boolean().optional(),confirmName:z.string().max(200).optional()});
 const host=`(r.owner_id=$1 OR EXISTS(SELECT 1 FROM rail_room_hosts h WHERE h.room_id=r.id AND h.user_id=$1 AND h.accepted))`;
 export async function managementState(db:RoomDatabase,uid:string,groupId?:string){
  let group=null,members:Record<string,unknown>[]=[];
@@ -18,15 +18,28 @@ export async function managementState(db:RoomDatabase,uid:string,groupId?:string
 }
 export async function manageCommunity(db:RoomDatabase,uid:string,raw:unknown){
  const d=input.parse(raw);let changed:Record<string,unknown>[]=[];
- if(['leaveGroup','removeMember','transferGroup','rotateInvite'].includes(d.action)){
+ if(['deleteGroup','leaveGroup','removeMember','transferGroup','rotateInvite'].includes(d.action)){
   if(!d.groupId)throw new RoomError('Choose a private group.');
-  const g=(await db.query<{owner:string}>('SELECT owner FROM rail_groups WHERE id=$1 FOR UPDATE',[d.groupId])).rows[0];
+  const g=(await db.query<{owner:string;name:string}>('SELECT owner,name FROM rail_groups WHERE id=$1 FOR UPDATE',[d.groupId])).rows[0];
   if(!g)throw new RoomError('Group unavailable.',404);
   if(d.action==='leaveGroup'){
    if(g.owner===uid)throw new RoomError('Transfer ownership before leaving this group.');
    changed=(await db.query('DELETE FROM rail_members WHERE group_id=$1 AND user_id=$2 RETURNING user_id',[d.groupId,uid])).rows;
   }else{
    if(g.owner!==uid)throw new RoomError('Only the group owner can do this.',403);
+   if(d.action==='deleteGroup'){
+    if(d.confirmName!==g.name)throw new RoomError('Type the rail name exactly to confirm deletion.');
+    // Polymorphic activity references need cleanup before their source rows disappear.
+    const targets=`(scope='rail' AND target_id IN(SELECT id FROM rail_posts WHERE group_id=$1 UNION SELECT c.id FROM rail_comments c JOIN rail_posts p ON p.id=c.post_id WHERE p.group_id=$1)) OR (scope IN ('session','game') AND target_id IN(SELECT id FROM rail_sessions WHERE group_id=$1)) OR (scope='invitation' AND target_id IN(SELECT id FROM rail_invitations WHERE group_id=$1))`;
+    await db.query('DELETE FROM rail_watches WHERE '+targets,[d.groupId]);
+    await db.query('DELETE FROM rail_notifications WHERE '+targets,[d.groupId]);
+    await db.query('DELETE FROM rail_activity_events WHERE '+targets,[d.groupId]);
+    await db.query("DELETE FROM rail_comment_likes WHERE scope='rail' AND comment_id IN(SELECT c.id FROM rail_comments c JOIN rail_posts p ON p.id=c.post_id WHERE p.group_id=$1)",[d.groupId]);
+    await db.query("DELETE FROM rail_street_reactions WHERE scope='rail' AND post_id IN(SELECT id FROM rail_posts WHERE group_id=$1)",[d.groupId]);
+    await db.query('DELETE FROM rail_invitation_history WHERE group_id=$1',[d.groupId]);
+    // Separate tournament rails survive through parent_group_id ON DELETE SET NULL.
+    changed=(await db.query('DELETE FROM rail_groups WHERE id=$1 AND owner=$2 RETURNING id',[d.groupId,uid])).rows;
+   }
    if(d.action==='rotateInvite')changed=(await db.query('UPDATE rail_groups SET code=$2 WHERE id=$1 RETURNING id',[d.groupId,randomBytes(18).toString('hex')])).rows;
    if(d.action==='removeMember'){
     if(!d.userId||d.userId===uid)throw new RoomError('Choose another member.');

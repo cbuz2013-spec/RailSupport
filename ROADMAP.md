@@ -4,6 +4,15 @@ Updated **October 13, 2026**. **Current deployed release: 2.7.0 — followed-pla
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
+## Version 2.8 — publication in progress
+
+Build and deployment authorized October 13, 2026 at 4:25 PM EDT. Implemented and verified with 135 passing tests. [Requirements](docs/next-update-list-2026-10-13.md) · [Release record](docs/release-2.8-game-history.md).
+
+- [x] **Delete rails you own** — Add an owner-only Delete Rail button with a clear confirmation before permanently removing the selected rail and its contents. Make it easy to access on mobile and desktop.
+- [x] **One game-summary graphic** — Combine the chip-history graph, current stack, current big blind, players remaining, total players, paid places (players in the money), status, and an optional photo area in one graphic for each tournament or cash game. Support photos of the live tournament clock. Save timestamped updates, allow tapping a point for details, and preserve history after the game finishes.
+
+**Future idea:** Read visible tournament information from a clock photo to prefill an update, with player review and corrections before saving. Recorded for a later update.
+
 ## Completed October 13 — active games and tournament notifications
 
 - [x] **Followed-player tournament alerts** — Notify followers at tournament start and finish, with in-app alerts and push for opted-in devices. Repeated status saves do not duplicate alerts; blocks, unfollows and private-rail permissions are enforced.

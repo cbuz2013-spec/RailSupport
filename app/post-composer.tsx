@@ -25,7 +25,7 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,tour
  }
  async function submit(e:React.FormEvent){
   e.preventDefault();if(kind==='hand'&&reviewStep!==REVIEW_SHARE_STEP)return;setError('');
-  const tournament=showTournament?{...seed,event:seed?.event||'',chips:undefined,bigBlind:undefined,remaining:undefined,started:undefined,...countValues(counts),status,winnings:winnings!==''&&['Out','Cashed'].includes(status)?Number(winnings):undefined}:undefined;
+  const tournament=showTournament?{...seed,event:seed?.event||'',chips:undefined,bigBlind:undefined,remaining:undefined,started:undefined,paid:undefined,...countValues(counts),status,winnings:winnings!==''&&['Out','Cashed'].includes(status)?Number(winnings):undefined}:undefined;
   const parsed=postSchema.safeParse({groupId,kind,body,hand:kind==='hand'?withReview(hand,{}):undefined,tournament,images,keepImages,sessionId:initial?.sessionId,mentions:[...(initial?.mentions||[]),...activeMentions(body,mentions)]});
   if(!parsed.success){setError(parsed.error.issues[0].message);return}
   await onSave({...parsed.data,...(initial?{postId:initial.id}:{})});
@@ -53,13 +53,14 @@ export default function PostComposer({groupId,initial,kind:defaultKind,mode,tour
  </form>;
 }
 
-export function StackStats({value,onUpdate,onStage,onStatus}:{value:Tournament;onUpdate?:()=>void;onStage?:()=>void;onStatus?:()=>void}){
+export function StackStats({value,onUpdate,onStage,onStatus,children}:{value:Tournament;onUpdate?:()=>void;onStage?:()=>void;onStatus?:()=>void;children?:React.ReactNode}){
  const status=value.status==='Playing'?'Still Playing':value.status==='Out'?'Busted':value.status==='Cashed'?'Finished':value.status;
- return <div className="tournament-card"><div className="tournament-label"><span>{value.event||(value.gameType==='cash'?'Cash game':'Tournament update')}</span><span className="status">{status}</span></div>
+ return <div className={'tournament-card'+(children?' game-summary':'')}><div className="tournament-label"><span>{value.event||(value.gameType==='cash'?'Cash game':'Tournament update')}</span><span className="status">{status}</span></div>
  <p className="form-hint">{[value.location,value.stakes&&'Stakes '+value.stakes,value.buyIn&&'Buy-in '+value.buyIn,value.guarantee&&'Guarantee '+value.guarantee,value.startingStack&&'Starting stack '+value.startingStack].filter(Boolean).join(' · ')}</p>
- <div className="stats"><div><span>CHIPS</span><strong>{value.chips?.toLocaleString()??'—'}</strong></div><div><span>CURRENT BIG BLIND</span><strong>{value.bigBlind?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS LEFT / STARTED</span><strong>{value.remaining?.toLocaleString()??'—'}{value.started!==undefined?' out of '+value.started.toLocaleString():''}</strong></div></div>
+ <div className="stats"><div><span>CURRENT STACK</span><strong>{value.chips?.toLocaleString()??'—'}</strong></div><div><span>CURRENT BIG BLIND</span><strong>{value.bigBlind?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS LEFT</span><strong>{value.remaining?.toLocaleString()??'—'}</strong></div><div><span>TOTAL PLAYERS</span><strong>{value.started?.toLocaleString()??'—'}</strong></div><div><span>PLAYERS IN THE MONEY</span><strong>{value.paid?.toLocaleString()??'—'}</strong></div></div>
  {value.winnings!==undefined&&['Out','Cashed'].includes(value.status)&&<p>Winnings: {value.winnings.toLocaleString(undefined,{maximumFractionDigits:2})}</p>}
  <div className="stack-footer">{value.chips!==undefined&&!!value.bigBlind&&<span>{(value.chips/value.bigBlind).toFixed(1)} BB</span>}{!onStage&&value.stage&&<span>{value.stage}</span>}</div>
  {onUpdate&&<div className="tournament-quick-actions"><button className="outline" onClick={onUpdate}>Update Stack</button>{value.gameType!=='cash'&&onStage&&<button className="outline" aria-label={'Tournament stage: '+(value.stage||'Set stage')} onClick={onStage}>{value.stage||'Tournament stage'}</button>}{onStatus&&<button className="outline" aria-label={'Status: '+status} onClick={onStatus}>Status: {status}</button>}</div>}
+ {children}
  </div>;
 }

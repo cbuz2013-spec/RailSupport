@@ -29,7 +29,7 @@ export async function saveRailPost(pool:Pool,userId:string,input:unknown,editing
   }
   const mentions=await validMentions(client,userId,p.body,p.mentions);
   const updatedTournament=p.tournament?{...old?.tournament,...p.tournament,...p.sessionDetails}:null;
-  if(updatedTournament&&old)for(const key of ['chips','bigBlind','remaining','started','winnings'] as const){if(p.tournament?.[key]===undefined)delete updatedTournament[key];}
+  if(updatedTournament&&old)for(const key of ['chips','bigBlind','remaining','started','paid','winnings'] as const){if(p.tournament?.[key]===undefined)delete updatedTournament[key];}
   const hand=p.hand?{...p.hand,revealed:!!(old?.hand?.revealed&&old.hand.result===p.hand.result)}:null;
   if(old)await client.query('UPDATE rail_posts SET kind=$2,body=$3,hand=$4,tournament=$5,session_id=$6,mentions=$7::jsonb,edited=now() WHERE id=$1',[id,p.kind,p.body,hand,updatedTournament,sessionId,JSON.stringify(mentions)]);
   else await client.query('INSERT INTO rail_posts(id,group_id,user_id,kind,body,hand,tournament,session_id,mentions) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)',[id,p.groupId,userId,p.kind,p.body,hand,updatedTournament,sessionId,JSON.stringify(mentions)]);

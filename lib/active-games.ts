@@ -22,7 +22,7 @@ export async function activeGames(database:RoomDatabase,userId:string,input:unkn
  EXISTS(SELECT 1 FROM rail_follows WHERE follower_id=$1 AND followed_id=s.user_id) AS "followingPlayer",
  EXISTS(SELECT 1 FROM rail_members m JOIN rail_groups parent ON parent.id=m.group_id WHERE m.user_id=$1 AND m.group_id IN(g.id,g.parent_group_id) AND rail_unblocked($1,parent.owner)) AS "followingRail",
  false AS "followingRoom",
- CASE WHEN rail_visible_to('session',s.id,$1) THEN (SELECT p.tournament FROM rail_posts p WHERE p.session_id=s.id AND p.tournament IS NOT NULL ORDER BY COALESCE(p.edited,p.created) DESC,p.id DESC LIMIT 1) END AS tournament
+ CASE WHEN rail_visible_to('session',s.id,$1) THEN COALESCE((SELECT u.stats FROM rail_game_updates u WHERE u.session_id=s.id ORDER BY u.id DESC LIMIT 1),(SELECT p.tournament FROM rail_posts p WHERE p.session_id=s.id AND p.tournament IS NOT NULL ORDER BY COALESCE(p.edited,p.created) DESC,p.id DESC LIMIT 1)) END AS tournament
  FROM rail_sessions s JOIN rail_groups g ON g.id=s.group_id JOIN "user" u ON u.id=s.user_id
  WHERE (s.active OR s.id=$2) AND rail_game_visible_to(s.id,$1)
  UNION ALL

@@ -5,7 +5,7 @@ import {RoomError,type RoomDatabase} from './rooms';
 import {tournamentSchema} from './validation';
 
 const text=(max:number)=>z.string().trim().max(max).default('');
-export const tournamentSetupSchema=z.object({groupId:z.string().min(1).max(100),event:text(120),location:text(120),buyIn:text(30),startingStack:text(30),guarantee:text(40),chips:tournamentSchema.shape.chips,bigBlind:tournamentSchema.shape.bigBlind,remaining:tournamentSchema.shape.remaining,started:tournamentSchema.shape.started,status:z.enum(['Playing','Out']).default('Playing'),winnings:tournamentSchema.shape.winnings});
+export const tournamentSetupSchema=z.object({groupId:z.string().min(1).max(100),event:text(120),location:text(120),buyIn:text(30),startingStack:text(30),guarantee:text(40),chips:tournamentSchema.shape.chips,bigBlind:tournamentSchema.shape.bigBlind,remaining:tournamentSchema.shape.remaining,started:tournamentSchema.shape.started,paid:tournamentSchema.shape.paid,status:z.enum(['Playing','Out']).default('Playing'),winnings:tournamentSchema.shape.winnings});
 
 export async function startTournament(pool:Pool,userId:string,input:unknown){
  const parsed=tournamentSetupSchema.safeParse(input);if(!parsed.success)throw new RoomError(parsed.error.issues[0].message);
@@ -28,9 +28,9 @@ export async function startTournament(pool:Pool,userId:string,input:unknown){
 }
 
 export async function updateTournament(pool:Pool,userId:string,raw:unknown){
- const parsed=z.object({postId:z.string().min(1).max(100),part:z.enum(['stack','stage','status']),values:z.object({chips:tournamentSchema.shape.chips,bigBlind:tournamentSchema.shape.bigBlind,remaining:tournamentSchema.shape.remaining,started:tournamentSchema.shape.started,stage:tournamentSchema.shape.stage,status:z.enum(['Playing','On break','Bagged','Cashed','Out']).optional(),winnings:tournamentSchema.shape.winnings}).strict()}).safeParse(raw);
+ const parsed=z.object({postId:z.string().min(1).max(100),part:z.enum(['stack','stage','status']),values:z.object({chips:tournamentSchema.shape.chips,bigBlind:tournamentSchema.shape.bigBlind,remaining:tournamentSchema.shape.remaining,started:tournamentSchema.shape.started,paid:tournamentSchema.shape.paid,stage:tournamentSchema.shape.stage,status:z.enum(['Playing','On break','Bagged','Cashed','Out']).optional(),winnings:tournamentSchema.shape.winnings}).strict()}).safeParse(raw);
  if(!parsed.success)throw new RoomError(parsed.error.issues[0].message);
- const d=parsed.data,allowed=d.part==='stack'?['chips','bigBlind','remaining','started']:d.part==='stage'?['stage']:['status','winnings'];
+ const d=parsed.data,allowed=d.part==='stack'?['chips','bigBlind','remaining','started','paid']:d.part==='stage'?['stage']:['status','winnings'];
  if(Object.keys(d.values).some(key=>!allowed.includes(key)))throw new RoomError('Choose only fields for this update.');
  if(d.part==='status'&&!d.values.status)throw new RoomError('Choose Still Playing, Finished, or Busted.');
  if(d.part==='stage'&&!d.values.stage)throw new RoomError('Choose a tournament stage.');
@@ -38,7 +38,8 @@ export async function updateTournament(pool:Pool,userId:string,raw:unknown){
   await c.query('BEGIN');
   const p=(await c.query('SELECT p.* FROM rail_posts p JOIN rail_members m ON m.group_id=p.group_id AND m.user_id=$2 WHERE p.id=$1 AND p.user_id=$2 FOR UPDATE OF p',[d.postId,userId])).rows[0];
   if(!p?.tournament)throw new RoomError('Only the player can update this tournament.',403);
-  const next={...p.tournament};for(const key of allowed)delete next[key];Object.assign(next,d.values);
+  const snapshot=p.session_id?(await c.query('SELECT stats FROM rail_game_updates WHERE session_id=$1 ORDER BY id DESC LIMIT 1',[p.session_id])).rows[0]?.stats:null;
+  const next={...p.tournament};if(snapshot){for(const key of ['chips','bigBlind','remaining','started','paid','stage','status','winnings'])delete next[key];Object.assign(next,snapshot);}for(const key of allowed)delete next[key];Object.assign(next,d.values);
   const validated=tournamentSchema.safeParse(next);if(!validated.success)throw new RoomError(validated.error.issues[0].message);
   await c.query('UPDATE rail_posts SET tournament=$2::jsonb,edited=now() WHERE id=$1',[p.id,JSON.stringify({...next,...validated.data})]);
   if(p.session_id&&d.part==='status')await c.query('UPDATE rail_sessions SET active=$2 WHERE id=$1',[p.session_id,!['Out','Cashed'].includes(next.status)]);

@@ -21,17 +21,17 @@ test('New Post has only text and optional photos and saves without tournament da
  let saved:Record<string,unknown>|undefined;const ui=await mount(createElement(Composer,{...base,onSave:async data=>{saved=data;return true}}));
  try{assert.equal(ui.el.querySelectorAll('textarea').length,1);assert.equal(ui.el.querySelectorAll('input[type=file]').length,1);assert.equal(ui.el.querySelectorAll('input[type=number],select').length,0);await input(ui.el.querySelector('textarea')!,'A basic rail post');await submit(ui.el);assert.equal(saved?.body,'A basic rail post');assert.equal(saved?.tournament,undefined)}finally{await ui.close()}
 });
-test('Tournament Update puts words and images first, then four optional counts and status',async()=>{
+test('Tournament Update puts words and images first, then five optional counts and status',async()=>{
  const ui=await mount(createElement(Composer,{...base,mode:'tournament'}));try{
  const controls=Array.from(ui.el.querySelectorAll('textarea,input,select'));assert.equal(controls[0].tagName,'TEXTAREA');assert.equal((controls[1] as HTMLInputElement).type,'file');
- assert.deepEqual(controls.slice(2,6).map(e=>e.getAttribute('aria-label')),['Chips','Current big blind','Players left','Players started']);assert.equal(controls[6].getAttribute('aria-label'),'Status');assert.equal(controls.length,7);assert.equal(ui.el.querySelectorAll('[required]').length,0);
+ assert.deepEqual(controls.slice(2,7).map(e=>e.getAttribute('aria-label')),['Chips','Current big blind','Players left','Players started','Players in the money (paid places)']);assert.equal(controls[7].getAttribute('aria-label'),'Status');assert.equal(controls.length,8);assert.equal(ui.el.querySelectorAll('[required]').length,0);
  assert.doesNotMatch(ui.el.textContent||'',/Event.*optional|Start a new|Tournament or cash game rail/);
  }finally{await ui.close()}
 });
-test('Update Stack saves only the four counts, including zero and omitted blank fields',async()=>{
+test('Update Stack saves only the five counts, including zero and omitted blank fields',async()=>{
  let saved:Record<string,unknown>|undefined;const post={id:'p',tournament:{event:'Test',status:'Playing',chips:200,bigBlind:20,remaining:24,started:73}} as Post;
  const ui=await mount(createElement(Quick,{post,part:'stack',busy:false,onSave:async data=>{saved=data;return true}}));try{
- assert.equal(ui.el.querySelectorAll('input').length,4);assert.equal(ui.el.querySelectorAll('select,textarea,input[type=file]').length,0);
+ assert.equal(ui.el.querySelectorAll('input').length,5);assert.equal(ui.el.querySelectorAll('select,textarea,input[type=file]').length,0);
  await input(ui.el.querySelector('input[aria-label="Chips"]')!,'0');await input(ui.el.querySelector('input[aria-label="Players left"]')!,'');await submit(ui.el);
  assert.deepEqual(saved,{postId:'p',part:'stack',values:{chips:0,bigBlind:20,started:73}});
  }finally{await ui.close()}
@@ -40,7 +40,7 @@ test('Start Tournament accepts empty optional setup and sends the chosen stack a
  let saved:Record<string,unknown>|undefined,created='';globalThis.fetch=async(_url,options)=>{saved=JSON.parse(String(options?.body));return Response.json({id:'new-tournament'})};
  const ui=await mount(createElement(Start,{groups:[{id:'g',name:'Private rail'} as Group],activeGroupId:'g',onCreateGroup(){},onCreated:id=>{created=id}}));try{
  const start=Array.from(ui.el.querySelectorAll('button')).find(b=>b.textContent==='Start Tournament')!;await act(async()=>start.click());
- assert.equal(ui.el.querySelectorAll('[required]').length,0);assert.equal(ui.el.querySelectorAll('input[type=number]').length,4);
+ assert.equal(ui.el.querySelectorAll('[required]').length,0);assert.equal(ui.el.querySelectorAll('input[type=number]').length,5);
  await input(ui.el.querySelector('input[aria-label="Chips"]')!,'30000');await input(ui.el.querySelector('input[aria-label="Current big blind"]')!,'100');await submit(ui.el);
  assert.equal(saved?.action,'startTournament');assert.equal(saved?.event,'');assert.equal(saved?.chips,30000);assert.equal(saved?.bigBlind,100);assert.equal(saved?.status,'Playing');assert.equal(created,'new-tournament');
  }finally{await ui.close();globalThis.fetch=originalFetch}
