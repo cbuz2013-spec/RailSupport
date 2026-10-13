@@ -1,6 +1,6 @@
 # Rail Social 2.6 — simple posts and tournament rails
 
-Implementation and production deployment authorized October 13, 2026. Production publication pending the release checks below.
+Deployed October 13, 2026 at 3:09 PM EDT to https://railsupport.vercel.app. Implementation and production deployment were explicitly authorized.
 
 ## Included
 
@@ -34,4 +34,17 @@ Implementation and production deployment authorized October 13, 2026. Production
 - A clean tracked-file export is staged with production environment variables, then promoted after READY. No local environment files, test fixtures, unrelated output or credentials are included.
 - Prior production: `dpl_B3Fo3CnYL9fJbXyEe2SUgUoAPrdj`, version 2.5.7. The additive schema is compatible with that release if an application rollback becomes necessary.
 
-Production deployment ID, commit and live checks will be recorded after publication.
+## Published release
+
+- Code commit: `5f886c5bb0d10ac58066ae559cc4342ba33d3221`.
+- Deployment: `dpl_AYusdLG74KDSqbwj6smpMxHtKLbJ`, READY and promoted.
+- Immutable URL: https://railsupport-e6y4704q2-rage-factory1.vercel.app.
+- Cloud build completed successfully; the additive migration completed and verified against the expected production endpoint.
+- Existing production counts remained 35 posts, 13 memberships and 6 groups after migration. Both tournament columns, both enforcement triggers and the chat table were present.
+- Authenticated staged check and unauthenticated canonical-domain check passed: HTTP 200; exact deployment ID in HTML; all 10 linked JavaScript bundles retrieved; version 2.6, New Game, Start Tournament, player counts, stages and chat code present.
+- Both rail and chat endpoints returned the expected 401 without an app session. A nonexistent invite returned 404, exercising the new invite-query schema.
+- No production posts, chat messages, invitations, follows or accounts were created by verification.
+- The immutable deployment remains protected by Vercel authentication. The canonical production domain is publicly reachable.
+
+
+The immediate error-level log scan showed four PostgreSQL driver warnings about SSL-mode semantics in a future major version. The checked requests returned their expected 401/404 responses; no application exception appeared in that scan. Current dependencies retain certificate verification.

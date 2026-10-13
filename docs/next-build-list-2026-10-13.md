@@ -1,6 +1,6 @@
 # Rail Social next build list
 
-Requested October 13, 2026; consolidated for user review. **Implementation and live deployment authorized October 13, 2026 at 2:21 PM EDT.** Implemented for version 2.6; see release-2.6-tournament-rails.md for verification details and the visual-browser test limitation.
+Requested October 13, 2026; consolidated for user review. **Implementation and live deployment authorized October 13, 2026 at 2:21 PM EDT.** Deployed as version 2.6 on October 13, 2026 at 3:09 PM EDT; see release-2.6-tournament-rails.md for verification details and the visual-browser test limitation.
 
 ## Actions within a private rail
 
