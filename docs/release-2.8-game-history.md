@@ -1,6 +1,6 @@
 # Rail Social 2.8 — game graphic, chip history, clock photos and Delete Rail
 
-Build and live deployment explicitly authorized October 13, 2026 at 4:25 PM EDT. Publication details will be recorded after verification.
+Build and live deployment explicitly authorized October 13, 2026 at 4:25 PM EDT. Version 2.8.0 is live and verified as of October 13, 2026 at 4:56 PM EDT.
 
 ## Included
 
@@ -38,4 +38,15 @@ Build and live deployment explicitly authorized October 13, 2026 at 4:25 PM EDT.
 
 ## Publication
 
-Production build passed. Staged deployment and live publication verification pending.
+- Release commit: `627305d`, pushed to `codex/rail-social-v2.1`.
+- Exact deployment: `dpl_F6Fy9YUMSnNsdC8K9Qy38SjaJDQ2` (READY).
+- Immutable URL: https://railsupport-39eotvlu9-rage-factory1.vercel.app.
+- Staged using a clean tracked-file export, then promoted to https://railsupport.vercel.app on October 13, 2026 at 4:55 PM EDT. Canonical verification passed at 4:56 PM EDT.
+- Staged and canonical checks confirmed the exact deployment, version, all 10 JavaScript bundles and the expected feature strings. History, photo, management, games, activity, rail and chat APIs returned 401 without sign-in; an invalid invitation returned 404.
+- Production migration completed and verified. Read-only checks found 36 posts, 14 memberships, 7 groups and 4 sessions, unchanged from the pre-release baseline; 4 truthful baseline history snapshots and the capture trigger were created. No real rail or account was deleted.
+- Post-publication Vercel log query returned no HTTP 5xx entries for the new deployment.
+- Local temporary test-branch credentials were removed after verification. Unrelated marketing and roadmap files were left unchanged.
+
+## User testing
+
+Refresh the app and confirm version 2.8.0. In a tournament or cash game, use Update Stack to save two distinct chip counts and inspect the graph, current numbers and saved-point details. Add/replace/enlarge a clock or game photo. To remove an unwanted test rail you own, open Manage Rail, choose Delete Rail and confirm its exact name. Physical-phone camera and visual checks remain user testing; browser automation could not attach during this release.

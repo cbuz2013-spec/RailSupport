@@ -1,12 +1,12 @@
 # Rail Social — current build roadmap
 
-Updated **October 13, 2026**. **Current deployed release: 2.7.0 — followed-player tournament start/finish notifications; Active Games in the bottom menu for followed players, rooms and joined rails; room host start/finish controls; and Finished status with optional winnings. Retains simple posts, dedicated tournament rails, live chat, invite onboarding, all 52-card selection, duplicate exclusion and equity-hand sharing.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 13, 2026**. **Current deployed release: 2.8.0 — one game graphic with chip history, current counts, paid places, status and optional clock/game photo; plus owner-only Delete Rail with explicit confirmation. Retains tournament notifications, Active Games, dedicated tournament rails, live chat, simple posts, invitations, card selection and equity sharing.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
-## Version 2.8 — publication in progress
+## Completed October 13 — game history, photos and rail deletion
 
-Build and deployment authorized October 13, 2026 at 4:25 PM EDT. Implemented and verified with 135 passing tests. [Requirements](docs/next-update-list-2026-10-13.md) · [Release record](docs/release-2.8-game-history.md).
+Version 2.8.0 is live and verified October 13, 2026 at 4:56 PM EDT, with 135 passing tests. [Requirements](docs/next-update-list-2026-10-13.md) · [Release record](docs/release-2.8-game-history.md).
 
 - [x] **Delete rails you own** — Add an owner-only Delete Rail button with a clear confirmation before permanently removing the selected rail and its contents. Make it easy to access on mobile and desktop.
 - [x] **One game-summary graphic** — Combine the chip-history graph, current stack, current big blind, players remaining, total players, paid places (players in the money), status, and an optional photo area in one graphic for each tournament or cash game. Support photos of the live tournament clock. Save timestamped updates, allow tapping a point for details, and preserve history after the game finishes.

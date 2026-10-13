@@ -2,9 +2,9 @@
 
 Started October 13, 2026 at 4:13 PM EDT, following release 2.7.0.
 
-Last updated October 13, 2026 at 4:50 PM EDT.
+Last updated October 13, 2026 at 4:56 PM EDT.
 
-Status: version 2.8 implemented and verified with 135 passing tests; production build and publication in progress. Build and deployment explicitly authorized at 4:25 PM EDT. See [release record](release-2.8-game-history.md).
+Status: delivered in version 2.8.0, live and verified October 13, 2026 at 4:56 PM EDT. Build and deployment explicitly authorized at 4:25 PM EDT. See [release record](release-2.8-game-history.md).
 
 ## 1. Delete rails you own
 
