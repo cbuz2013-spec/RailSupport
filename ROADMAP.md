@@ -1,16 +1,16 @@
 # Rail Social — current build roadmap
 
-Updated **October 13, 2026**. **Current deployed release: 2.6.0 — simple text/photo posts; New Game and dedicated tournament rails; optional tournament setup; text-first updates; four-count stack controls; separate tournament stage and playing status with winnings; player-only update feeds, follower comments and live chat; invite-code signup with tournament subscriptions and mutual follows. Retains all 52-card selection, duplicate exclusion and equity-hand sharing features.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 13, 2026**. **Current deployed release: 2.7.0 — followed-player tournament start/finish notifications; Active Games in the bottom menu for followed players, rooms and joined rails; room host start/finish controls; and Finished status with optional winnings. Retains simple posts, dedicated tournament rails, live chat, invite onboarding, all 52-card selection, duplicate exclusion and equity-hand sharing.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
-## October 13 — active games and tournament notifications
+## Completed October 13 — active games and tournament notifications
 
 - [x] **Followed-player tournament alerts** — Notify followers at tournament start and finish, with in-app alerts and push for opted-in devices. Repeated status saves do not duplicate alerts; blocks, unfollows and private-rail permissions are enforced.
 - [x] **Active Games navigation** — Add a bottom menu entry and a screen listing active tournament/cash games from followed players, followed rooms and joined rails. Include Players, Rooms and Rails filters; finished games leave the list.
 - [x] **Room game status and tournament finish** — Hosts can start/finish room league games. Players can choose Finished or Busted to end a tournament, with optional winnings.
 
-Version 2.7 verification and publication: [release record](docs/release-2.7-active-games.md).
+Version 2.7 is live as of 3:38 PM EDT. Verification and publication: [release record](docs/release-2.7-active-games.md).
 
 ## Completed October 13 — tournament rails and simple posting
 

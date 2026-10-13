@@ -1,6 +1,6 @@
 # Rail Social 2.7 — followed games and tournament alerts
 
-Requested October 13, 2026. Implementation and publication are covered by the user's continuing build/deploy authorization. Publication evidence is recorded below after deployment.
+Requested October 13, 2026. Deployed live October 13, 2026 at 3:38 PM EDT under the user's continuing build/deploy authorization.
 
 ## Included
 
@@ -34,4 +34,13 @@ Requested October 13, 2026. Implementation and publication are covered by the us
 
 ## Publication
 
-Pending cloud deployment and canonical-domain verification.
+- Code commit: `5224454d3bc5abdbf1ab909ecc3aaeaf5a8da872`.
+- Deployment: `dpl_JFh1hotPtx8pQ9EYLfJ4J8ntxgKs`, READY and promoted.
+- Immutable URL: https://railsupport-rlhu069ij-rage-factory1.vercel.app.
+- Canonical domain verified at 3:38 PM EDT: https://railsupport.vercel.app.
+- Cloud build, TypeScript and guarded production migration completed successfully.
+- Production row counts remained 35 posts, 13 memberships, 6 groups, 3 sessions and 20 notifications. Completion column/trigger and the room active-status constraint were confirmed present.
+- Protected staging and public canonical checks each passed: HTTP 200; exact deployment ID in HTML; all 10 linked JavaScript bundles fetched; version 2.7, Active Games, game API, tournament lifecycle notification kinds and retained tournament/chat code present.
+- Games, activity, rail and chat endpoints returned the expected 401 without an app session. A nonexistent invite returned 404.
+- Immediate production log check found no HTTP 5xx responses. Error-level entries were PostgreSQL driver warnings about SSL semantics in a future major version, attached to expected 401/404 responses; no application exception appeared in the scan.
+- No verification account, post, invitation, follow or chat message was created in production.
