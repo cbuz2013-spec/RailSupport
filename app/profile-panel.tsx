@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Image from 'next/image';
+import ReportButton from './report-button';
 import TableTalk from './table-talk';
 import type {Profile} from '@/lib/types';
 
@@ -18,6 +19,6 @@ export default function ProfilePanel({id,me,onChanged}:{id:string;me:string;onCh
  return <div className="post-form profile-panel">{error&&<p className="error" role="alert">{error}</p>}
   <div className="profile-overview">{profile.photo?<Image src={profile.photo} alt="" width={76} height={76} unoptimized className="profile-photo"/>:<span className="profile-photo profile-initial">{profile.name.slice(0,1)}</span>}<div><h3>{profile.name}</h3><span>{profile.followers} followers · {profile.following} following</span></div></div>
   {edit&&id===me?<><label className="field">Display name<input value={draft.name} maxLength={60} onChange={e=>setDraft({...draft,name:e.target.value})}/></label><label className="field">Bio<textarea value={draft.bio} maxLength={500} rows={3} onChange={e=>setDraft({...draft,bio:e.target.value})}/></label><label className="field">Profile photo<input type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(f)void photo(f)}}/></label>{draft.photo&&<button type="button" className="outline" onClick={()=>setDraft({...draft,photo:''})}>Remove photo</button>}{sites.map(([key,label])=><label className="field" key={key}>{label} profile link<input type="url" placeholder="https://" value={draft[key]} onChange={e=>setDraft({...draft,[key]:e.target.value})}/></label>)}<button className="primary" disabled={busy} onClick={()=>void action('profile')}>Save profile</button><button className="outline" onClick={()=>setEdit(false)}>Cancel</button></>:<><p className="muted">{profile.bio||'No bio yet.'}</p><div className="profile-links">{sites.map(([key,label])=>profile[key]&&<a key={key} href={profile[key]} target="_blank" rel="noopener noreferrer" className="outline">{label} ↗</a>)}</div>{id===me?<button className="outline" onClick={()=>setEdit(true)}>Edit my profile</button>:<div className="profile-controls"><button className="primary" disabled={busy||profile.isBlocked} onClick={()=>void action(profile.isFollowing?'unfollow':'follow')}>{profile.isFollowing?'Unfollow':'Follow'}</button><button className="outline" disabled={busy} onClick={()=>void action(profile.isBlocked?'unblock':'block')}>{profile.isBlocked?'Unblock player':'Block player'}</button></div>}{profile.isBlocked&&<p className="form-hint">You have blocked this player. Their posts and comments are hidden from your view, and neither of you can follow the other.</p>}</>}
- {!edit&&!profile.isBlocked&&<TableTalk key={id} id={id} me={me} relationshipVersion={relationshipVersion}/>}
+ {!edit&&!profile.isBlocked&&<><ReportButton scope="profile" targetId={id} label="Report this player"/><TableTalk key={id} id={id} me={me} relationshipVersion={relationshipVersion}/></>}
  </div>
 }

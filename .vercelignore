@@ -1,0 +1,7 @@
+tmp/
+tests/
+.git/
+*.tsbuildinfo
+
+output/
+docs/

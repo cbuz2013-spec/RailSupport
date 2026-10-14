@@ -1,0 +1,5 @@
+.post-timestamp{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px;max-width:100%;font-size:12px;line-height:1.6;color:var(--muted)}
+.timestamp-edited{font-size:11px}
+.post-head>div{min-width:0}
+.post-meta{flex-wrap:wrap}
+.post-meta>.post-timestamp{flex-basis:100%;padding:0}

@@ -1,0 +1,64 @@
+/* Consistent entry colors, including Safari's text-fill and autofill rendering. */
+:root{--input-surface:#ffffff;--input-text:#163d2e;--input-placeholder:#566e60}
+:root[data-theme=dark]{--input-surface:#09281e;--input-text:#f2fff6;--input-placeholder:#b5d0bf}
+.field input,.field textarea,.field select,.comments input,[data-theme=dark] .field input,[data-theme=dark] .field textarea,[data-theme=dark] .field select{background-color:var(--input-surface);color:var(--input-text);-webkit-text-fill-color:var(--input-text);caret-color:var(--input-text);border-color:var(--border-strong);opacity:1}
+.field input::placeholder,.field textarea::placeholder,.comments input::placeholder{color:var(--input-placeholder);-webkit-text-fill-color:var(--input-placeholder);opacity:1}
+.field input:autofill{background-color:var(--input-surface);color:var(--input-text)}
+.field input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px var(--input-surface) inset;-webkit-text-fill-color:var(--input-text)}
+.post-form .quick-stack-fields{background:var(--soft);border-color:var(--border-strong);align-items:start}
+.post-form .quick-stack-fields .field{color:var(--text)}
+.post-form .quick-stack-fields input{background:var(--input-surface);color:var(--input-text);-webkit-text-fill-color:var(--input-text);font-size:22px;min-height:52px}
+.field input:focus-visible,.field textarea:focus-visible,.field select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* A viewport layer remains still as the feed scrolls, also on mobile Safari. */
+.app-shell .stage-background{--stage-lift:20vh;--stage-lift:20lvh;position:fixed;inset:0 0 auto;height:100vh;height:100lvh;z-index:-2;pointer-events:none;background-color:#f6f3eb;background-image:linear-gradient(rgb(246 243 235 / .91),rgb(246 243 235 / .82)),url('/poker-stage-v29.webp');background-repeat:no-repeat;background-size:cover;background-position:center,center calc(100% - var(--stage-lift))}
+[data-theme=dark] .app-shell .stage-background{background-color:#061b13;background-image:linear-gradient(rgb(5 22 15 / .2),rgb(5 22 15 / .38)),url('/poker-stage-v29.webp')}
+
+/* Keep the theme control in the app header; other pages retain their theme bar. */
+body:has(.topbar)>.theme-bar{display:none}
+.theme-toggle.compact{width:42px;height:42px;min-height:42px;padding:0;border-radius:50%}
+.theme-toggle.compact .theme-label,.theme-toggle.compact .theme-switch{display:none}
+.topbar{height:68px}
+.rail-page-title{min-height:0;padding-top:0;margin-bottom:18px;align-items:flex-start}
+.rail-page-title>div:first-child{min-width:0}
+.rail-page-title h1{line-height:1.1;overflow-wrap:anywhere}
+.rail-page-title .rail-title-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:0 0 auto;gap:6px}
+.rail-page-title .rail-title-actions .outline{font-size:12px;min-height:44px;padding:8px;justify-content:center;white-space:nowrap}
+.rail-page-title .rail-title-actions svg{width:15px;height:15px;flex-shrink:0}
+.post-activity .reaction-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.post-activity .reaction-options button{min-height:86px;font-size:11px;white-space:normal;line-height:1.2}
+.reaction-options .poker-reaction-icon{width:36px;height:36px;flex-shrink:0}
+.social-action .poker-reaction-icon{width:24px;height:24px;flex-shrink:0}
+.reaction-picker{max-height:min(65dvh,460px);overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:1200px){.rail-page-title{flex-wrap:wrap}.rail-page-title .rail-title-actions{flex:1 0 100%}}
+@media(max-width:760px){
+ .topbar{height:60px;padding:0 14px;gap:8px}
+ .topbar .brand-image{width:138px;max-height:44px}
+ .topbar .account-tools{gap:6px}
+ .topbar .theme-toggle.compact,.topbar .notification-bell{width:40px;height:40px;min-height:40px}
+ .topbar .account{min-height:44px;padding:0}
+ .layout{padding-top:6px}
+ .rail-list{padding:4px 0 8px;gap:6px}
+ .rail-list .rail-link{min-height:44px;padding:6px 9px}
+ .rail-list .rail-icon{width:24px;height:24px}
+ .rail-page-title{gap:10px;padding:6px 0 0;margin-bottom:12px;min-height:0}
+ .rail-page-title h1{font-size:30px;margin:4px 0}
+ .rail-page-title p{font-size:12px;line-height:1.45;max-width:none;margin:0}
+ .rail-page-title .eyebrow{font-size:8px;line-height:1.2}
+ .rail-page-title .rail-title-actions{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .rail-page-title .rail-title-actions .outline{font-size:12px;padding:8px 4px;min-height:44px;gap:5px}
+ .composer{padding:12px;margin-bottom:12px}
+ .composer .composer-prompt{gap:8px;margin-bottom:10px}
+ .composer .composer-prompt .avatar{width:32px;height:32px}
+ .composer .composer-prompt button{font-size:12px;line-height:1.4;text-align:left}
+ .composer .composer-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding-top:8px}
+ .composer .composer-actions>button,.composer .composer-actions .share-button{min-height:44px;font-size:12px;line-height:1.25;justify-content:center;margin:0;padding:6px;width:100%;gap:5px}
+ .mobile-chat-toggle{min-height:44px;margin:8px 0}
+ .feed-tabs{margin-bottom:12px;gap:15px}
+ .feed-tabs>button{padding-top:10px;padding-bottom:12px;font-size:11px}
+ .post-form .quick-stack-fields{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:12px}
+ .post-form .quick-stack-fields input{font-size:20px}
+ /* Bring the crowd and table into the open area above the composer. */
+ .app-shell .stage-background{--stage-lift:44vh;--stage-lift:44lvh}
+}
+@media(max-width:380px){.topbar .brand .beta{display:none}.topbar .brand-image{width:130px}.topbar{padding-inline:12px}}

@@ -1,7 +1,13 @@
-export type Group = {id:string;name:string;description:string;kind:'Friends & family'|'Study group'|'Backers';owner:string;code?:string;members:number};
-export type Hand = {game:string;stakes:string;position:string;stack:string;hero:string;board:string;pot:string;action:string;question:string;result?:string;revealed:boolean};
-export type Tournament = {event:string;chips:number;bigBlind:number;remaining:number;status:'Playing'|'On break'|'Bagged'|'Cashed'|'Out'};
+export type Group = {id:string;name:string;description:string;kind:'Friends & family'|'Study group'|'Backers';owner:string;code?:string;members:number;tournament?:boolean;parentGroupId?:string;sessionId?:string};
+export type StackUnit=''|'bb'|'chips'|'currency';
+export type StreetEquities=Partial<Record<'preflop'|'flop'|'turn'|'river',{key:string;result:import('./odds').MultiwayOddsResult}>>;
+export type ReviewOpponent={cards:string;position:string;stack:string;stackUnit?:StackUnit};
+export type HandActionKind='check'|'bet'|'call'|'fold'|'raise';
+export type HandAction={playerId:string;position:string;kind:HandActionKind;amount:string;unit:'chips'|'bb';allIn?:boolean};
+export type HandReview={boardByStreet?:import('./hand-board').ReviewBoard;headsUp?:boolean;actions?:Partial<Record<'preflop'|'flop'|'turn'|'river',HandAction[]>>;format:''|'cash'|'tournament';blinds:string;ante:string;event:string;location?:string;startingStack?:string;buyIn?:string;guarantee?:string;level:string;remaining:string;totalPlayers?:string;bigBlind?:string;blindUnit?:StackUnit;stackUnit?:StackUnit;streetEquities?:StreetEquities;opponents:ReviewOpponent[];actionMode:'notes'|'streets';notes:string;streets:{preflop:string;flop:string;turn:string;river:string};equity?:import('./odds').MultiwayOddsResult};
+export type Hand = {game:string;stakes:string;position:string;stack:string;hero:string;board:string;pot:string;action:string;question:string;result?:string;revealed:boolean;review?:HandReview};
+export type Tournament = {event:string;chips?:number;bigBlind?:number;remaining?:number;started?:number;paid?:number;stage?:'Registration'|'Reg Closed'|'In the Money'|'Final Table';winnings?:number;status:'Playing'|'On break'|'Bagged'|'Cashed'|'Out';gameType?:'tournament'|'cash';location?:string;buyIn?:string;guarantee?:string;startingStack?:string;stakes?:string};
 export type Comment = {id:string;userId:string;name:string;body:string;created:string};
-export type Post = {id:string;groupId:string;userId:string;name:string;photo?:string;kind:'update'|'hand';body:string;created:string;hand?:Hand;tournament?:Tournament;imageCount:number;likes:number;liked:boolean;comments:Comment[];votes:{Fold:number;Call:number;Raise:number};myVote?:'Fold'|'Call'|'Raise'};
+export type Post = {id:string;groupId:string;userId:string;name:string;photo?:string;kind:'update'|'hand';body:string;created:string;edited?:string;mentions?:string[];sessionId?:string;hand?:Hand;tournament?:Tournament;imageCount:number;likes:number;liked:boolean;comments:Comment[];votes:{Fold:number;Call:number;Raise:number};myVote?:'Fold'|'Call'|'Raise'};
 export type User = {id:string;name:string;photo?:string};
 export type Profile = User & {bio:string;wsop:string;mspt:string;hendon:string;sharkscope:string;followers:number;following:number;isFollowing:boolean;isBlocked:boolean};
