@@ -14,6 +14,25 @@ export function validPushEndpoint(value:string){
 }
 export const pushSubscriptionSchema=z.object({endpoint:z.string().max(4096).refine(validPushEndpoint,'This browser push provider is not supported.'),keys:z.object({p256dh:z.string().regex(/^[A-Za-z0-9_-]+={0,2}$/).min(80).max(100),auth:z.string().regex(/^[A-Za-z0-9_-]+={0,2}$/).min(20).max(30)})});
 export function pushConfigured(){return !!(process.env.RAILSOCIAL_VAPID_PUBLIC_KEY&&process.env.RAILSOCIAL_VAPID_PRIVATE_KEY&&process.env.RAILSOCIAL_VAPID_SUBJECT)}
+type Sender=(subscription:{endpoint:string;keys:{p256dh:string;auth:string}},payload:string)=>Promise<unknown>;
+const sendPush:Sender=(subscription,payload)=>webpush.sendNotification(subscription,payload,{TTL:86400,urgency:'normal',timeout:5000,vapidDetails:{subject:process.env.RAILSOCIAL_VAPID_SUBJECT!,publicKey:process.env.RAILSOCIAL_VAPID_PUBLIC_KEY!,privateKey:process.env.RAILSOCIAL_VAPID_PRIVATE_KEY!}});
+export async function preparePushTest(database:RoomDatabase,userId:string,input:unknown,send?:Sender){
+ if(!send&&!pushConfigured())throw new RoomError('Push notifications are not configured.',503);
+ const endpoint=z.string().max(4096).refine(validPushEndpoint).parse(input);
+ const device=(await database.query<{id:string;endpoint:string;p256dh:string;auth:string}>('SELECT id,endpoint,p256dh,auth FROM rail_push_devices WHERE user_id=$1 AND endpoint=$2',[userId,endpoint])).rows[0];
+ if(!device)throw new RoomError('Enable push notifications on this device first.',404);
+ // A deterministic audit ID makes the one-per-minute limit atomic, including concurrent requests.
+ const id='push-test:'+userId+':'+Math.floor(Date.now()/60000);
+ const added=await database.query(`INSERT INTO rail_audit(id,actor_id,kind,target_id,details) VALUES($1,$2,'notification.test',$3,'{"result":"queued"}') ON CONFLICT(id) DO NOTHING RETURNING id`,[id,userId,device.id]);
+ if(!added.rows.length)throw new RoomError('Please wait a minute before sending another test.',429);
+ return {id,deliver:async()=>{
+  // The user may sign out or disable notifications during the short test countdown.
+  const current=(await database.query<{endpoint:string;p256dh:string;auth:string}>('SELECT endpoint,p256dh,auth FROM rail_push_devices WHERE id=$1 AND user_id=$2',[device.id,userId])).rows[0];
+  let result='cancelled';
+  if(current)try{await (send||sendPush)({endpoint:current.endpoint,keys:{p256dh:current.p256dh,auth:current.auth}},JSON.stringify({body:'Test notification: your Rail Social alerts can reach this device.',url:'/?view=notifications',tag:id}));result='accepted'}catch(error){const status=(error as {statusCode?:number}).statusCode;result=status===404||status===410?'expired':'failed'}
+  await database.query('UPDATE rail_audit SET details=$2::jsonb WHERE id=$1',[id,JSON.stringify({result})]);
+ }};
+}
 export async function savePushDevice(database:RoomDatabase,userId:string,input:unknown){
  const parsed=pushSubscriptionSchema.safeParse(input);if(!parsed.success)throw new RoomError(parsed.error.issues[0].message);
  const s=parsed.data;
@@ -98,17 +117,17 @@ export async function notificationInbox(database:RoomDatabase,userId:string){
  const result=await database.query(`SELECT n.id,u.name AS actor,n.kind,n.href,n.created,n.read_at AS "readAt" FROM rail_notifications n JOIN "user" u ON u.id=n.actor_id
  WHERE n.recipient_id=$1 AND rail_visible_to(n.scope,n.target_id,$1) AND rail_unblocked($1,n.actor_id) ORDER BY n.created DESC LIMIT 60`,[userId]);
  const count=await database.query<{count:number}>(`SELECT count(*)::int AS count FROM rail_notifications n WHERE n.recipient_id=$1 AND n.read_at IS NULL AND rail_visible_to(n.scope,n.target_id,$1) AND rail_unblocked($1,n.actor_id)`,[userId]);
- return {items:result.rows,unread:count.rows[0].count,publicKey:pushConfigured()?process.env.RAILSOCIAL_VAPID_PUBLIC_KEY:null};
+ const test=(await database.query<{id:string;created:string;result:string}>(`SELECT id,created,details->>'result' AS result FROM rail_audit WHERE actor_id=$1 AND kind='notification.test' ORDER BY created DESC LIMIT 1`,[userId])).rows[0]||null;
+ return {items:result.rows,unread:count.rows[0].count,publicKey:pushConfigured()?process.env.RAILSOCIAL_VAPID_PUBLIC_KEY:null,test};
 }
 type Delivery=Notification&{notification_id:string;device_id:string;endpoint:string;p256dh:string;auth:string;attempts:number;device_user:string};
-type Sender=(subscription:{endpoint:string;keys:{p256dh:string;auth:string}},payload:string)=>Promise<unknown>;
 export async function deliverPush(database:RoomDatabase,send?:Sender){
  if(!send&&!pushConfigured())return {sent:0,failed:0};
  const rows=(await database.query<Delivery>(`WITH claimed AS (UPDATE rail_push_outbox SET lease_until=now()+interval '2 minutes',attempts=attempts+1
  WHERE (notification_id,device_id) IN(SELECT notification_id,device_id FROM rail_push_outbox WHERE sent_at IS NULL AND attempts<5 AND available_at<=now() AND (lease_until IS NULL OR lease_until<now()) ORDER BY available_at LIMIT 30 FOR UPDATE SKIP LOCKED) RETURNING *)
  SELECT o.*,n.*,d.endpoint,d.p256dh,d.auth,d.user_id AS device_user FROM claimed o JOIN rail_notifications n ON n.id=o.notification_id JOIN rail_push_devices d ON d.id=o.device_id`)).rows;
  let sent=0,failed=0;
- const sender:Sender=send||((subscription,payload)=>webpush.sendNotification(subscription,payload,{TTL:86400,urgency:'normal',timeout:5000,vapidDetails:{subject:process.env.RAILSOCIAL_VAPID_SUBJECT!,publicKey:process.env.RAILSOCIAL_VAPID_PUBLIC_KEY!,privateKey:process.env.RAILSOCIAL_VAPID_PRIVATE_KEY!}}));
+ const sender:Sender=send||sendPush;
  for(let i=0;i<rows.length;i+=5)await Promise.all(rows.slice(i,i+5).map(async d=>{
   const allowed=d.recipient_id===d.device_user&&(await database.query(`SELECT 1 FROM rail_activity_content c WHERE c.scope=$1 AND c.id=$2 AND rail_visible_to($1,$2,$3) AND rail_unblocked($3,$4)
    AND ($5 NOT IN ('post','stack','comment') OR ($5='comment' AND c.user_id=$3) OR EXISTS(SELECT 1 FROM rail_watches w WHERE w.user_id=$3 AND ((w.scope=c.scope AND w.target_id=c.id) OR (w.scope='session' AND w.target_id=c.session_id))))

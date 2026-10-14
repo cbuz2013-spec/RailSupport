@@ -7,6 +7,8 @@ import {activityStates,activityComments,mutateActivity,mentionCandidates,userSes
 import {notificationInbox,savePushDevice,pushConfigured,processActivityEvents} from '@/lib/notifications';
 import {scheduleActivity} from '@/lib/activity-dispatch';
 import {z} from 'zod';
+import {after} from 'next/server';
+import {preparePushTest} from '@/lib/notifications';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const maxDuration=90;
@@ -27,6 +29,11 @@ async function handle(req:Request,write:boolean){
   }
   const raw=await req.text();if(raw.length>24000)return out({error:'This request is too large.'},413);
   const d=JSON.parse(raw);
+  if(d.action==='testPush'){
+   const test=await preparePushTest(db(),user.id,d.endpoint);
+   after(async()=>{await new Promise(resolve=>setTimeout(resolve,10000));await test.deliver()});
+   return out({ok:true,id:test.id});
+  }
   if(d.action==='reactStreet'){scheduleActivity();return out(await reactStreet(db(),user.id,d));}
   if(d.action==='states')return out({states:await activityStates(db(),user.id,d.targets)});
   if(d.action==='read'){

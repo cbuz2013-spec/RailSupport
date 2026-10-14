@@ -3,7 +3,7 @@ import {createContext,useCallback,useContext,useEffect,useState} from 'react';
 import {Bell} from 'lucide-react';
 import {activityRequest} from './activity-client';
 type Item={id:string;actor:string;kind:string;href:string;created:string;readAt:string|null};
-type Inbox={items:Item[];unread:number;publicKey:string|null};
+type Inbox={items:Item[];unread:number;publicKey:string|null;test?:{id:string;created:string;result:string}|null};
 const words:Record<string,string>={invitation:'invited you to a rail or room',stack:'updated their stack',post:'posted in a rail you joined',comment:'commented on a post',mention:'tagged you',like:'liked your post',comment_like:'liked your comment',follow:'started following you',session:'started a tournament or cash-game rail',tournament_start:'started a tournament',tournament_finish:'finished a tournament'};
 const Context=createContext<{data:Inbox;error:string;refresh:()=>Promise<void>;enable:()=>Promise<string>;disable:()=>Promise<void>;deviceOn:boolean;deviceNote:string}|null>(null);
 export const useNotifications=()=>useContext(Context);
@@ -52,9 +52,18 @@ export function NotificationBell({onClick}:{onClick:()=>void}){
 export default function Notifications(){
  const n=useNotifications();const [busy,setBusy]=useState(false),[error,setError]=useState('');if(!n)return null;
  async function act(fn:()=>Promise<unknown>){setBusy(true);setError('');try{await fn()}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+ async function testPush(){
+  const reg=await navigator.serviceWorker.getRegistration('/');const sub=await reg?.pushManager?.getSubscription();
+  if(!sub)throw Error('Enable push notifications on this device first.');
+  await activityRequest({action:'testPush',endpoint:sub.endpoint});await n!.refresh();
+ }
+ const testMessage=n.data.test?(n.data.test.result==='queued'&&Date.now()-Date.parse(n.data.test.created)>60000?'The last test did not finish. Please try again.':({queued:'Test scheduled. Leave Rail Social or lock your phone now. The alert will be sent in 10 seconds.',accepted:'Your notification service accepted the test. Confirm that the alert appeared on the device used for this test; acceptance alone does not confirm it was displayed.',expired:'This device’s notification registration expired. Turn push off, then enable it again and retry.',failed:'The notification service could not accept the test. Please try again in a minute.',cancelled:'The test was cancelled because this device’s notifications were turned off.'} as Record<string,string>)[n.data.test.result]):'';
  return <section className="notification-page"><div className="page-title"><div><span className="eyebrow">STAY ON THE RAIL</span><h1>Notifications</h1></div><button className="outline" onClick={()=>void n.refresh()}>Refresh</button></div>
  <div className="panel notification-settings"><h2>Your rail, in real time.</h2><p>Stack updates, tags, likes, comments, new followers, and new tournament or cash-game rails from people you follow.</p><p className="form-hint">Private-rail alerts are only sent to members who can view that rail.</p>
  <button className="primary" disabled={busy||!n.data.publicKey} onClick={()=>void act(n.deviceOn?n.disable:n.enable)}>{n.deviceOn?'Turn off push on this device':'Enable push notifications'}</button>
+ <button className="outline" disabled={busy||!n.deviceOn} onClick={()=>void act(testPush)}>Send test notification</button>
+ {testMessage&&<p role="status"><strong>Latest test · {new Date(n.data.test!.created).toLocaleTimeString()}</strong><br/>{testMessage}</p>}
+ <p className="form-hint">Missing iPhone alerts? In Settings → Notifications → Rail Social, check Allow Notifications, Lock Screen and Banners. Focus and Scheduled Summary can delay alerts.</p>
  <p className="form-hint">On iPhone or iPad: open in Safari, choose Share → Add to Home Screen, then enable notifications in the installed app.</p>{n.deviceNote&&<p role="status">{n.deviceNote}</p>}</div>
  {(error||n.error)&&<p className="error" role="alert">{error||n.error}</p>}
  <div className="notification-tools"><button className="text-link" disabled={busy||!n.data.unread} onClick={()=>void act(async()=>{await activityRequest({action:'read'});await n.refresh()})}>Mark all read</button></div>

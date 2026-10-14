@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 import type {Pool} from 'pg';
 import {mutateActivity,activityComments,activityStates,validMentions} from '../lib/activity';
-import {processActivityEvents,notificationInbox,deliverPush,savePushDevice,validPushEndpoint} from '../lib/notifications';
+import {processActivityEvents,notificationInbox,deliverPush,savePushDevice,validPushEndpoint,preparePushTest} from '../lib/notifications';
 import {saveRailPost} from '../lib/save-rail-post';
 import {postSchema} from '../lib/validation';
 import {mutateCommunity,people} from '../lib/community';
@@ -23,7 +23,7 @@ before(async()=>{
 });
 after(async()=>db.close());
 beforeEach(async()=>{
- await db.exec(`TRUNCATE "user" CASCADE;DELETE FROM rail_comment_likes;DELETE FROM rail_watches;
+ await db.exec(`TRUNCATE "user" CASCADE;DELETE FROM rail_comment_likes;DELETE FROM rail_watches;DELETE FROM rail_audit;
  INSERT INTO "user" VALUES('a','Alex','a@example.test'),('b','Blair','b@example.test'),('c','Casey','c@example.test');
  INSERT INTO rail_groups(id,name,kind,owner,code) VALUES('g','Test Rail','Friends','a','test-code');
  INSERT INTO rail_members VALUES('g','a'),('g','b');
@@ -37,6 +37,33 @@ beforeEach(async()=>{
 const inbox=async(u:string)=>(await notificationInbox(db,u)).items;
 const act=(user:string,action:string,extra:Record<string,unknown>={})=>mutateActivity(db,user,{scope:'rail',postId:'p',action,...extra});
 const subscription=(suffix='one')=>({endpoint:'https://fcm.googleapis.com/fcm/send/'+suffix,keys:{p256dh:Buffer.alloc(65,1).toString('base64url'),auth:Buffer.alloc(16,2).toString('base64url')}});
+
+test('push test targets only the signed-in user device and limits concurrent requests',async()=>{
+ await savePushDevice(db,'a',subscription());await savePushDevice(db,'b',subscription('other'));
+ let calls=0;const send=async(s:{endpoint:string},payload:string)=>{calls++;assert.equal(s.endpoint,subscription().endpoint);const p=JSON.parse(payload);assert.match(p.body,/Test notification/);assert.equal(p.url,'/?view=notifications');assert.ok(!payload.includes('Original'))};
+ await assert.rejects(preparePushTest(db,'a',subscription('other').endpoint,send),/Enable push/);
+ await assert.rejects(preparePushTest(db,'a','https://localhost/test',send));
+ const attempts=await Promise.allSettled([preparePushTest(db,'a',subscription().endpoint,send),preparePushTest(db,'a',subscription().endpoint,send)]);
+ assert.equal(attempts.filter(r=>r.status==='fulfilled').length,1);assert.equal(calls,0);
+ assert.equal((await notificationInbox(db,'a')).test?.result,'queued');assert.equal((await notificationInbox(db,'b')).test,null);
+ for(const attempt of attempts)if(attempt.status==='fulfilled')await attempt.value.deliver();
+ assert.equal(calls,1);assert.equal((await notificationInbox(db,'a')).test?.result,'accepted');
+ assert.equal((await db.query('SELECT * FROM rail_notifications')).rows.length,0);
+});
+test('push test rechecks device ownership before delayed delivery',async()=>{
+ await savePushDevice(db,'a',subscription());let calls=0;
+ const test=await preparePushTest(db,'a',subscription().endpoint,async()=>{calls++});
+ await savePushDevice(db,'b',subscription());await test.deliver();assert.equal(calls,0);
+ assert.equal((await notificationInbox(db,'a')).test?.result,'cancelled');
+});
+test('push test reports expired and provider failures without exposing provider details',async()=>{
+ for(const [user,status,result] of [['a',410,'expired'],['b',503,'failed']] as const){
+  await savePushDevice(db,user,subscription(user));
+  const test=await preparePushTest(db,user,subscription(user).endpoint,async()=>{throw {statusCode:status,body:'private-provider-details'}});await test.deliver();
+  assert.equal((await notificationInbox(db,user)).test?.result,result);
+ }
+ assert.ok(!JSON.stringify((await db.query("SELECT details FROM rail_audit WHERE kind='notification.test'")).rows).includes('private-provider-details'));
+});
 
 test('poker reactions preserve old hearts, change/remove without duplicate alerts, and never alter follows',async()=>{
  await act('b','like',{enabled:true});await act('b','watch',{enabled:true});
