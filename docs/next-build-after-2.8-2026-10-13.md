@@ -4,7 +4,7 @@ Started October 13, 2026 at 7:44 PM EDT.
 
 Last updated October 14, 2026 at 1:23 AM EDT.
 
-Status: implementation and deployment of the complete list authorized October 14, 2026 at 12:53 AM EDT. Preparing version 2.9.0.
+Status: implementation and deployment of the complete list authorized October 14, 2026 at 12:53 AM EDT. Version 2.9.0 is live; public deployment verified October 14 at 1:38 AM EDT.
 
 ## 1. Make input values easy to read
 
@@ -42,7 +42,7 @@ Requested October 14, 2026 at 12:50 AM EDT. The user requested image creation; a
 - [x] Integrate the image as a background fixed to the viewport: it stays in place while app content scrolls.
 - [ ] Preserve readable posts, numbers and input fields over the image. Test mobile/iPhone scrolling, desktop layout and responsive cropping so the table, rail and crowd remain recognizable.
 
-Generated asset: [Poker-stage background v1](../output/imagegen/rail-social-fixed-background-v1.png). [Final prompt and generation record](../output/imagegen/rail-social-fixed-background-v1-prompt.txt). Created with the built-in image-generation tool; integrated as public/poker-stage-v29.webp; deployment pending.
+Generated asset: [Poker-stage background v1](../output/imagegen/rail-social-fixed-background-v1.png). [Final prompt and generation record](../output/imagegen/rail-social-fixed-background-v1-prompt.txt). Created with the built-in image-generation tool; integrated as public/poker-stage-v29.webp; deployed in version 2.9.0.
 
 ## 5. Compact the top of the app and raise the feed
 
@@ -54,4 +54,4 @@ Requested October 14, 2026 at 12:53 AM EDT, with a phone screenshot showing the 
 
 Automatic information extraction from tournament-clock photos remains a separate future idea recorded in the roadmap.
 
-Implementation, production build and 138 tests passed. Browser and physical iPhone checks have not completed; see [release record](release-2.9-mobile-polish.md).
+Implementation, production build and 138 tests passed. Live browser checks at 390px width passed for header, fields, Villain labels and reaction choices. Physical iPhone/Safari checks remain pending; see [release record](release-2.9-mobile-polish.md).

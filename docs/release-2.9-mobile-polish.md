@@ -1,6 +1,6 @@
 # Rail Social 2.9.0 — mobile layout and poker polish
 
-Authorized October 14, 2026 at 12:53 AM EDT. Prepared October 14 at 1:23 AM EDT; publication pending.
+Authorized October 14, 2026 at 12:53 AM EDT. Live and publicly verified October 14 at 1:38 AM EDT.
 
 ## Changes
 
@@ -16,7 +16,7 @@ Authorized October 14, 2026 at 12:53 AM EDT. Prepared October 14 at 1:23 AM EDT;
 - 138 tests passed, including new reaction authorization/persistence/replacement/removal, migration replay, accessible reaction picker interaction, and Villain renumbering.
 - Isolated HTTP verification passed at 1:17 AM EDT: all five reactions on posts/comments/streets, removal, unauthorized and nonmember denial, invalid-value rejection, served stylesheet and image.
 - New SVG artwork and the compressed background were visually inspected.
-- Browser connection became available during final checks, but localhost inspection repeatedly timed out and did not complete authenticated phone-layout verification. Physical iPhone/Safari checks remain pending.
+- Authenticated live browser inspection at 390px width subsequently passed: compact header, Members/Invite/Manage Rail on one row, light/dark appearance, populated dark Update Stack values, all five reaction picker entries, and Villain labels in existing hand tables/actions. Inspected existing records without saving edits or reactions. Localhost inspection had timed out; physical iPhone/Safari checks remain pending.
 - React review: small pure SVG components, shared display labels, no new network waterfalls or dependencies, existing accessible button names/focus behavior preserved.
 
 ## Database and deployment
@@ -28,6 +28,16 @@ The production build receives the one-time `RAILSOCIAL_RUN_POKER_REACTIONS_MIGRA
 Neon branch rehearsal executed the current schema and migration twice in a 173-statement savepoint transaction. All five constraints expanded successfully; rolling back restored 19 posts, four memberships and the original test schema. Production baseline at about 1:06 AM EDT: seven posts, six memberships, four groups, one session, four post/comment reactions, two street reactions and seven game-history entries.
 
 Photo information extraction remains a future idea and is outside this release.
+
+## Published release evidence
+
+- Code commit: `f24bdb7`, pushed to `codex/rail-social-v2.1`.
+- Deployment: `dpl_319Uq1V4ZTEEm58AGVofjPkj4s8e`.
+- Immutable URL: https://railsupport-fsd8g0zo4-rage-factory1.vercel.app.
+- Staged verification passed at 1:35 AM EDT; public verification passed at 1:38 AM EDT. Both returned HTTP 200 for the exact deployment, all ten JavaScript bundles and five stylesheets, expected 401 responses from protected APIs, and 404 for an invalid invitation. Public background returned the expected WebP and exact byte count.
+- Production migration verified all five expanded constraints; counts remained seven posts, six memberships, four groups, one session, four post/comment reactions, two street reactions and seven history entries.
+- Initial deployment log inspection found no 5xx requests. Nine error-level entries contained the existing PostgreSQL client's future SSL-mode compatibility warning; no application exception appeared in those entries.
+- Local evidence: `tmp/verified-2.9-staged.json`, `tmp/verified-2.9-live.json`, `tmp/release-2.9-http-result.json`, `tmp/compact-header-2.9.jpg`, `tmp/stack-fields-2.9.jpg`.
 
 ## Working preference
 
