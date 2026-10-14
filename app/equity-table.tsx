@@ -1,3 +1,4 @@
+import {villainLabel} from '@/lib/player-labels';
 import type {ReactNode} from 'react';
 import type {MultiwayOddsResult} from '@/lib/odds';
 import {equitySeats} from '@/lib/equity-seats';
@@ -19,7 +20,7 @@ export default function EquityTable({players,board,active,result,disabled,onSele
  return <div className={`equity-table players-${players.length}`} role="group" aria-label="Poker table">
   <div className="equity-felt" aria-hidden="true"/>
   {equitySeats(players).map(({player,index,slot})=>{
-   const name=index===0?(readOnly?'Hero':'You'):`Opponent ${index}`;
+   const name=index===0?(readOnly?'Hero':'You'):villainLabel(index,players.length-1);
    return <button type="button" key={player.id} className={`equity-seat seat-${slot===0?'hero':slot}${active===player.id?' is-active':''}`} disabled={disabled} tabIndex={readOnly?-1:0} aria-pressed={active===player.id} aria-label={`${readOnly?'':'Edit '}${name}${player.position?`, ${player.position}`:''}`} onClick={()=>{if(!readOnly)onSelect(player.id)}}>
     <span className="equity-seat-name">{name}</span><span className="equity-seat-position">{player.position||'Position —'}</span><EquityCards value={player.cards} count={2}/><strong className="equity-seat-value">{result?`${(result.players[index].equity*100).toFixed(1)}%`:'—'}</strong><small>equity</small>{player.stackLabel&&<span className="equity-seat-stack">{player.stackLabel}</span>}
    </button>;

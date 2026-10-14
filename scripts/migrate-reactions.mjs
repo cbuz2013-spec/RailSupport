@@ -3,16 +3,17 @@ import pg from 'pg';
 
 // Explicit one-off release switch. Ordinary local and Vercel builds never migrate.
 const community=process.env.RAILSOCIAL_RUN_COMMUNITY_MIGRATION==='true';
+const poker=process.env.RAILSOCIAL_RUN_POKER_REACTIONS_MIGRATION==='true';
 const history=process.env.RAILSOCIAL_RUN_HISTORY_MIGRATION==='true';
 const games=process.env.RAILSOCIAL_RUN_GAMES_MIGRATION==='true';
 const tournaments=process.env.RAILSOCIAL_RUN_TOURNAMENT_MIGRATION==='true';
-if(!history&&!games&&!tournaments&&!community&&process.env.RAILSOCIAL_RUN_REACTION_MIGRATION!=='true')process.exit(0);
+if(!poker&&!history&&!games&&!tournaments&&!community&&process.env.RAILSOCIAL_RUN_REACTION_MIGRATION!=='true')process.exit(0);
 if(process.env.VERCEL_ENV!=='production'||process.env.BETTER_AUTH_URL?.replace(/\/$/,'')!=='https://railsupport.vercel.app')throw Error('Reaction migration requires the Rail Social production environment.');
 if(!process.env.DATABASE_URL)throw Error('Production database is not configured.');
 const connection=new URL(process.env.DATABASE_URL);
 // Neon schema changes use the direct endpoint for the same configured database.
 if(connection.hostname.endsWith('.neon.tech'))connection.hostname=connection.hostname.replace(/-pooler(?=\.)/,'');
-if((history||games||tournaments)&&(!process.env.RAILSOCIAL_EXPECTED_DATABASE_HOST||connection.hostname!==process.env.RAILSOCIAL_EXPECTED_DATABASE_HOST))throw Error('Tournament migration database does not match the verified production branch.');
+if((poker||history||games||tournaments)&&(!process.env.RAILSOCIAL_EXPECTED_DATABASE_HOST||connection.hostname!==process.env.RAILSOCIAL_EXPECTED_DATABASE_HOST))throw Error('Tournament migration database does not match the verified production branch.');
 const client=new pg.Client({connectionString:connection.toString(),connectionTimeoutMillis:15000});
 try{
  await client.connect();
@@ -23,6 +24,7 @@ try{
  if(tournaments)await client.query(await readFile(new URL('./tournaments-2.6.sql',import.meta.url),'utf8'));
  if(games)await client.query(await readFile(new URL('./active-games-2.7.sql',import.meta.url),'utf8'));
  if(history)await client.query(await readFile(new URL('./game-history-2.8.sql',import.meta.url),'utf8'));
+ if(poker)await client.query(await readFile(new URL('./poker-reactions-2.9.sql',import.meta.url),'utf8'));
  const check=await client.query("SELECT count(*)::int AS count FROM information_schema.columns WHERE table_schema='public' AND table_name IN ('rail_likes','rail_room_likes','rail_table_likes','rail_comment_likes') AND column_name='reaction' AND is_nullable='NO'");
  if(check.rows[0].count!==4)throw Error('Reaction schema validation failed.');
  await client.query('SELECT reaction FROM rail_activity_reactions LIMIT 0');
@@ -30,6 +32,7 @@ try{
  if(tournaments){await client.query('SELECT tournament,parent_group_id FROM rail_groups LIMIT 0');await client.query('SELECT group_id,body FROM rail_tournament_chat LIMIT 0');}
  if(games)await client.query('SELECT finished_at,rail_game_visible_to(id,user_id) FROM rail_sessions LIMIT 0');
  if(history){await client.query('SELECT stats FROM rail_game_updates LIMIT 0');await client.query('SELECT revision FROM rail_game_photos LIMIT 0');}
+ if(poker){const checks=await client.query("SELECT count(*)::int AS n FROM pg_constraint WHERE conname IN ('rail_likes_reaction_check','rail_room_likes_reaction_check','rail_table_likes_reaction_check','rail_comment_likes_reaction_check','rail_street_reactions_reaction_check') AND pg_get_constraintdef(oid) LIKE '%chip_shuffle%'");if(checks.rows[0].n!==5)throw Error('Poker reaction validation failed.');}
  await client.query('COMMIT');
  console.log('Rail Social additive migration completed and verified.');
 }catch(error){

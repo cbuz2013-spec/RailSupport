@@ -1,3 +1,4 @@
+import {villainLabel} from './player-labels';
 export const RANKS='23456789TJQKA';
 export const SUITS='shdc';
 export function parseCards(value:string):string[]{
@@ -56,10 +57,10 @@ function sevenScore(cards:string[]):number{
 }
 
 export async function calculateMultiwayOdds(handTexts:string[],boardText:string,options:CalculationOptions={}):Promise<MultiwayOddsResult>{
- if(handTexts.length<2||handTexts.length>5)throw Error('Compare your hand with 1 to 4 opponents.');
+ if(handTexts.length<2||handTexts.length>5)throw Error('Compare your hand with 1 to 4 villains.');
  const hands=handTexts.map(parseCards),board=parseCards(boardText);
  const incomplete=hands.findIndex(hand=>hand.length!==2);
- if(incomplete>=0)throw Error(`Choose two cards for ${incomplete===0?'your hand':`Opponent ${incomplete}`}.`);
+ if(incomplete>=0)throw Error(`Choose two cards for ${incomplete===0?'your hand':villainLabel(incomplete,handTexts.length-1)}.`);
  if(![0,3,4,5].includes(board.length))throw Error('Choose 0, 3, 4, or 5 board cards.');
  const known=[...hands.flat(),...board];if(new Set(known).size!==known.length)throw Error('A card cannot appear twice.');
  const deck=[...RANKS].flatMap(r=>[...SUITS].map(s=>r+s)).filter(c=>!known.includes(c));

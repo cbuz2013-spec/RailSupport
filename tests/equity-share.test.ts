@@ -14,7 +14,7 @@ test('share draft uses current calculator hands and retains source context witho
  assert.equal(draft.hand.stakes,'$1 / $3');assert.equal(draft.hand.action,source.action);assert.equal(draft.hand.result,'');
  const summary=equityShareSummary(draft);
  assert.match(summary,/Your hand \(BTN\): Ah Qh · 25.0% equity/);
- assert.match(summary,/Opponent 2 \(SB\): Jc Tc · 0.0% equity/);
+ assert.match(summary,/Villain 2 \(SB\): Jc Tc · 0.0% equity/);
  assert.match(summary,/Exact equity · 42 runouts/);
  assert.doesNotMatch(JSON.stringify(draft),/Private hidden showdown notes/);
 });
@@ -32,7 +32,7 @@ test('sharing routes to the selected destination and preserves all opponents, th
   const table=equityShareRequest(draft,{kind:'table',audience},notes);
   assert.equal(table.path,'/api/table-talk');assert.equal(table.payload.audience,audience);
   for(const body of [table.payload.body,room.payload.body]){
-   assert.match(body,/Opponent 2 \(SB\): Jc Tc/);assert.match(body,/Board: Qs 9h 4c 7h/);
+   assert.match(body,/Villain 2 \(SB\): Jc Tc/);assert.match(body,/Board: Qs 9h 4c 7h/);
    assert.ok(body.includes(source.action));assert.ok(body.includes(source.question));assert.ok(body.includes(notes.context));
   }
  }

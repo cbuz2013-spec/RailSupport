@@ -10,6 +10,7 @@ import {postSchema} from '../lib/validation';
 import {mutateCommunity,people} from '../lib/community';
 import {withReview,withStreetBoard} from '../lib/hand-review';
 import type {Hand} from '../lib/types';
+import {reactStreet,streetState} from '../lib/street-reactions';
 let db:PGlite;
 let pool:Pool;
 before(async()=>{
@@ -61,6 +62,31 @@ test('reactions work on rooms, Table Talk and comments with existing access rule
  await act('b','reactComment',{commentId:comment.id,reaction:'heart'});await processActivityEvents(db,50);assert.equal((await inbox('a')).filter(n=>n.kind==='comment_like').length,1);
  await act('b','reactComment',{commentId:comment.id,reaction:null});thread=await activityComments(db,'b','rail','p');assert.deepEqual(thread.comments[0].reactions,{});
  await assert.rejects(act('c','reactComment',{commentId:comment.id,reaction:'shark'}));
+});
+
+test('new poker reactions round-trip on posts, comments and streets; migration reruns preserve choices and events',async()=>{
+ const additions=['all_in','muck_that','slow_roll','chip_shuffle','tank'];
+ for(const [scope,postId,table] of [['rail','p','rail_posts'],['room','rp','rail_room_posts'],['table','tp','rail_table_posts']] as const){
+  await db.query(`UPDATE ${table} SET hand=$1::jsonb WHERE id=$2`,[JSON.stringify({question:'Review this hand'}),postId]);
+  const comment=await mutateActivity(db,'b',{action:'comment',scope,postId,body:'Poker reactions test'});
+  for(const reaction of additions){
+   await mutateActivity(db,'b',{action:'react',scope,postId,reaction});
+   const state=(await activityStates(db,'b',[{scope,id:postId}]))[0];assert.equal(state.myReaction,reaction);assert.deepEqual(state.reactions,{[reaction]:1});
+   await mutateActivity(db,'b',{action:'reactComment',scope,postId,commentId:comment.id,reaction});
+   const thread=await activityComments(db,'b',scope,postId);assert.equal(thread.comments[0].myReaction,reaction);
+   await reactStreet(db,'b',{scope,postId,street:'flop',reaction});
+   assert.equal((await streetState(db,'b',{scope,postId,street:'flop'})).myReaction,reaction);
+  }
+ }
+ const before=(await db.query('SELECT (SELECT count(*) FROM rail_activity_events) AS events,(SELECT count(*) FROM rail_activity_reactions) AS reactions,(SELECT count(*) FROM rail_street_reactions) AS streets')).rows;
+ const migration=await readFile(new URL('../scripts/poker-reactions-2.9.sql',import.meta.url),'utf8');
+ await db.exec(migration);await db.exec(migration);
+ // The full setup also remains safe to rerun after saving a new reaction.
+ await db.exec(await readFile(new URL('../scripts/schema.sql',import.meta.url),'utf8'));
+ assert.deepEqual((await db.query('SELECT (SELECT count(*) FROM rail_activity_events) AS events,(SELECT count(*) FROM rail_activity_reactions) AS reactions,(SELECT count(*) FROM rail_street_reactions) AS streets')).rows,before);
+ assert.equal((await activityStates(db,'b',[{scope:'rail',id:'p'}]))[0].myReaction,'tank');
+ await assert.rejects(act('c','react',{reaction:'all_in'}));await assert.rejects(reactStreet(db,'c',{scope:'rail',postId:'p',street:'flop',reaction:'tank'}));
+ await db.exec("INSERT INTO rail_blocks(blocker_id,blocked_id) VALUES('a','b')");await assert.rejects(act('b','react',{reaction:'chip_shuffle'}));
 });
 
 test('optional post fields preserve zero, allow partial hands, reject malformed cards and empty posts',()=>{

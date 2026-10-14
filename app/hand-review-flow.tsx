@@ -1,4 +1,5 @@
 'use client';
+import {villainLabel} from '@/lib/player-labels';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {Banknote,Plus,Trash2,Trophy} from 'lucide-react';
 import type {Hand,HandReview,StackUnit} from '@/lib/types';
@@ -19,7 +20,7 @@ export default function HandReviewFlow({hand,onChange,step,onStep,busy,children}
  const heading=useRef<HTMLHeadingElement>(null);
  useEffect(()=>{heading.current?.focus({preventScroll:true});heading.current?.scrollIntoView({block:'nearest'});},[step]);
  const activeIndex=players.findIndex(player=>player.id===active),player=players[activeIndex];
- const playerName=active==='hero'?'Your hand':`Opponent ${activeIndex}`;
+ const playerName=active==='hero'?'Your hand':villainLabel(activeIndex,players.length-1);
  function update(patch:Partial<HandReview>,clearEquity=false){onChange(withReview(hand,patch,clearEquity));}
  function changePlayer(index:number,patch:{cards?:string;position?:string;stack?:string;stackUnit?:StackUnit}){
   if(index===0){const next=withReview(hand,patch.stackUnit!==undefined?{stackUnit:patch.stackUnit}:{},patch.cards!==undefined);onChange({...next,...(patch.cards!==undefined?{hero:patch.cards}:{}),...(patch.position!==undefined?{position:patch.position}:{}),...(patch.stack!==undefined?{stack:patch.stack}:{})});}
@@ -44,11 +45,11 @@ export default function HandReviewFlow({hand,onChange,step,onStep,busy,children}
     <div className="stack-entry"><label className="field">Your current stack (optional)<input value={hand.stack} maxLength={30} inputMode="decimal" placeholder={review.stackUnit==='chips'?'e.g. 45,000':'e.g. 45'} onChange={e=>changePlayer(0,{stack:e.target.value,stackUnit:review.stackUnit||'bb'})}/></label><label className="field">Your stack unit<select value={review.stackUnit||(hand.stack?'':'bb')} onChange={e=>changePlayer(0,{stackUnit:e.target.value as StackUnit})}>{hand.stack&&!review.stackUnit&&<option value="">Choose units</option>}{review.stackUnit==='currency'&&<option value="currency">Cash amount (saved)</option>}<option value="chips">Chips</option><option value="bb">Big blinds</option></select></label></div>
    </>}
    {step===3&&<>
-    <div className="review-player-tabs" role="group" aria-label="Choose a player">{players.map((item,index)=><button type="button" key={item.id} aria-pressed={active===item.id} onClick={()=>setActive(item.id)}>{index===0?'You':`Opponent ${index}`}<small>{item.cards||'Cards optional'}</small></button>)}</div>
+    <div className="review-player-tabs" role="group" aria-label="Choose a player">{players.map((item,index)=><button type="button" key={item.id} aria-pressed={active===item.id} onClick={()=>setActive(item.id)}>{index===0?'You':villainLabel(index,players.length-1)}<small>{item.cards||'Cards optional'}</small></button>)}</div>
     {players.length===2&&<label className="action-all-in"><input type="checkbox" checked={review.headsUp||false} onChange={e=>update({headsUp:e.target.checked})}/>Heads-up table (only two players were dealt in)</label>}
-    <div className="equity-toolbar"><span>{review.opponents.length} of 4 opponents</span><button type="button" className="outline" disabled={review.opponents.length===4} onClick={addOpponent}><Plus size={16} aria-hidden="true"/>Add opponent</button></div>
+    <div className="equity-toolbar"><span>{review.opponents.length} of 4 villains</span><button type="button" className="outline" disabled={review.opponents.length===4} onClick={addOpponent}><Plus size={16} aria-hidden="true"/>Add villain</button></div>
     {player&&<>
-     <div className="review-player-heading"><h4>{playerName}</h4>{activeIndex>0&&review.opponents.length>1&&<button type="button" className="equity-remove" onClick={()=>removeOpponent(activeIndex)}><Trash2 size={15} aria-hidden="true"/>Remove opponent</button>}</div>
+     <div className="review-player-heading"><h4>{playerName}</h4>{activeIndex>0&&review.opponents.length>1&&<button type="button" className="equity-remove" onClick={()=>removeOpponent(activeIndex)}><Trash2 size={15} aria-hidden="true"/>Remove villain</button>}</div>
      <label className="field">Position (optional)<select aria-label={`${playerName} position`} value={player.position} onChange={event=>changePlayer(activeIndex,{position:event.target.value})}><option value="">Not specified</option>{player.position&&!EQUITY_POSITIONS.some(item=>item.value===player.position)&&<option value={player.position}>{player.position}</option>}{EQUITY_POSITIONS.map(position=><option key={position.value} value={position.value}>{position.label} ({position.value})</option>)}</select></label>
      {activeIndex>0&&<div className="stack-entry"><label className="field">{playerName} stack (optional)<input value={player.stack} maxLength={30} placeholder="e.g. 45" onChange={e=>changePlayer(activeIndex,{stack:e.target.value,stackUnit:player.stackUnit||'bb'})}/></label><label className="field">Stack unit<select value={player.stackUnit||''} onChange={e=>changePlayer(activeIndex,{stackUnit:e.target.value as StackUnit})}><option value="">Not specified</option><option value="bb">Big blinds</option><option value="chips">Chips</option><option value="currency">Cash amount</option></select></label></div>}
      <CardPicker key={active} label={`${playerName} cards (optional)`} value={player.cards} maxCards={2} unavailable={[knownBoardCards(hand).join(' '),...players.filter(item=>item.id!==active).map(item=>item.cards)].join(' ')} onChange={cards=>changePlayer(activeIndex,{cards})} hint="Tap the cards you know. Unknown cards can stay blank." disabled={busy}/>

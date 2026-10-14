@@ -4,6 +4,16 @@ Updated **October 13, 2026**. **Current deployed release: 2.8.0 — one game gra
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
+## Version 2.9 — implementation in progress
+
+Started October 13, 2026 at 7:44 PM EDT. [Next-build list](docs/next-build-after-2.8-2026-10-13.md). Build and deployment authorized October 14, 2026 at 12:53 AM EDT.
+
+- [ ] **Readable input fields** — Increase contrast so entered numbers are easy to see, starting with all five Update Stack fields and other inputs using the same styling. Verify phone readability, including iPhone/Safari.
+- [ ] **Villain labels in hand histories/reviews** — Use Villain for one opponent, or Villain 1, Villain 2, etc. for multiple opponents, with consistent numbering throughout the hand. Added October 14, 2026 at 12:38 AM EDT.
+- [ ] **Poker-themed emojis** — Add All In, Muck That, Slow Roll, Chip Shuffling and Tank, with recognizable poker imagery and clear labels at phone sizes. Added October 14, 2026 at 12:48 AM EDT.
+- [ ] **Fixed poker-stage background** — Use the generated silhouette of a poker table, spectator rail, cheering crowd and stage lights as a stationary background while app content scrolls. Image created October 14, 2026 at 12:50 AM EDT; app integration remains queued. See the next-build list for the asset and prompt.
+- [ ] **Compact mobile header** — Put Members, Invite friends and Manage Rail in one row and reduce the space above the feed while preserving readable controls and navigation.
+
 ## Completed October 13 — game history, photos and rail deletion
 
 Version 2.8.0 is live and verified October 13, 2026 at 4:56 PM EDT, with 135 passing tests. [Requirements](docs/next-update-list-2026-10-13.md) · [Release record](docs/release-2.8-game-history.md).

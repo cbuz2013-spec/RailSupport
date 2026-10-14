@@ -58,7 +58,7 @@ test('optional sizes, notes and selected stack units survive validated save/edit
  let h=act(initial(),'flop','bet');h=act(h,'flop','call');const r=reviewDetails(h);h=withReview(h,{streets:{...r.streets,flop:'Size unknown, live read.'}});
  const parsed=postSchema.safeParse({groupId:'private',kind:'hand',hand:JSON.parse(JSON.stringify(h))});assert.equal(parsed.success,true);
  if(parsed.success){assert.deepEqual(parsed.data.hand?.review?.actions,h.review?.actions);assert.equal(parsed.data.hand?.stack,'40000');assert.equal(parsed.data.hand?.review?.stackUnit,'chips');}
- assert.match(streetActionText(reviewDetails(h),'flop'),/SB · Opponent 1: Bet\nBB · Opponent 2: Call\nSize unknown/);
+ assert.match(streetActionText(reviewDetails(h),'flop'),/SB · Villain 1: Bet\nBB · Villain 2: Call\nSize unknown/);
  assert.equal(stackLabel('40000','chips'),'40000 chips');assert.equal(stackLabel('40','bb'),'40 BB');
  assert.equal(stackLabel('40000','chips','1000','chips'),'40000 chips · 40 BB');
  const undone=withReview(h,{actions:{...r.actions,flop:r.actions!.flop!.slice(0,-1)}});assert.equal(actionState(undone,'flop').current?.position,'BB');

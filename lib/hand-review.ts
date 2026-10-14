@@ -26,7 +26,7 @@ export function withStreetBoard(hand:Hand,street:BoardStreet,value:string):Hand 
 }
 export function equityUnavailable(hand:Hand):string {
  const hands=reviewPlayers(hand).map(player=>player.cards.trim().split(/\s+/).filter(Boolean));
- if(hands.some(cards=>cards.length!==2))return 'To calculate equity, choose two cards for yourself and each opponent. Unknown hands can stay blank—skip equity and continue your review.';
+ if(hands.some(cards=>cards.length!==2))return 'To calculate equity, choose two cards for yourself and each villain. Unknown hands can stay blank—skip equity and continue your review.';
  if(hasBoardGaps(hand))return 'Some earlier board cards are missing. Add them for later-street equity, or continue without equity.';
  const board=hand.board.trim().split(/\s+/).filter(Boolean);
  if(![0,3,4,5].includes(board.length))return 'For equity, use no board or a complete flop, turn or river. You can keep a partial board and skip this step.';

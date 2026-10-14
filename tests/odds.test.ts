@@ -53,10 +53,10 @@ test('excludes all five hands from flop and turn runouts and conserves pot equit
 });
 
 test('multiway validation covers every hand, the player limit and cross-player duplicates',async()=>{
- await assert.rejects(calculateMultiwayOdds(['Ah Ad'],''),/1 to 4 opponents/);
- await assert.rejects(calculateMultiwayOdds(Array(6).fill('Ah Ad'),''),/1 to 4 opponents/);
+ await assert.rejects(calculateMultiwayOdds(['Ah Ad'],''),/1 to 4 villains/);
+ await assert.rejects(calculateMultiwayOdds(Array(6).fill('Ah Ad'),''),/1 to 4 villains/);
  await assert.rejects(calculateMultiwayOdds(['','Ks Kd'],''),/your hand/);
- await assert.rejects(calculateMultiwayOdds(['Ah Ad','Ks Kd','Qs Qd','Js Jd','Tc'],''),/Opponent 4/);
+ await assert.rejects(calculateMultiwayOdds(['Ah Ad','Ks Kd','Qs Qd','Js Jd','Tc'],''),/Villain 4/);
  await assert.rejects(calculateMultiwayOdds(['Ah Ad','Ks Kd','Qs Ah'],''),/cannot appear twice/);
  await assert.rejects(calculateMultiwayOdds(['Ah Ad','Ks Kd','Qs Qd'],'2c 3d Qd'),/cannot appear twice/);
 });

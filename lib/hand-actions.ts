@@ -1,3 +1,4 @@
+import {villainLabel} from './player-labels';
 import type {Hand,HandAction,HandActionKind,HandReview} from './types';
 import {reviewDetails,reviewPlayers,STREETS} from './hand-review';
 import type {Street} from './hand-streets';
@@ -5,19 +6,19 @@ import type {Street} from './hand-streets';
 const preflop=['UTG','UTG+1','MP','LJ','HJ','CO','BTN','SB','BB'];
 const postflop=['SB','BB','UTG','UTG+1','MP','LJ','HJ','CO','BTN'];
 export const ACTION_LABELS:Record<HandActionKind,string>={check:'Check',bet:'Bet',call:'Call',fold:'Fold',raise:'Raise'};
-export const actionPlayerName=(id:string)=>id==='hero'?'You':`Opponent ${id.split('-')[1]}`;
+export const actionPlayerName=(id:string,count:number)=>id==='hero'?'You':villainLabel(Number(id.split('-')[1]),count);
 export function actionOrder(hand:Hand,street:Street){
  const players=reviewPlayers(hand),order=street==='preflop'?preflop:postflop;
  // A recorded heads-up SB/button acts first preflop and last after the flop.
  const headsUp=hand.review?.headsUp===true&&players.length===2&&players.some(p=>p.position==='BB')&&players.some(p=>p.position==='SB'||p.position==='BTN');
  return [...players].sort((a,b)=>headsUp?(street==='preflop'?(a.position==='BB'?1:-1):(a.position==='BB'?-1:1)):order.indexOf(a.position)-order.indexOf(b.position));
 }
-export function actionText(action:HandAction){
+export function actionText(action:HandAction,count:number){
  const size=action.amount?` ${action.kind==='raise'?'to ':''}${action.amount} ${action.unit==='bb'?'BB':'chips'}`:'';
- return `${action.position} · ${action.playerId==='hero'?'Hero':actionPlayerName(action.playerId)}: ${ACTION_LABELS[action.kind]}${size}${action.allIn?' (all-in)':''}`;
+ return `${action.position} · ${action.playerId==='hero'?'Hero':actionPlayerName(action.playerId,count)}: ${ACTION_LABELS[action.kind]}${size}${action.allIn?' (all-in)':''}`;
 }
 export function streetActionText(review:HandReview,street:Street){
- return [...(review.actions?.[street]||[]).map(actionText),review.streets[street]].filter(Boolean).join('\n');
+ return [...(review.actions?.[street]||[]).map(action=>actionText(action,review.opponents.length)),review.streets[street]].filter(Boolean).join('\n');
 }
 export function actionState(hand:Hand,street:Street){
  const review=reviewDetails(hand),players=actionOrder(hand,street),prior=STREETS.slice(0,STREETS.indexOf(street)).flatMap(s=>review.actions?.[s]||[]);

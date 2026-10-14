@@ -1,3 +1,4 @@
+import {villainLabel} from './player-labels';
 import {hasBoardGaps,knownBoardCards,reviewBoard} from './hand-board';
 import {parseCards,type MultiwayOddsResult} from './odds';
 import type {Hand} from './types';
@@ -10,7 +11,7 @@ export type ShareDestination={kind:'rail';id:string}|{kind:'room';id:string}|{ki
 export type ShareNotes={context:string;action:string;question:string};
 
 export function createEquityShareDraft(players:EquitySharePlayer[],board:string,result:MultiwayOddsResult|null,source?:Hand|null):EquityShareDraft{
- if(players.length<2||players.length>5)throw Error('Choose your hand and 1 to 4 opponents before sharing.');
+ if(players.length<2||players.length>5)throw Error('Choose your hand and 1 to 4 villains before sharing.');
  const hands=players.map((player,index)=>{
   const cards=parseCards(player.cards);
   if(cards.length>2)throw Error('Use at most two cards per player.');
@@ -32,7 +33,7 @@ export function equityShareSummary(draft:EquityShareDraft):string{
  return [
   `Hand history · ${hand.game} · ${street}`,
   ...[hand.stakes&&`Stakes / event: ${hand.stakes}`,hand.stack&&`${hand.review?"Your stack":"Effective stack"}: ${hand.stack}`,hand.pot&&`Pot: ${hand.pot}`].filter(Boolean),
-  ...players.map((player,index)=>`${index===0?'Your hand':`Opponent ${index}`}${player.position?` (${player.position})`:''}: ${player.cards}${result?` · ${(result.players[index].equity*100).toFixed(1)}% equity`:''}`),
+  ...players.map((player,index)=>`${index===0?'Your hand':villainLabel(index,players.length-1)}${player.position?` (${player.position})`:''}: ${player.cards}${result?` · ${(result.players[index].equity*100).toFixed(1)}% equity`:''}`),
   hasBoardGaps(hand)?`Board: ${(['flop','turn','river'] as const).map(street=>`${street}: ${reviewBoard(hand)[street]||'not entered'}`).join(' · ')}`:`Board: ${hand.board||'No community cards (preflop)'}`,
   result?`${result.exact?'Exact':'Estimated'} equity · ${result.trials.toLocaleString('en-US')} ${result.exact?(result.trials===1?'runout':'runouts'):'sampled runouts'}. Includes shares of tied pots.`:'Equity not calculated.',
  ].join('\n');

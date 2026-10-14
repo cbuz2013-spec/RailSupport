@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS rail_street_reactions (
  scope text NOT NULL CHECK(scope IN ('rail','room','table')),post_id text NOT NULL,
  street text NOT NULL CHECK(street IN ('preflop','flop','turn','river')),
  user_id text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
- reaction text NOT NULL CHECK(reaction IN ('heart','nice_hand','donkey','fish','shark','so_sick')),
+ reaction text NOT NULL CHECK(reaction IN ('heart','nice_hand','donkey','fish','shark','so_sick','all_in','muck_that','slow_roll','chip_shuffle','tank')),
  created timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(scope,post_id,street,user_id)
 );
 CREATE TABLE IF NOT EXISTS rail_admins (user_id text PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE);
@@ -71,7 +71,7 @@ CREATE TRIGGER rail_street_reaction_event AFTER INSERT ON rail_street_reactions 
 DO $$ DECLARE t text; BEGIN
  FOREACH t IN ARRAY ARRAY['rail_likes','rail_room_likes','rail_table_likes','rail_comment_likes'] LOOP
  EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I',t,t||'_reaction_check');
- EXECUTE format('ALTER TABLE %I ADD CONSTRAINT %I CHECK(reaction IN (''heart'',''nice_hand'',''donkey'',''fish'',''shark'',''so_sick''))',t,t||'_reaction_check');
+ EXECUTE format('ALTER TABLE %I ADD CONSTRAINT %I CHECK(reaction IN (''heart'',''nice_hand'',''donkey'',''fish'',''shark'',''so_sick'',''all_in'',''muck_that'',''slow_roll'',''chip_shuffle'',''tank''))',t,t||'_reaction_check');
  END LOOP;
 END $$;
 

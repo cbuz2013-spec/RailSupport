@@ -58,6 +58,18 @@ async function mount(initial:Hand,startStep:number){
  return {container,button,click,pick,checkControls,size,hand:()=>saved,close:async()=>{await act(async()=>root.unmount());container.remove();}};
 }
 
+test('one villain becomes numbered villains when another player is added, with consistent card-editor labels',async()=>{
+ const ui=await mount(seed(),3);
+ try{
+  const tabs=()=>Array.from(ui.container.querySelectorAll<HTMLButtonElement>('.review-player-tabs button'));
+  assert.match(tabs()[1].textContent||'',/^VillainKh Kd$/);assert.doesNotMatch(ui.container.textContent||'',/Opponent/);
+  await ui.click(tabs()[1]);assert.equal(ui.container.querySelector('.review-player-heading h4')?.textContent,'Villain');assert.ok(ui.container.querySelector('[aria-label="Villain position"]'));
+  await ui.click(ui.button('Add villain'));
+  assert.match(tabs()[1].textContent||'',/^Villain 1/);assert.match(tabs()[2].textContent||'',/^Villain 2/);assert.equal(ui.container.querySelector('.review-player-heading h4')?.textContent,'Villain 2');
+  await ui.click(ui.button('Remove villain'));assert.match(tabs()[1].textContent||'',/^VillainKh Kd$/);assert.equal(ui.hand().review?.opponents[0].cards,'Kh Kd');
+ }finally{await ui.close()}
+});
+
 test('flop card clicks stay in one three-card picker across edits, actions and street navigation',async()=>{
  const ui=await mount(seed(),4);
  try{
