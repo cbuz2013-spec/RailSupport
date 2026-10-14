@@ -1,8 +1,12 @@
 # Rail Social — current build roadmap
 
-Updated **October 14, 2026**. **Current deployed release: 2.9.0 — compact mobile header, readable inputs, Villain labels, five poker reactions and a fixed poker-stage background. Retains version 2.8 features — one game graphic with chip history, current counts, paid places, status and optional clock/game photo; plus owner-only Delete Rail with explicit confirmation. Retains tournament notifications, Active Games, dedicated tournament rails, live chat, simple posts, invitations, card selection and equity sharing.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 14, 2026**. **Current deployed release: 2.9.1 — compact mobile header, readable inputs, Villain labels, five poker reactions and a fixed poker-stage background. Retains version 2.8 features — one game graphic with chip history, current counts, paid places, status and optional clock/game photo; plus owner-only Delete Rail with explicit confirmation. Retains tournament notifications, Active Games, dedicated tournament rails, live chat, simple posts, invitations, card selection and equity sharing.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
+
+## Completed October 14 — raised background
+
+Version 2.9.1 raises the poker scene into the visible gap near the top. Published and verified at 1:51 AM EDT. [Release record](docs/release-2.9.1-background.md).
 
 ## Completed October 14 — mobile layout and poker polish
 
