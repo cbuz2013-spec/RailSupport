@@ -29,7 +29,7 @@ Deployed and promoted to https://railsupport.vercel.app/forgot-password.
 
 ## Remaining account milestones
 
-Confirm a real user's inbox receives the reset message by requesting one through the live form. The user chooses their own password. Email ownership verification, account/session settings and account deletion remain separate planned tasks.
+Updated October 14, 2026: a user-approved request through the live form reached the real Gmail inbox at 2:22:54 AM EDT. The email link returns a valid callback and opens the password form in the desktop browser. In Gmail on iPhone, pressing and holding opens the form in Safari; ordinary single-tap behavior remains a usability follow-up. At 2:56 AM EDT the user confirmed completing their own password reset and successfully signing back in. The assistant did not choose or enter the password. See [current phone/account verification](docs/device-account-verification-2026-10-14.md) for evidence and remaining account checks; later releases have implemented account settings and deletion.
 
 The original October 8 graphical/PDF roadmap files are historical planning artifacts. The Markdown roadmap/checklist now records task 1.2 complete and keeps task 1.1 open pending inbox confirmation.
 

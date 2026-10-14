@@ -1,12 +1,18 @@
 # Rail Social — current build roadmap
 
-Updated **October 14, 2026**. **Current deployed release: 2.9.1 — compact mobile header, readable inputs, Villain labels, five poker reactions and a fixed poker-stage background. Retains version 2.8 features — one game graphic with chip history, current counts, paid places, status and optional clock/game photo; plus owner-only Delete Rail with explicit confirmation. Retains tournament notifications, Active Games, dedicated tournament rails, live chat, simple posts, invitations, card selection and equity sharing.** This is the build-only roadmap; marketing and participation goals remain separate.
+Updated **October 14, 2026**. **Current deployed release: 2.9.2 — adds a delayed notification test for the current device, with delivery results. Retains compact mobile header, readable inputs, Villain labels, five poker reactions and a fixed poker-stage background; game history/photos, owner-only Delete Rail, tournament notifications, Active Games, dedicated tournament rails, live chat, simple posts, invitations, card selection and equity sharing.** This is the build-only roadmap; marketing and participation goals remain separate.
 
 The detailed [feature checklist](docs/rail-social-build-checklist-2026-10-08.md) and [task data](docs/rail-social-build-checklist-2026-10-08-data.json) are synchronized. They retain all **51 feature tasks and 6 external milestones**. Checked means delivered and verified within the stated scope. Partial work is listed explicitly instead of checking off an unfinished stage.
 
 ## Completed October 14 — raised background
 
 Version 2.9.1 raises the poker scene into the visible gap near the top. Published and verified at 1:51 AM EDT. [Release record](docs/release-2.9.1-background.md).
+
+## October 14 — phone/account checks and notification test
+
+Version 2.9.2 is live at 2:52 AM EDT. Notifications includes **Send test notification**, delayed 10 seconds so the user can leave the app. It targets only their current registered device and reports provider results. Twenty-seven tests and local/cloud production builds passed. [Release record](docs/release-2.9.2-notification-test.md).
+
+The user confirmed upright, persistent photos and readable numbers on their iPhone. A new reset email reached the real inbox; its form opened from Gmail using press-and-hold, and the user completed reset/sign-in. At 2:56 AM EDT, they confirmed the delayed test alert appeared on the locked iPhone. Single-tap Gmail behavior remains a usability follow-up. [Verification checklist](docs/device-account-verification-2026-10-14.md).
 
 ## Completed October 14 — mobile layout and poker polish
 
@@ -172,15 +178,17 @@ These checkoffs describe delivered feature scope. Entire stages 1–3 remain par
 
 ## Deployed, with verification or feature work remaining
 
-- [ ] **Browser push:** opt-in, delivery queue, retries and expired-device cleanup are deployed. Verify receipt on physical phones; permission is required per device. Native app push is a later task.
-- [ ] **Email delivery:** domain verification and provider test acceptance passed. Confirm a real user receives the reset message.
-- [ ] **Photo management:** rail-post photos support compression and editing (up to three). Finish physical-device orientation, format and retry checks.
+- [x] **Browser push on the tested iPhone:** October 14 at 2:56 AM EDT, the user confirmed the delayed test alert appeared outside the app after locking the phone. Other platforms and native app push remain separate checks.
+- [x] **Reset-email delivery:** a fresh approved live request reached the real Gmail inbox October 14 at 2:22:54 AM EDT. Provider failure handling also passed. Verification/change-email completion remains separate.
+- [x] **Phone password reset/sign-in:** the user confirmed both completed successfully after opening the email link with press-and-hold. Desktop/server checks also pass.
+- [ ] **Gmail link usability:** ordinary taps did nothing in Gmail on iPhone; press-and-hold opens the valid link in Safari. Investigate the single-tap behavior separately.
+- [ ] **Photo management:** live JPEG/PNG/WebP preview, EXIF rotation, resizing, three-photo limit and retry checks passed. The user confirms upright photos persist after reopening the iPhone Home Screen app and Update Stack numbers are readable. HEIC/camera and separate Safari coverage remain.
 - [ ] **Preferences and reminders:** post/session watches and device push on/off exist. Per-room/category controls and schedule-aware reminders remain.
 - [ ] **Safety and operations:** advanced image screening and broader abuse/accessibility review remain. Manual snapshot recovery was exercised; automated daily snapshots are not enabled by the provider. See the release record for the finalized restore and data comparison.
 
 ## Next actions, in order
 
-1. **By Oct 12:** confirm actual verification/reset/change-email inbox delivery and sensitive account settings; complete phone push receipt checks (original Oct 10 goal remains overdue).
+1. **Core phone/account checks completed October 14:** real reset-email delivery, reset/sign-in, outside-app iPhone push, and Home Screen photo persistence/orientation/readability passed. Follow-ups remain for Gmail single-tap behavior, verification/change-email settings, and broader Safari/HEIC/accessibility coverage. [Current evidence](docs/device-account-verification-2026-10-14.md).
 2. **By Oct 12:** decide the native app approach and start publisher/provider setup.
 3. **By Oct 16:** enable an available automatic-backup option, document a strictly isolated restore procedure, and complete the broader abuse review.
 4. **By Oct 22:** finish physical-phone photo/icon behavior and the cross-product keyboard/accessibility audit.
@@ -192,10 +200,10 @@ All goals are end of day **America/New_York, 2026**. Dates are stretch targets r
 
 | Order | Stage | Current position | Complete-by goal |
 | --- | --- | --- | --- |
-| 1 | Accounts and recovery | Account features deployed; actual inbox and sensitive-settings completion checks remain | Oct 12 |
+| 1 | Accounts and recovery | Reset delivery and phone sign-in verified; verification/change-email and remaining sensitive settings need checks | Oct 12 |
 | 2 | Safety, permissions and support | Reports/moderation/support live; automatic backups and broader abuse review remain | Oct 16 |
 | 3 | Social, room and league controls | Administration deployed; physical-device and accessibility checks remain | Oct 22 |
-| 4 | Notifications and destination links | Inbox complete; web push deployed; phone verification, preferences and reminder work remain | Oct 28 |
+| 4 | Notifications and destination links | Inbox and tested iPhone push verified; other devices, preferences and reminders remain | Oct 28 |
 | 5 | Live tournament tools | Player sessions and stack updates live; event lifecycle, QR join, board, clock and scoring integration remain | Nov 5 |
 | 6 | iPhone and Android apps | Native app implementation and signed physical-device builds remain | Nov 13 |
 | 7 | Ads and paid room plans | Ad integration, consent, entitlements, billing and sponsor controls remain | Nov 20 |

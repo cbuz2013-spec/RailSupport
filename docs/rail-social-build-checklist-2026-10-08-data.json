@@ -14,9 +14,10 @@
           "name": "Verified email delivery",
           "due": "2026-10-09",
           "how": "Connect a verified sender so account messages reach the correct address; confirm delivery and failure handling.",
-          "status": "partial",
-          "completed": false,
-          "progress": "Sender domain phabfive.com is verified and Resend is connected. Provider test acceptance and failure handling passed; receipt in a real user inbox still needs confirmation."
+          "status": "complete",
+          "completed": true,
+          "progress": "October 14: a fresh user-approved live reset request reached the real Gmail inbox at 2:22:54 AM EDT. Provider retry/failure handling passed. Verification/change-email completion remains separate; see device-account-verification-2026-10-14.md.",
+          "completed_at": "2026-10-14"
         },
         {
           "id": "1.2",
@@ -25,8 +26,8 @@
           "how": "Send a single-use, expiring reset link; let the user set a new password and return to sign-in.",
           "status": "complete",
           "completed": true,
-          "completed_at": "2026-10-09",
-          "progress": "Completed Oct 9: deployed single-use, 30-minute reset links, session revocation and invitation-preserving recovery; local end-to-end and production route checks passed."
+          "progress": "October 14: real inbox delivery, production callback and desktop form passed. The user completed their own reset and signed in successfully on iPhone after opening the Gmail link with press-and-hold. Single-use/expiry/session tests pass. Ordinary single-tap Gmail behavior remains a separate usability follow-up.",
+          "completed_at": "2026-10-14"
         },
         {
           "id": "1.3",
@@ -168,7 +169,7 @@
           "how": "Finish supported edit/delete flows, image orientation/compression and useful upload retry messages.",
           "status": "partial",
           "completed": false,
-          "progress": "Post/photo edits and deletion retained; orientation-aware compression and unsupported-format retry guidance deployed. Physical-device orientation/format and retry checks remain; maximum three photos per private-rail post."
+          "progress": "October 14: live JPEG/PNG/WebP, EXIF rotation, resizing, three-photo limit, invalid/oversize rejection and successful retry passed. The user confirms upright photos persist after reopening the iPhone Home Screen app. Persistence/privacy tests passed; HEIC/camera and separate Safari checks remain."
         },
         {
           "id": "3.5",
@@ -224,7 +225,7 @@
           "how": "Register supported browsers for opt-in push and handle permission denial and expired subscriptions.",
           "status": "partial",
           "completed": false,
-          "progress": "Browser opt-in, service worker, production push credentials, permission handling and expired-device cleanup are deployed. This stays unchecked until receipt is verified on physical phones."
+          "progress": "October 14: version 2.9.2 adds a delayed current-device test. Provider acceptance was recorded at 2:55:23 AM EDT, and at 2:56 AM the user confirmed the alert appeared on their locked iPhone. Home Screen push and iOS settings are enabled with Focus off. The tested iPhone path is verified; other browser/device platforms remain to check."
         },
         {
           "id": "4.4",
@@ -625,9 +626,9 @@
     "League seasons, schedules, manual results and standings",
     "Manual tournament-update posts"
   ],
-  "updated": "2026-10-09",
-  "current_release": "2.5.7",
-  "last_verified_commit": "89f19f2148b5a4fac48432a036ca7a52e56439b2",
+  "updated": "2026-10-14",
+  "current_release": "2.9.2",
+  "last_verified_commit": "d8b6da4bc182ad5d522913dd2f1d007a052e3036",
   "release_additions": [
     {
       "name": "Green and white interface",
@@ -697,5 +698,5 @@
     }
   ],
   "verification_note": "Release 2.5.7: 49 selected tests passed, including three React DOM interaction regressions reproduced before the fix, plus local/cloud builds. Canonical live domain confirmed READY deployment dpl_B3Fo3CnYL9fJbXyEe2SUgUoAPrdj, homepage HTTP 200 and corrected component identities in published JavaScript. In-memory DOM tests are not a physical-device/browser session; that retest remains outstanding after the earlier browser approval block. Broader task completion retains its existing evidence and limitations.",
-  "status_updated": "2026-10-11"
+  "status_updated": "2026-10-14"
 }
